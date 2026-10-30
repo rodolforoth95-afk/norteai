@@ -226,7 +226,7 @@ function PainelIndicadores({ ind }: { ind: Indicadores }) {
       tom: v === null ? undefined : v >= 0 ? ("alta" as const) : ("baixa" as const),
     })),
   ];
-  const hora = new Date(ind.atualizadoEm).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+  const hora = new Date(ind.atualizadoEm).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit", timeZone: "America/Sao_Paulo" });
 
   return (
     <Cartao className="flex flex-col gap-4">
