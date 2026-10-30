@@ -4,6 +4,7 @@ import { Logo } from "@/components/Logo";
 import { TabBar } from "@/components/TabBar";
 import { BarraLateral } from "@/components/BarraLateral";
 import { AlternarTema } from "@/components/AlternarTema";
+import { BotaoSair } from "@/components/BotaoSair";
 import { exigirUsuario } from "@/lib/servidor/sessao";
 import { resumoMoedas } from "@/lib/dominio/moedas";
 
@@ -35,6 +36,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
               <span className="text-xs text-suave">{nivel}</span>
             </Link>
             <AlternarTema />
+            <BotaoSair />
           </div>
         </div>
       </header>

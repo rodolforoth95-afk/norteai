@@ -22,8 +22,7 @@ export function AcoesConta({ teste = false }: { teste?: boolean }) {
 
   async function sair() {
     await postarJson("/api/auth/sair", {});
-    router.replace("/");
-    router.refresh();
+    window.location.assign("/");
   }
 
   async function excluirConta() {

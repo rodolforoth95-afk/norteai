@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { BookOpen, CandlestickChart, Coins, Home, PieChart, User, UserRound } from "lucide-react";
 import { Logo } from "./Logo";
 import { AlternarTema } from "./AlternarTema";
+import { BotaoSair } from "./BotaoSair";
 
 const ITENS = [
   { href: "/inicio", rotulo: "Início", Icone: Home },
@@ -56,6 +57,7 @@ export function BarraLateral({ saldo, nivel, nome }: { saldo: number; nivel: str
           <span className="mt-0.5 block text-xs text-suave">Nível {nivel}</span>
         </Link>
         <AlternarTema comRotulo />
+        <BotaoSair comRotulo />
         {nome ? <p className="truncate px-1 text-xs text-suave">Conectado como {nome}</p> : null}
       </div>
     </aside>
