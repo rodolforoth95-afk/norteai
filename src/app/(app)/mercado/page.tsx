@@ -1,10 +1,11 @@
 import { Suspense } from "react";
 import Link from "next/link";
-import { ArrowRight, CandlestickChart, GitCompareArrows, GraduationCap, Landmark, LineChart, TrendingDown, TrendingUp } from "lucide-react";
+import { ArrowRight, GitCompareArrows, GraduationCap, Landmark, LineChart, TrendingDown, TrendingUp } from "lucide-react";
 import { AvisoEducacional } from "@/components/AvisoEducacional";
 import { Cartao, TituloSecao } from "@/components/ui";
-import { AVISO_MERCADO, EsqueletoLista, LinhaAtivo, LogoAtivo, SeloVariacao, formatarPreco } from "@/components/mercado";
-import { altasDaSemana, brapiDisponivel, cotacao, destaquesDoDia, futuros, historico, listarAtivos, tesouro } from "@/lib/servidor/brapi";
+import { AVISO_MERCADO, EsqueletoLista, LinhaAtivo, SeloVariacao, formatarPreco } from "@/components/mercado";
+import { altasDaSemana, brapiDisponivel, cotacao, destaquesDoDia, futuros, historico, listarAtivosComTotal, tesouro } from "@/lib/servidor/brapi";
+import { MapaDoDia as MapaInterativo, type GrupoMapa } from "./MapaDoDia";
 import { exigirUsuario } from "@/lib/servidor/sessao";
 import { AbasDestaques } from "./AbasDestaques";
 import { BuscaAtivos } from "./BuscaAtivos";
@@ -98,46 +99,29 @@ export default async function PaginaMercado() {
   );
 }
 
-// Mapa de calor: as ações mais negociadas do dia, coloridas pela variação.
+// Mapa de calor do dia: os ativos mais negociados de cada tipo (4 requisições, 15 min de cache).
 async function MapaDoDia() {
-  const lista = await listarAtivos({ tipo: "stock", ordenar: "volume", limite: 30 }).catch(() => []);
-  const itens = lista.filter((a) => a.variacaoPct !== null && a.preco !== null).slice(0, 24);
-  if (!itens.length) return null;
-  const subiram = itens.filter((a) => a.variacaoPct! > 0).length;
-  const cor = (v: number) => {
-    const forca = Math.min(1, Math.abs(v) / 4);
-    return v >= 0 ? `rgba(34, 197, 94, ${0.18 + forca * 0.6})` : `rgba(239, 68, 68, ${0.18 + forca * 0.6})`;
-  };
-  return (
-    <Cartao className="flex flex-col gap-3">
-      <TituloSecao
-        titulo="Mapa do dia"
-        subtitulo={`As 24 ações mais negociadas hoje: ${subiram} em alta, ${itens.length - subiram} em queda ou estáveis. Toque para ver o gráfico com suportes e resistências.`}
-      />
-      <ul className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 lg:grid-cols-8">
-        {itens.map((a) => (
-          <li key={a.simbolo}>
-            <Link
-              href={`/mercado/${a.simbolo}`}
-              className="flex min-h-24 flex-col items-center justify-center rounded-xl px-1 py-2 text-center transition hover:ring-2 hover:ring-texto/40"
-              style={{ background: cor(a.variacaoPct!) }}
-            >
-              <LogoAtivo simbolo={a.simbolo} logo={a.logo} tamanho={30} />
-              <span className="mt-1 font-display text-sm font-bold text-texto">{a.simbolo}</span>
-              <span className="text-xs font-semibold tabular-nums text-texto">
-                {a.variacaoPct! > 0 ? "+" : ""}
-                {a.variacaoPct!.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ul>
-      <p className="flex items-center gap-1.5 text-[11px] text-suave">
-        <CandlestickChart className="h-3.5 w-3.5" aria-hidden="true" />
-        Quanto mais forte a cor, maior a variação. Mostra só o movimento do dia, não é indicação.
-      </p>
-    </Cartao>
-  );
+  const tipos = [
+    { id: "acoes", rotulo: "Ações", descricao: "Entre as 60 ações mais negociadas hoje.", params: { tipo: "stock" as const } },
+    { id: "fiis", rotulo: "FIIs", descricao: "Entre os 60 fundos imobiliários mais negociados hoje.", params: { subtipo: "fii" as const } },
+    { id: "etfs", rotulo: "ETFs", descricao: "Entre os 60 ETFs mais negociados hoje.", params: { subtipo: "etf" as const } },
+    { id: "bdrs", rotulo: "BDRs", descricao: "Entre os 60 BDRs (empresas de fora) mais negociados hoje.", params: { tipo: "bdr" as const } },
+  ];
+  const grupos: GrupoMapa[] = [];
+  for (const t of tipos) {
+    try {
+      const { itens, total } = await listarAtivosComTotal({ ...t.params, ordenar: "volume", limite: 70 });
+      const validos = itens
+        .filter((a) => a.variacaoPct !== null && a.preco !== null)
+        .slice(0, 60)
+        .map((a) => ({ simbolo: a.simbolo, nome: a.nome, logo: a.logo, variacaoPct: a.variacaoPct!, preco: a.preco! }));
+      if (validos.length) grupos.push({ id: t.id, rotulo: t.rotulo, descricao: t.descricao, total, itens: validos });
+    } catch {
+      // Um tipo com falha não derruba o mapa.
+    }
+  }
+  if (!grupos.length) return null;
+  return <MapaInterativo grupos={grupos} />;
 }
 
 async function CartaoIbovespa() {

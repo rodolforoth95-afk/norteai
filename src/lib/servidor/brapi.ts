@@ -235,7 +235,16 @@ type RespostaLista = {
     logoUrl: string | null;
     quote: { lastPrice: number | null; changePercent: number | null; volume: number | null; marketCap: number | null } | null;
   }[];
+  pagination?: { totalItems?: number };
 };
+
+type ParametrosLista = Parameters<typeof listarAtivos>[0];
+
+// Lista e total de ativos daquele tipo na B3 (a brapi informa o total na paginação).
+export async function listarAtivosComTotal(params: ParametrosLista) {
+  const { itens, total } = await buscarLista(params);
+  return { itens, total };
+}
 
 export async function listarAtivos(params: {
   busca?: string;
@@ -245,6 +254,17 @@ export async function listarAtivos(params: {
   tipo?: "stock" | "fund" | "bdr";
   subtipo?: "stock" | "unit" | "fii" | "etf" | "bdr";
 }): Promise<ItemLista[]> {
+  return (await buscarLista(params)).itens;
+}
+
+async function buscarLista(params: {
+  busca?: string;
+  ordenar?: "volume" | "change" | "marketCap" | "symbol";
+  ordem?: "asc" | "desc";
+  limite?: number;
+  tipo?: "stock" | "fund" | "bdr";
+  subtipo?: "stock" | "unit" | "fii" | "etf" | "bdr";
+}): Promise<{ itens: ItemLista[]; total: number }> {
   const q = new URLSearchParams({
     sortBy: params.ordenar ?? "volume",
     sortOrder: params.ordem ?? "desc",
@@ -254,7 +274,7 @@ export async function listarAtivos(params: {
   if (params.tipo) q.set("type", params.tipo);
   if (params.subtipo) q.set("subType", params.subtipo);
   const r = await chamar<RespostaLista>(`/v2/tickers?${q}`, params.busca ? 60 * 60 : 15 * 60, [TAG_MERCADO]);
-  return r.results
+  const itens = r.results
     .filter((a) => !/\dF$/.test(a.symbol)) // mercado fracionário duplica o ativo
     .map((a) => ({
       simbolo: a.symbol,
@@ -268,6 +288,7 @@ export async function listarAtivos(params: {
       volume: a.quote?.volume ?? null,
       valorMercado: a.quote?.marketCap ?? null,
     }));
+  return { itens, total: r.pagination?.totalItems ?? itens.length };
 }
 
 // --- Painel do mercado -------------------------------------------------------------------
