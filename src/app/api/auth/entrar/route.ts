@@ -6,6 +6,8 @@ import { reenviarCodigo } from "@/lib/servidor/codigo";
 import { destinoPosLogin } from "@/lib/servidor/destino";
 import { COOKIE_TESTE, USUARIO_TESTE, ehLoginTeste } from "@/lib/modo-teste";
 import { ehLoginAdminWeb, entrarComoAdmin } from "@/lib/servidor/admin-web";
+import { repositorio } from "@/lib/servidor/repositorio";
+import { BONUS_DEMO } from "@/lib/dominio/moedas";
 import { dentroDoLimite, erro, hashEmail, ipDe, registrarErro } from "@/lib/servidor/util";
 
 const Corpo = z.object({ email: esquemaEmail, senha: z.string().min(1, "Informe sua senha.") });
@@ -14,6 +16,7 @@ export async function POST(req: Request) {
   const corpo = await req.json().catch(() => null);
 
   if (ehLoginTeste(corpo?.email, corpo?.senha)) {
+    await darBonusDemo(USUARIO_TESTE.id, true);
     const resposta = NextResponse.json({
       ok: true,
       destino: await destinoPosLogin(USUARIO_TESTE.id, true),
@@ -29,6 +32,7 @@ export async function POST(req: Request) {
     }
     const uid = await entrarComoAdmin();
     if (!uid) return erro("Não foi possível entrar com o usuário de demonstração agora.", 500);
+    await darBonusDemo(uid, false);
     return NextResponse.json({ ok: true, destino: await destinoPosLogin(uid) });
   }
 
@@ -58,4 +62,13 @@ export async function POST(req: Request) {
   }
 
   return NextResponse.json({ ok: true, destino: await destinoPosLogin(data.user.id) });
+}
+
+// Lança uma única vez (o lançamento é único por tipo + referência).
+async function darBonusDemo(uid: string, teste: boolean) {
+  try {
+    await repositorio(teste).lancarMoedas(uid, BONUS_DEMO.tipo, BONUS_DEMO.referencia, BONUS_DEMO.valor);
+  } catch (e) {
+    registrarErro("bônus da conta de demonstração", e instanceof Error ? e.message : undefined);
+  }
 }

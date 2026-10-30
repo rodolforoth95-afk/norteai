@@ -12,6 +12,10 @@ export const RECOMPENSAS = {
 
 export type TipoRecompensa = keyof typeof RECOMPENSAS;
 
+// Saldo extra da conta de demonstração (admin), para testar os desbloqueios.
+// Fica fora de RECOMPENSAS porque não é uma forma de ganhar coins.
+export const BONUS_DEMO = { tipo: "bonus_demo", referencia: "inicial", valor: 5000, rotulo: "Bônus da conta de demonstração" } as const;
+
 export const NIVEIS = [
   { nome: "Iniciante", minimo: 0 },
   { nome: "Explorador", minimo: 150 },
@@ -31,5 +35,6 @@ export function resumoMoedas(lancamentos: LancamentoMoedas[]) {
 
 export function rotuloLancamento(l: LancamentoMoedas) {
   if (l.tipo === "desbloqueio") return "Treinamento desbloqueado";
+  if (l.tipo === BONUS_DEMO.tipo) return BONUS_DEMO.rotulo;
   return RECOMPENSAS[l.tipo as TipoRecompensa]?.rotulo ?? l.tipo;
 }
