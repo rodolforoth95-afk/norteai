@@ -1,6 +1,6 @@
 import { PaginaDocumento } from "@/components/PaginaDocumento";
 
-export const metadata = { title: "Termos de uso · Norte.ia" };
+export const metadata = { title: "Termos de uso" };
 
 export default function PaginaTermos() {
   return (

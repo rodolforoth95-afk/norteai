@@ -18,7 +18,7 @@ export default async function PaginaModulo({ params }: { params: Promise<{ slug:
   const minutos = aulas.reduce((s, a) => s + a.minutos, 0);
 
   return (
-    <section className="flex flex-col gap-6">
+    <section className="mx-auto flex w-full max-w-3xl flex-col gap-6">
       <Link href="/aprender" className="-ml-1 inline-flex min-h-11 items-center gap-2 self-start font-medium text-suave hover:text-texto">
         <ArrowLeft className="h-5 w-5" aria-hidden="true" />
         Trilhas

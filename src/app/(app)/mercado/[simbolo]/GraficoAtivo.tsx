@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Area, AreaChart, CartesianGrid, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { SeloVariacao, formatarPreco } from "@/components/mercado";
+import { useCoresTema } from "@/components/useCoresTema";
 
 type Ponto = { data: string; fechamento: number };
 
@@ -22,6 +23,7 @@ export function GraficoAtivo({ simbolo, inicial }: { simbolo: string; inicial: P
   const [ativo, setAtivo] = useState<number | null>(null);
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState(false);
+  const tema = useCoresTema();
 
   async function trocar(p: string) {
     if (p === periodo) return;
@@ -81,11 +83,11 @@ export function GraficoAtivo({ simbolo, inicial }: { simbolo: string; inicial: P
                   <stop offset="100%" stopColor={cor} stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid stroke="#222222" strokeDasharray="2 6" vertical={false} />
-              <XAxis dataKey="data" tickFormatter={dataCurta} tick={{ fill: "#8A8A8A", fontSize: 11 }} axisLine={false} tickLine={false} minTickGap={28} />
+              <CartesianGrid stroke={tema.linha} strokeDasharray="2 6" vertical={false} />
+              <XAxis dataKey="data" tickFormatter={dataCurta} tick={{ fill: tema.suave, fontSize: 11 }} axisLine={false} tickLine={false} minTickGap={28} />
               <YAxis hide domain={["dataMin", "dataMax"]} />
-              {primeiro ? <ReferenceLine y={primeiro} stroke="#555555" strokeDasharray="4 4" /> : null}
-              <Tooltip content={() => null} cursor={{ stroke: "#FFB020", strokeWidth: 1, strokeDasharray: "3 3" }} />
+              {primeiro ? <ReferenceLine y={primeiro} stroke={tema.suave} strokeOpacity={0.6} strokeDasharray="4 4" /> : null}
+              <Tooltip content={() => null} cursor={{ stroke: tema.destaque, strokeWidth: 1, strokeDasharray: "3 3" }} />
               <Area
                 type="monotone"
                 dataKey="fechamento"
@@ -94,7 +96,7 @@ export function GraficoAtivo({ simbolo, inicial }: { simbolo: string; inicial: P
                 fill="url(#area-ativo)"
                 animationDuration={900}
                 animationEasing="ease-out"
-                activeDot={{ r: 6, fill: "#FFB020", stroke: "#000000", strokeWidth: 3 }}
+                activeDot={{ r: 6, fill: tema.destaque, stroke: tema.superficie, strokeWidth: 3 }}
               />
             </AreaChart>
           </ResponsiveContainer>

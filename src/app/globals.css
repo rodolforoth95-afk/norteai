@@ -1,22 +1,23 @@
 @import "tailwindcss";
 
-/* Identidade visual v3: preto com detalhes em laranja amarelado (referência: corretoras como XP e Rico) */
-@theme {
-  --color-fundo: #000000;
-  --color-superficie: #111111;
-  --color-superficie-2: #1b1b1b;
-  --color-linha: #2b2b2b;
-  --color-texto: #ffffff;
-  --color-suave: #a6a6a6;
-  --color-indigo: #ff6b00; /* laranja profundo */
-  --color-violeta: #ff8f00; /* laranja */
-  --color-ciano: #ffb020; /* laranja amarelado: destaques e links */
-  --color-menta: #22c55e; /* alta */
-  --color-ambar: #ffc940; /* coins */
-  --color-rosa: #f472b6;
-  --color-erro: #ef4444; /* baixa e erros */
+/* Identidade visual v3: preto (ou branco) com detalhes em laranja amarelado.
+   As cores vêm de variáveis que mudam com o tema (data-tema="escuro" | "claro" no <html>). */
+@theme inline {
+  --color-fundo: var(--fundo);
+  --color-superficie: var(--superficie);
+  --color-superficie-2: var(--superficie-2);
+  --color-linha: var(--linha);
+  --color-texto: var(--texto);
+  --color-suave: var(--suave);
+  --color-indigo: var(--laranja-forte); /* laranja profundo */
+  --color-violeta: var(--laranja); /* laranja */
+  --color-ciano: var(--destaque); /* laranja amarelado: destaques e links */
+  --color-menta: var(--alta); /* alta */
+  --color-ambar: var(--coins); /* coins */
+  --color-rosa: var(--rosa);
+  --color-erro: var(--baixa); /* baixa e erros */
 
-  --font-sans: var(--font-texto), system-ui, sans-serif;
+--font-sans: var(--font-texto), system-ui, sans-serif;
   --font-display: var(--font-titulo), system-ui, sans-serif;
 
   --animate-subir: subir 0.5s ease-out both;
@@ -58,7 +59,7 @@
 }
 
 @utility vidro {
-  background-color: rgb(10 10 10 / 0.8);
+  background-color: color-mix(in srgb, var(--fundo) 84%, transparent);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
 }
@@ -66,29 +67,67 @@
 @utility borda-gradiente {
   border: 1px solid transparent;
   background:
-    linear-gradient(var(--color-superficie), var(--color-superficie)) padding-box,
+    linear-gradient(var(--superficie), var(--superficie)) padding-box,
     linear-gradient(120deg, #ff6b00, #ff9500, #ffb800) border-box;
+}
+
+:root,
+[data-tema="escuro"] {
+  --fundo: #000000;
+  --superficie: #111111;
+  --superficie-2: #1b1b1b;
+  --linha: #2b2b2b;
+  --texto: #ffffff;
+  --suave: #a6a6a6;
+  --laranja-forte: #ff6b00;
+  --laranja: #ff8f00;
+  --destaque: #ffb020;
+  --alta: #22c55e;
+  --coins: #ffc940;
+  --rosa: #f472b6;
+  --baixa: #ef4444;
+  --brilho: rgb(255 107 0 / 0.16);
+  color-scheme: dark;
+}
+
+/* Modo claro: tons de laranja mais escuros para manter contraste sobre o branco.
+   Um bloco com data-tema="escuro" (ex.: cartões de destaque) continua escuro dentro do modo claro. */
+[data-tema="claro"] {
+  --fundo: #f5f5f2;
+  --superficie: #ffffff;
+  --superficie-2: #f0efeb;
+  --linha: #e0dfd9;
+  --texto: #121212;
+  --suave: #5c5c5c;
+  --laranja-forte: #ff6b00;
+  --laranja: #e07800;
+  --destaque: #b35500;
+  --alta: #15803d;
+  --coins: #9a5b00;
+  --rosa: #be185d;
+  --baixa: #dc2626;
+  --brilho: rgb(255 140 0 / 0.1);
+  color-scheme: light;
 }
 
 html {
   -webkit-text-size-adjust: 100%;
-  color-scheme: dark;
 }
 
 body {
   font-feature-settings: "tnum" 1; /* números com largura fixa, bons para cotações */
   background:
-    radial-gradient(60rem 30rem at 85% -10%, rgb(255 107 0 / 0.16), transparent 60%),
+    radial-gradient(60rem 30rem at 85% -10%, var(--brilho), transparent 60%),
     radial-gradient(50rem 28rem at -10% 10%, rgb(255 176 32 / 0.07), transparent 60%),
-    var(--color-fundo);
+    var(--fundo);
   background-attachment: fixed;
-  color: var(--color-texto);
+  color: var(--texto);
   font-family: var(--font-sans);
   min-height: 100dvh;
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-ciano);
+  outline: 2px solid var(--destaque);
   outline-offset: 2px;
 }
 

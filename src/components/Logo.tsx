@@ -13,7 +13,7 @@ export function Estrela({ className = "h-7 w-7" }: { className?: string }) {
           <stop offset="100%" stopColor="#FFB800" />
         </linearGradient>
       </defs>
-      <polygon points="24,2 28,20 24,24 20,20" fill="#FFFFFF" />
+      <polygon points="24,2 28,20 24,24 20,20" style={{ fill: "var(--texto)" }} />
       <polygon points="28,20 46,24 28,28 24,46 20,28 2,24 20,20 24,24" fill={`url(#${id})`} />
     </svg>
   );

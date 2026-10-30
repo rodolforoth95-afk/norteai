@@ -5,6 +5,7 @@ import { criarClienteServidor } from "@/lib/supabase/servidor";
 import { reenviarCodigo } from "@/lib/servidor/codigo";
 import { destinoPosLogin } from "@/lib/servidor/destino";
 import { COOKIE_TESTE, USUARIO_TESTE, ehLoginTeste } from "@/lib/modo-teste";
+import { ehLoginAdminWeb, entrarComoAdmin } from "@/lib/servidor/admin-web";
 import { dentroDoLimite, erro, hashEmail, ipDe, registrarErro } from "@/lib/servidor/util";
 
 const Corpo = z.object({ email: esquemaEmail, senha: z.string().min(1, "Informe sua senha.") });
@@ -19,6 +20,16 @@ export async function POST(req: Request) {
     });
     resposta.cookies.set(COOKIE_TESTE, "1", { httpOnly: true, sameSite: "lax", path: "/" });
     return resposta;
+  }
+
+  // Login de demonstração na versão publicada (só com ADMIN_ATIVO=1).
+  if (ehLoginAdminWeb(corpo?.email, corpo?.senha)) {
+    if (!dentroDoLimite(`entrar:admin:${ipDe(req)}`, 20, 15 * 60 * 1000)) {
+      return erro("Muitas tentativas de login. Tente de novo em 15 minutos.", 429);
+    }
+    const uid = await entrarComoAdmin();
+    if (!uid) return erro("Não foi possível entrar com o usuário de demonstração agora.", 500);
+    return NextResponse.json({ ok: true, destino: await destinoPosLogin(uid) });
   }
 
   const lido = Corpo.safeParse(corpo);

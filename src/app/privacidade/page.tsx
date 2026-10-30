@@ -1,6 +1,6 @@
 import { PaginaDocumento } from "@/components/PaginaDocumento";
 
-export const metadata = { title: "Política de privacidade · Norte.ia" };
+export const metadata = { title: "Política de privacidade" };
 
 export default function PaginaPrivacidade() {
   return (

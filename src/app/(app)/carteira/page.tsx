@@ -92,7 +92,7 @@ export default async function PaginaCarteira({ searchParams }: { searchParams: P
       ) : null}
 
       {/* Patrimônio */}
-      <div className="relative overflow-hidden rounded-3xl p-6 text-white" style={{ background: "linear-gradient(135deg, #141414 0%, #2A1606 55%, #6B2E00 100%)" }}>
+      <div data-tema="escuro" className="relative overflow-hidden rounded-3xl p-6 text-white" style={{ background: "linear-gradient(135deg, #141414 0%, #2A1606 55%, #6B2E00 100%)" }}>
         <div className="pointer-events-none absolute -bottom-16 -right-10 h-48 w-48 animate-brilho rounded-full bg-indigo/40 blur-3xl" aria-hidden="true" />
         <p className="relative text-sm text-white/75">Patrimônio total</p>
         <p className="relative mt-1 font-display text-4xl font-bold">{formatarReais(comp.total)}</p>
@@ -107,6 +107,7 @@ export default async function PaginaCarteira({ searchParams }: { searchParams: P
         </p>
       </div>
 
+      <div className="flex flex-col gap-7 lg:grid lg:grid-cols-2 lg:items-start lg:gap-6">
       {/* Composição principal */}
       <Cartao className="flex flex-col gap-4">
         <TituloSecao titulo="Composição" />
@@ -258,7 +259,9 @@ export default async function PaginaCarteira({ searchParams }: { searchParams: P
         ))}
       </Cartao>
 
-      <div className="flex flex-col gap-2">
+      </div>
+
+      <div className="flex flex-col gap-2 lg:grid lg:grid-cols-2 lg:gap-3">
         <BotaoCotacoes />
         <BotaoLink href="/carteira/importar" variante="secundario" larguraTotal>
           <RefreshCw className="h-4 w-4" aria-hidden="true" />
@@ -287,7 +290,7 @@ function Anel({ valor }: { valor: number }) {
             <stop offset="100%" stopColor="#FFB800" />
           </linearGradient>
         </defs>
-        <circle cx="50" cy="50" r={r} fill="none" stroke="#1B1B1B" strokeWidth="10" />
+        <circle cx="50" cy="50" r={r} fill="none" className="stroke-superficie-2" strokeWidth="10" />
         <circle cx="50" cy="50" r={r} fill="none" stroke="url(#anel-aderencia)" strokeWidth="10" strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={circ * (1 - valor / 100)} />
       </svg>
       <span className="absolute inset-0 flex items-center justify-center font-display text-2xl font-bold text-texto">{valor}%</span>

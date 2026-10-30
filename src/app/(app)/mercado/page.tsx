@@ -10,7 +10,7 @@ import { BuscaAtivos } from "./BuscaAtivos";
 import { MiniGrafico } from "./MiniGrafico";
 import { BotaoAtualizar } from "@/components/BotaoAtualizar";
 
-export const metadata = { title: "Mercado · Norte.ia" };
+export const metadata = { title: "Mercado" };
 
 // Painel de mercado: dados para acompanhar e aprender, nunca indicação.
 export default async function PaginaMercado() {
@@ -34,8 +34,12 @@ export default async function PaginaMercado() {
         <BotaoAtualizar />
       </div>
 
-      <BuscaAtivos />
+      <div className="lg:max-w-xl">
+        <BuscaAtivos />
+      </div>
 
+      <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
+        <div className="flex min-w-0 flex-col gap-6">
       <Suspense fallback={<div className="h-44 animate-pulse rounded-3xl bg-superficie" />}>
         <CartaoIbovespa />
       </Suspense>
@@ -43,6 +47,8 @@ export default async function PaginaMercado() {
       <Suspense fallback={<Cartao><EsqueletoLista /></Cartao>}>
         <Destaques />
       </Suspense>
+        </div>
+        <div className="flex min-w-0 flex-col gap-6">
 
       <Suspense
         fallback={
@@ -58,6 +64,8 @@ export default async function PaginaMercado() {
       <Suspense fallback={<div className="h-40 animate-pulse rounded-3xl bg-superficie" />}>
         <RendaFixaEFuturos />
       </Suspense>
+        </div>
+      </div>
 
       <AvisoEducacional extra={AVISO_MERCADO} />
     </section>

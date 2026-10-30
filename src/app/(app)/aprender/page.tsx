@@ -35,7 +35,7 @@ export default async function PaginaAprender() {
 
       <div className="flex flex-col gap-3">
         <TituloSecao titulo="Trilhas" subtitulo={`+${RECOMPENSAS.leitura.valor} coins por aula · +${RECOMPENSAS.quiz.valor} por quiz`} />
-        <ul className="flex flex-col gap-3">
+        <ul className="grid grid-cols-1 gap-3 lg:grid-cols-2">
           {progresso.map(({ m, lidas, quiz, pct }, i) => (
             <li key={m.slug} className="min-w-0">
               <Link href={`/aprender/modulo/${m.slug}`} className="flex min-w-0 items-center gap-4 rounded-3xl border border-linha bg-superficie p-4 transition hover:border-violeta">

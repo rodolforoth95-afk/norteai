@@ -5,13 +5,12 @@ import type { Ilustracao } from "@/lib/conteudo/aulas";
 const VERDE = "#22C55E";
 const VERMELHO = "#EF4444";
 const LARANJA = "#FFB020";
-const LINHA = "#2B2B2B";
-const TEXTO = "#A6A6A6";
+const TEXTO = "var(--suave)";
 
 function Moldura({ titulo, children }: { titulo: string; children: React.ReactNode }) {
   return (
     <figure className="rounded-3xl border border-linha bg-superficie p-4">
-      <svg viewBox="0 0 320 170" className="w-full" role="img" aria-label={titulo}>
+      <svg viewBox="0 0 320 170" className="w-full [&_text]:fill-suave" role="img" aria-label={titulo}>
         {children}
       </svg>
       <figcaption className="mt-2 text-xs text-suave">{titulo} · exemplo ilustrativo</figcaption>
@@ -70,7 +69,7 @@ function Medias() {
   return (
     <Moldura titulo="Preço (laranja) e média móvel (branca), que suaviza o ruído">
       <polyline points="10,120 30,100 50,115 70,90 90,105 110,80 130,95 150,70 170,85 190,60 210,78 230,55 250,70 270,45 300,60" fill="none" stroke={LARANJA} strokeWidth="2.5" />
-      <path d="M10,118 C80,105 140,88 200,72 S280,55 300,52" fill="none" stroke="#FFFFFF" strokeWidth="2.5" strokeDasharray="6 4" />
+      <path d="M10,118 C80,105 140,88 200,72 S280,55 300,52" fill="none" className="stroke-texto" strokeWidth="2.5" strokeDasharray="6 4" />
     </Moldura>
   );
 }
@@ -80,7 +79,7 @@ function Volume() {
   return (
     <Moldura titulo="Barras de volume: dias com mais negociação se destacam">
       {barras.map((v, i) => (
-        <rect key={i} x={12 + i * 25} y={160 - v} width="16" height={v} rx="2" fill={v > 80 ? LARANJA : LINHA} />
+        <rect key={i} x={12 + i * 25} y={160 - v} width="16" height={v} rx="2" fill={LARANJA} className={v > 80 ? "" : "fill-linha"} />
       ))}
     </Moldura>
   );
@@ -108,7 +107,7 @@ function Juros() {
   });
   return (
     <Moldura titulo="R$ 200/mês a 0,8% ao mês: total (laranja) × valor aportado (cinza)">
-      <polyline points={pontos.map((p) => `${p.x},${p.aportado}`).join(" ")} fill="none" stroke={TEXTO} strokeWidth="2" strokeDasharray="5 4" />
+      <polyline points={pontos.map((p) => `${p.x},${p.aportado}`).join(" ")} fill="none" className="stroke-suave" strokeWidth="2" strokeDasharray="5 4" />
       <polyline points={pontos.map((p) => `${p.x},${p.valor}`).join(" ")} fill="none" stroke={LARANJA} strokeWidth="3" />
       <text x="230" y="20" fill={LARANJA} fontSize="10">R$ 144 mil</text>
       <text x="250" y="122" fill={TEXTO} fontSize="10">R$ 48 mil</text>

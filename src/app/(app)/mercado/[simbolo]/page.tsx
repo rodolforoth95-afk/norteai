@@ -53,11 +53,11 @@ export default async function PaginaAtivo({ params }: { params: Promise<{ simbol
           <h1 className="font-display text-2xl font-bold text-texto">{simbolo}</h1>
           <p className="truncate text-sm text-suave">{c.nome}</p>
         </div>
-      </header>
-      <div className="-mt-2 flex justify-end">
         <BotaoAtualizar simbolo={simbolo} horario={c.horario} />
-      </div>
+      </header>
 
+      <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr] lg:items-start">
+      <div className="flex min-w-0 flex-col gap-6">
       <div>
         <p className="font-display text-4xl font-bold tabular-nums text-texto">{formatarPreco(c.preco)}</p>
         <div className="mt-2 flex items-center gap-2">
@@ -70,6 +70,8 @@ export default async function PaginaAtivo({ params }: { params: Promise<{ simbol
       </div>
 
       <GraficoAtivo key={`${c.horario}-${pontos.at(-1)?.fechamento}`} simbolo={simbolo} inicial={pontos} />
+      </div>
+      <div className="flex min-w-0 flex-col gap-6">
 
       <Cartao className="flex flex-col gap-4">
         <TituloSecao titulo="Números do dia" />
@@ -121,6 +123,9 @@ export default async function PaginaAtivo({ params }: { params: Promise<{ simbol
           <ArrowRight className="h-5 w-5 text-suave" aria-hidden="true" />
         </Link>
       ) : null}
+
+      </div>
+      </div>
 
       <AvisoEducacional extra={`${AVISO_MERCADO} Rentabilidade passada não garante resultado futuro.`} />
     </article>

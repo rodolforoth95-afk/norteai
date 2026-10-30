@@ -2,6 +2,7 @@
 
 import { Area, AreaChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { formatarReais, nomeMes } from "@/lib/dominio/motor";
+import { useCoresTema } from "@/components/useCoresTema";
 
 export function GraficoComposicao({ fatias }: { fatias: { nome: string; valor: number; cor: string }[] }) {
   const dados = fatias.filter((f) => f.valor > 0);
@@ -21,6 +22,7 @@ export function GraficoComposicao({ fatias }: { fatias: { nome: string; valor: n
 }
 
 export function GraficoEvolucao({ pontos }: { pontos: { mes: string; total: number }[] }) {
+  const tema = useCoresTema();
   return (
     <div className="h-48 w-full" role="img" aria-label={`Evolução do patrimônio: ${pontos.map((p) => `${nomeMes(p.mes)} ${formatarReais(p.total, true)}`).join(", ")}`}>
       <ResponsiveContainer width="100%" height="100%">
@@ -35,15 +37,15 @@ export function GraficoEvolucao({ pontos }: { pontos: { mes: string; total: numb
               <stop offset="100%" stopColor="#FFB800" />
             </linearGradient>
           </defs>
-          <CartesianGrid stroke="#262626" strokeDasharray="3 6" vertical={false} />
-          <XAxis dataKey="mes" tickFormatter={nomeMes} tick={{ fill: "#A6A6A6", fontSize: 11 }} axisLine={false} tickLine={false} interval={0} padding={{ left: 16, right: 16 }} />
+          <CartesianGrid stroke={tema.linha} strokeDasharray="3 6" vertical={false} />
+          <XAxis dataKey="mes" tickFormatter={nomeMes} tick={{ fill: tema.suave, fontSize: 11 }} axisLine={false} tickLine={false} interval={0} padding={{ left: 16, right: 16 }} />
           <YAxis hide domain={["dataMin - 500", "dataMax + 500"]} />
           <Tooltip
             formatter={(v) => [formatarReais(Number(v)), "Patrimônio"]}
             labelFormatter={(l) => nomeMes(String(l))}
-            contentStyle={{ background: "#111111", border: "1px solid #2B2B2B", borderRadius: 12, color: "#FFFFFF" }}
+            contentStyle={{ background: tema.superficie, border: `1px solid ${tema.linha}`, borderRadius: 12, color: tema.texto }}
           />
-          <Area type="monotone" dataKey="total" stroke="url(#linha-evolucao)" strokeWidth={3} fill="url(#area-evolucao)" dot={{ r: 3, fill: "#FFB020", strokeWidth: 0 }} />
+          <Area type="monotone" dataKey="total" stroke="url(#linha-evolucao)" strokeWidth={3} fill="url(#area-evolucao)" dot={{ r: 3, fill: tema.destaque, strokeWidth: 0 }} />
         </AreaChart>
       </ResponsiveContainer>
     </div>

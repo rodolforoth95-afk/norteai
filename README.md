@@ -22,6 +22,10 @@ Guia educacional de investimentos com IA (PWA). Next.js + Supabase + Claude.
 - [x] Início com saldo da carteira, jornada (aulas, quizzes, vídeos), próximo passo e módulos; estilo de investidor em Meu perfil (/perfil)
 - [x] 6 trilhas com 30 aulas, ilustrações e quiz por módulo (+30 coins)
 - [x] Gráficos interativos e botão de atualizar cotações
+- [x] Versão para computador (menu lateral, telas largas) e para celular
+- [x] Modo claro e modo escuro (botão no menu; a escolha fica salva)
+- [x] Login de demonstração admin/admin na versão publicada (variável ADMIN_ATIVO=1)
+- [x] Telas de carregamento, erro e página não encontrada; cabeçalhos de segurança; imagem para compartilhar o link
 - [ ] Revisão de segurança e critérios de aceite
 
 ## Configurar o Supabase (uma vez)
@@ -62,6 +66,10 @@ Teste de aceite (20 pedidos de indicação de ativo): `npm run testar:ia`.
 Token em `BRAPI_TOKEN` no `.env.local` (só servidor). O código está em `src/lib/servidor/brapi.ts`.
 
 Plano gratuito (verificado em 30/10/2026): 1 ativo por requisição, uma requisição por vez, histórico diário de até 3 meses, atraso de até 30 min e 15 mil requisições por mês. O app usa cache (cotações 15 min, histórico 1 h, altas da semana 6 h) para caber na cota. Dividendos, cripto, câmbio, Selic/IPCA, Tesouro completo e futuros completos exigem plano pago; ao assinar o Startup, defina `BRAPI_ATIVOS_POR_REQUISICAO=10` para buscar vários ativos de uma vez.
+
+## Login de demonstração na web
+
+Para testes com colegas, cadastre `ADMIN_ATIVO=1` nas variáveis de ambiente da Vercel e publique de novo. Aí dá para entrar com usuário `admin` e senha `admin` (troque a senha com `ADMIN_SENHA`). Todos que usarem esse login compartilham a mesma conta. Desligue (`ADMIN_ATIVO=0`) antes de abrir para clientes reais.
 
 ## Rodar localmente
 

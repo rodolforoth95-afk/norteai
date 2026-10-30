@@ -148,7 +148,7 @@ export function ChatEntrevista({
   const progresso = Math.min(atual, TOTAL_PERGUNTAS) / TOTAL_PERGUNTAS;
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col">
+    <main className="mx-auto flex min-h-dvh w-full max-w-md flex-col lg:max-w-2xl">
       <header className="vidro sticky top-0 z-10 border-b border-linha px-5 pb-3 pt-4">
         <div className="flex items-center justify-between">
           <Link href="/inicio" aria-label="Sair da entrevista" className="-ml-2 flex h-11 w-11 items-center justify-center rounded-xl text-suave hover:text-texto">

@@ -32,7 +32,7 @@ export default async function PaginaAula({ params }: { params: Promise<{ slug: s
   const proxima = modulo && indice < modulo.aulas.length - 1 ? aulaPorSlug(modulo.aulas[indice + 1]) : null;
 
   return (
-    <article className="flex flex-col gap-6">
+    <article className="mx-auto flex w-full max-w-3xl flex-col gap-6">
       <Link href={modulo ? `/aprender/modulo/${modulo.slug}` : "/aprender"} className="-ml-1 inline-flex min-h-11 items-center gap-2 self-start font-medium text-suave hover:text-texto">
         <ArrowLeft className="h-5 w-5" aria-hidden="true" />
         {modulo ? `${modulo.titulo} · aula ${indice + 1} de ${modulo.aulas.length}` : "Voltar"}

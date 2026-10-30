@@ -5,7 +5,7 @@ import { AcoesConta } from "./AcoesConta";
 export default async function PaginaConta() {
   const { usuario, email, teste } = await exigirUsuario();
   return (
-    <section className="flex flex-col gap-6">
+    <section className="mx-auto flex w-full max-w-2xl flex-col gap-6">
       <h1 className="font-display text-2xl font-bold text-texto">Conta</h1>
       <dl className="rounded-2xl border border-linha bg-superficie p-5">
         <dt className="text-xs text-suave">Nome</dt>

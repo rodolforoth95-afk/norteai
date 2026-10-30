@@ -30,7 +30,7 @@ export function BotaoAtualizar({ simbolo, horario }: { simbolo?: string; horario
 
   return (
     <div className="flex items-center gap-2">
-      <span className="text-right text-[11px] leading-tight text-suave" aria-live="polite">
+      <span className={`text-right text-[11px] leading-tight text-suave ${erro ? "" : "hidden sm:inline"}`} aria-live="polite">
         {erro ?? (atualizadoAgora ? "Atualizado" : hora ? `Cotação das ${hora}` : "Atraso de até 30 min")}
       </span>
       <button

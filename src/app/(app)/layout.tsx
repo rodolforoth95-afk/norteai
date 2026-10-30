@@ -2,31 +2,47 @@ import Link from "next/link";
 import { Coins } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { TabBar } from "@/components/TabBar";
+import { BarraLateral } from "@/components/BarraLateral";
+import { AlternarTema } from "@/components/AlternarTema";
 import { exigirUsuario } from "@/lib/servidor/sessao";
 import { resumoMoedas } from "@/lib/dominio/moedas";
 
+// Celular: cabeçalho no topo e abas embaixo. Computador: menu lateral e conteúdo largo.
 export default async function LayoutApp({ children }: { children: React.ReactNode }) {
-  const { uid, repo } = await exigirUsuario();
+  const { uid, repo, primeiroNome } = await exigirUsuario();
   const { saldo, nivel } = resumoMoedas(await repo.listarMoedas(uid));
   return (
     <>
-      <header className="vidro sticky top-0 z-20 border-b border-linha/60">
-        <div className="mx-auto flex max-w-md items-center justify-between px-5 py-3">
+      <a href="#conteudo" className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-xl focus:bg-superficie focus:px-4 focus:py-2">
+        Pular para o conteúdo
+      </a>
+
+      <BarraLateral saldo={saldo} nivel={nivel} nome={primeiroNome} />
+
+      <header className="vidro sticky top-0 z-20 border-b border-linha/60 lg:hidden">
+        <div className="mx-auto flex max-w-md items-center justify-between gap-2 px-5 py-3">
           <Link href="/inicio" aria-label="Início">
             <Logo />
           </Link>
-          <Link
-            href="/aprender#coins"
-            className="flex min-h-11 items-center gap-2 rounded-full border border-ambar/40 bg-ambar/10 px-3 text-sm"
-            aria-label={`${saldo} coins, nível ${nivel}`}
-          >
-            <Coins className="h-4 w-4 text-ambar" aria-hidden="true" />
-            <span className="font-bold text-ambar">{saldo}</span>
-            <span className="text-xs text-suave">{nivel}</span>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/aprender#coins"
+              className="flex min-h-11 items-center gap-2 rounded-full border border-ambar/40 bg-ambar/10 px-3 text-sm"
+              aria-label={`${saldo} coins, nível ${nivel}`}
+            >
+              <Coins className="h-4 w-4 text-ambar" aria-hidden="true" />
+              <span className="font-bold text-ambar">{saldo}</span>
+              <span className="text-xs text-suave">{nivel}</span>
+            </Link>
+            <AlternarTema />
+          </div>
         </div>
       </header>
-      <div className="mx-auto w-full max-w-md px-5 pb-28 pt-6">{children}</div>
+
+      <main id="conteudo" className="lg:pl-64">
+        <div className="mx-auto w-full max-w-md px-5 pb-28 pt-6 lg:max-w-6xl lg:px-10 lg:pb-14 lg:pt-10">{children}</div>
+      </main>
+
       <TabBar />
     </>
   );

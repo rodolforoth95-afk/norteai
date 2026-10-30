@@ -63,12 +63,13 @@ export default async function PaginaInicio() {
     <section className="flex flex-col gap-6">
       <div className="animate-subir">
         <p className="text-sm text-suave">{hoje}</p>
-        <h1 className="font-display text-3xl font-bold text-texto">Olá{primeiroNome ? `, ${primeiroNome}` : ""}</h1>
+        <h1 className="font-display text-3xl font-bold text-texto lg:text-4xl">Olá{primeiroNome ? `, ${primeiroNome}` : ""}</h1>
       </div>
 
+      <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr]">
       {/* Patrimônio */}
       {carteira ? (
-        <Link href="/carteira" className="relative block animate-subir overflow-hidden rounded-3xl border border-linha p-5" style={{ background: "linear-gradient(140deg, #121212 0%, #1E1104 60%, #4A2000 100%)" }}>
+        <Link data-tema="escuro" href="/carteira" className="relative block h-full animate-subir overflow-hidden rounded-3xl border border-linha p-5 lg:p-7" style={{ background: "linear-gradient(140deg, #121212 0%, #1E1104 60%, #4A2000 100%)" }}>
           <div className="pointer-events-none absolute -right-14 -top-14 h-44 w-44 rounded-full bg-indigo/30 blur-3xl" aria-hidden="true" />
           <div className="relative flex items-start justify-between">
             <p className="text-xs font-semibold uppercase tracking-wider text-ciano">Patrimônio investido</p>
@@ -130,12 +131,14 @@ export default async function PaginaInicio() {
         </Link>
       </div>
 
+      </div>
+
       {/* Módulos */}
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 lg:gap-4">
         <Modulo href="/mercado" icone={<CandlestickChart className="h-6 w-6" />} titulo="Mercado" detalhe={ibov ? <>Ibovespa <SeloVariacao valor={ibov.variacaoPct} /></> : "Cotações e destaques"} />
         <Modulo href="/carteira" icone={<PieChart className="h-6 w-6" />} titulo="Carteira" detalhe={carteira ? `${carteira.posicoes.length} investimentos` : "Importar"} />
         <Modulo href="/aprender" icone={<BookOpen className="h-6 w-6" />} titulo="Trilhas" detalhe={`${Math.round((aulasLidas / totalAulas) * 100)}% concluído`} />
-        <Modulo href="/perfil" icone={<UserRound className="h-6 w-6" />} titulo="Meu perfil" detalhe={perfil ? <span style={{ color: INFO_ESTILO[perfil.estilo].cor }}>{perfil.estilo}</span> : "Fazer entrevista"} />
+        <Modulo href="/perfil" icone={<UserRound className="h-6 w-6" />} titulo="Meu perfil" detalhe={perfil ? <span className="font-semibold text-ciano">{perfil.estilo} · {INFO_ESTILO[perfil.estilo].risco.toLowerCase()}</span> : "Fazer entrevista"} />
         <Modulo href="/aprender" icone={<Clapperboard className="h-6 w-6" />} titulo="Vídeos" detalhe={`${videosVistos} de ${videosLivres.length} assistidos`} />
         <Modulo href="/aprender#coins" icone={<Coins className="h-6 w-6" />} titulo="Loja de coins" detalhe="Treinamentos exclusivos" />
       </div>
@@ -171,7 +174,7 @@ function Anel({ valor }: { valor: number }) {
             <stop offset="100%" stopColor="#FFB800" />
           </linearGradient>
         </defs>
-        <circle cx="32" cy="32" r={r} fill="none" stroke="#1B1B1B" strokeWidth="7" />
+        <circle cx="32" cy="32" r={r} fill="none" className="stroke-superficie-2" strokeWidth="7" />
         <circle cx="32" cy="32" r={r} fill="none" stroke="url(#anel-jornada)" strokeWidth="7" strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={circ * (1 - valor / 100)} />
       </svg>
       <span className="absolute inset-0 flex items-center justify-center font-display text-sm font-bold text-texto">{valor}%</span>

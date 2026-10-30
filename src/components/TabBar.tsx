@@ -17,7 +17,7 @@ export function TabBar() {
   return (
     <nav
       aria-label="Navegação principal"
-      className="vidro fixed inset-x-0 bottom-0 z-20 border-t border-linha pb-[env(safe-area-inset-bottom)]"
+      className="vidro fixed inset-x-0 bottom-0 z-20 border-t border-linha pb-[env(safe-area-inset-bottom)] lg:hidden"
     >
       <ul className="mx-auto grid max-w-md grid-cols-5">
         {ABAS.map(({ href, rotulo, Icone }) => {
