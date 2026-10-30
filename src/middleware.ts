@@ -2,7 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { COOKIE_TESTE, sessaoTesteValida } from "@/lib/modo-teste";
 
-const ROTAS_PROTEGIDAS = ["/inicio", "/perfil", "/mercado", "/carteira", "/aprender", "/conta", "/entrevista"];
+const ROTAS_PROTEGIDAS = ["/inicio", "/perfil", "/mercado", "/carteira", "/aprender", "/conta", "/entrevista", "/simulador"];
 const ROTAS_SO_VISITANTE = ["/", "/cadastro"];
 
 export async function middleware(request: NextRequest) {

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, CandlestickChart, Coins, Home, PieChart, User, UserRound } from "lucide-react";
+import { BookOpen, CandlestickChart, Coins, FlaskConical, Home, PieChart, User, UserRound } from "lucide-react";
 import { Logo } from "./Logo";
 import { AlternarTema } from "./AlternarTema";
 import { BotaoSair } from "./BotaoSair";
@@ -11,6 +11,7 @@ const ITENS = [
   { href: "/inicio", rotulo: "Início", Icone: Home },
   { href: "/mercado", rotulo: "Mercado", Icone: CandlestickChart },
   { href: "/carteira", rotulo: "Carteira", Icone: PieChart },
+  { href: "/simulador", rotulo: "Simulador", Icone: FlaskConical },
   { href: "/aprender", rotulo: "Aprender", Icone: BookOpen },
   { href: "/perfil", rotulo: "Meu perfil", Icone: UserRound },
   { href: "/conta", rotulo: "Conta", Icone: User },

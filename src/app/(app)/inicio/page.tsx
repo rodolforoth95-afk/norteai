@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, CandlestickChart, Clapperboard, Coins, PieChart, Sparkles, Upload, UserRound } from "lucide-react";
+import { ArrowRight, BookOpen, CandlestickChart, Clapperboard, Coins, FlaskConical, PieChart, Sparkles, Upload, UserRound } from "lucide-react";
 import type { ReactNode } from "react";
 import { AvisoEducacional } from "@/components/AvisoEducacional";
 import { SeloVariacao } from "@/components/mercado";
@@ -140,7 +140,7 @@ export default async function PaginaInicio() {
         <Modulo href="/aprender" icone={<BookOpen className="h-6 w-6" />} titulo="Trilhas" detalhe={`${Math.round((aulasLidas / totalAulas) * 100)}% concluído`} />
         <Modulo href="/perfil" icone={<UserRound className="h-6 w-6" />} titulo="Meu perfil" detalhe={perfil ? <span className="font-semibold text-ciano">{perfil.estilo} · {INFO_ESTILO[perfil.estilo].risco.toLowerCase()}</span> : "Fazer entrevista"} />
         <Modulo href="/aprender" icone={<Clapperboard className="h-6 w-6" />} titulo="Vídeos" detalhe={`${videosVistos} de ${videosLivres.length} assistidos`} />
-        <Modulo href="/aprender#coins" icone={<Coins className="h-6 w-6" />} titulo="Loja de coins" detalhe="Treinamentos exclusivos" />
+        <Modulo href="/simulador" icone={<FlaskConical className="h-6 w-6" />} titulo="Simulador" detalhe="3 carteiras de exemplo" />
       </div>
 
       <AvisoEducacional />

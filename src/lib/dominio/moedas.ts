@@ -8,6 +8,7 @@ export const RECOMPENSAS = {
   quiz: { valor: 30, rotulo: "Quiz de módulo aprovado" },
   primeira_carteira: { valor: 50, rotulo: "Primeira carteira importada" },
   mes_positivo: { valor: 100, rotulo: "Mês positivo na carteira" },
+  simulacao: { valor: 25, rotulo: "Primeira simulação de carteira" },
 } as const;
 
 export type TipoRecompensa = keyof typeof RECOMPENSAS;

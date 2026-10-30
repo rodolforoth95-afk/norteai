@@ -15,7 +15,10 @@ import { registrarCarteira } from "@/lib/servidor/carteira";
 import { substituirSnapshotsTeste } from "@/lib/servidor/repositorio/arquivo";
 import { carteiraExemplo } from "@/lib/servidor/exemplo";
 import { TAG_MERCADO, brapiDisponivel, cotacoes, tagAtivo } from "@/lib/servidor/brapi";
-import { dentroDoLimite } from "@/lib/servidor/util";
+import { dentroDoLimite, registrarErro } from "@/lib/servidor/util";
+import { CARTEIRAS, LIMITES, comentarioPadrao, resumoParaIA, simular } from "@/lib/dominio/simulador";
+import { indicadores } from "@/lib/servidor/indicadores";
+import { comentarSimulacao, iaDisponivel } from "@/lib/servidor/ia";
 import { extrairTicker } from "@/lib/dominio/classificar";
 
 // --- Entrevista ---------------------------------------------------------------
@@ -193,4 +196,44 @@ export async function carregarCarteiraExemplo() {
   await substituirSnapshotsTeste(uid, snapshots);
   revalidatePath("/", "layout");
   return { ok: true };
+}
+
+// --- Simulador de carteiras -----------------------------------------------------
+
+const EntradaSimulacao = z.object({
+  carteira: z.string().max(60),
+  valor: z.number().min(0).max(LIMITES.valorMax),
+  aporte: z.number().min(0).max(LIMITES.aporteMax),
+  meses: z.number().int().min(1).max(600),
+});
+
+// Comentário educativo sobre a simulação: feito pela IA quando há chave, senão pelo app.
+// Os números são recalculados aqui no servidor com os indicadores do momento.
+export async function analisarSimulacao(dados: z.infer<typeof EntradaSimulacao>) {
+  const { uid, repo } = await exigirUsuario();
+  const lido = EntradaSimulacao.safeParse(dados);
+  if (!lido.success) return { erro: "Dados da simulação inválidos." };
+  const perfil = await repo.obterPerfil(uid);
+  if (!perfil) return { erro: "Faça a entrevista para ver as carteiras de exemplo." };
+  const carteira = CARTEIRAS[perfil.estilo].find((c) => c.id === lido.data.carteira);
+  if (!carteira) return { erro: "Carteira não encontrada para o seu estilo." };
+
+  const ind = await indicadores();
+  const entrada = { valor: lido.data.valor, aporte: lido.data.aporte, meses: lido.data.meses };
+  const sim = simular(carteira, entrada, ind);
+  const ganhou = await repo.lancarMoedas(uid, "simulacao", "primeira", RECOMPENSAS.simulacao.valor);
+
+  let texto: string | null = null;
+  if (iaDisponivel() && dentroDoLimite(`simulacao:${uid}`, 20, 60 * 60 * 1000)) {
+    try {
+      texto = await comentarSimulacao(resumoParaIA(sim, entrada, ind, perfil.estilo));
+    } catch (e) {
+      registrarErro("comentário da simulação", e instanceof Error ? e.name : undefined);
+    }
+  }
+  return {
+    texto: texto ?? comentarioPadrao(sim, entrada, ind),
+    fonte: texto ? ("ia" as const) : ("app" as const),
+    moedas: ganhou ? RECOMPENSAS.simulacao.valor : 0,
+  };
 }

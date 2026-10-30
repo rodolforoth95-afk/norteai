@@ -1,5 +1,6 @@
 import { exigirUsuario } from "@/lib/servidor/sessao";
 import { AcoesConta } from "./AcoesConta";
+import { AlternarTema } from "@/components/AlternarTema";
 
 // Tela 9 — Conta
 export default async function PaginaConta() {
@@ -17,6 +18,10 @@ export default async function PaginaConta() {
           {usuario?.plano === "premium" ? "Premium" : "Gratuito"}
         </dd>
       </dl>
+      {/* No computador o botão de tema fica no menu lateral. */}
+      <div className="lg:hidden">
+        <AlternarTema comRotulo />
+      </div>
       <AcoesConta teste={teste} />
     </section>
   );

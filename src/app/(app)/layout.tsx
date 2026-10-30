@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { Coins } from "lucide-react";
+import { Coins, User } from "lucide-react";
 import { Logo } from "@/components/Logo";
 import { TabBar } from "@/components/TabBar";
 import { BarraLateral } from "@/components/BarraLateral";
-import { AlternarTema } from "@/components/AlternarTema";
 import { BotaoSair } from "@/components/BotaoSair";
 import { exigirUsuario } from "@/lib/servidor/sessao";
 import { resumoMoedas } from "@/lib/dominio/moedas";
@@ -35,7 +34,13 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
               <span className="font-bold text-ambar">{saldo}</span>
               <span className="text-xs text-suave">{nivel}</span>
             </Link>
-            <AlternarTema />
+            <Link
+              href="/conta"
+              aria-label="Conta"
+              className="flex h-11 w-11 items-center justify-center rounded-xl border border-linha bg-superficie text-texto transition hover:border-violeta"
+            >
+              <User className="h-5 w-5" aria-hidden="true" />
+            </Link>
             <BotaoSair />
           </div>
         </div>

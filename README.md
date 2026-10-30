@@ -26,6 +26,7 @@ Guia educacional de investimentos com IA (PWA). Next.js + Supabase + Claude.
 - [x] Modo claro e modo escuro (botão no menu; a escolha fica salva)
 - [x] Login de demonstração admin/admin na versão publicada (variável ADMIN_ATIVO=1)
 - [x] Telas de carregamento, erro e página não encontrada; cabeçalhos de segurança; imagem para compartilhar o link
+- [x] Simulador de carteiras (/simulador): 3 carteiras de exemplo por estilo, projeção com faixa de cenários, IR, inflação, teste de crise e últimos 3 meses reais; indicadores do Banco Central, brapi e CoinGecko; explicação pela IA (ou pelo app, sem chave). Conferência: `npm run testar:simulador`
 - [ ] Revisão de segurança e critérios de aceite
 
 ## Configurar o Supabase (uma vez)

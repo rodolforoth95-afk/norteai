@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, CandlestickChart, Home, PieChart, User } from "lucide-react";
+import { BookOpen, CandlestickChart, FlaskConical, Home, PieChart } from "lucide-react";
 
 const ABAS = [
   { href: "/inicio", rotulo: "Início", Icone: Home },
   { href: "/mercado", rotulo: "Mercado", Icone: CandlestickChart },
   { href: "/carteira", rotulo: "Carteira", Icone: PieChart },
+  { href: "/simulador", rotulo: "Simular", Icone: FlaskConical },
   { href: "/aprender", rotulo: "Aprender", Icone: BookOpen },
-  { href: "/conta", rotulo: "Conta", Icone: User },
 ];
 
 export function TabBar() {

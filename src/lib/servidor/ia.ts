@@ -163,7 +163,7 @@ export async function conversarNaEntrevista(params: {
 
 // Checagem regulatória (seção 7.3): um segundo modelo verifica se o texto indica
 // ativo, fundo ou corretora para a pessoa ou promete retorno. Na dúvida, bloqueia.
-export async function textoPermitido(texto: string): Promise<boolean> {
+export async function textoPermitido(texto: string, contexto: "chat" | "simulacao" = "chat"): Promise<boolean> {
   try {
     const resposta = await claude().messages.create({
       model: MODELO_CHECAGEM,
@@ -181,7 +181,10 @@ export async function textoPermitido(texto: string): Promise<boolean> {
         },
       },
       system:
-        "Você revisa respostas de um app educacional de investimentos regulado pela CVM. Marque viola=true se o texto recomendar, indicar ou ranquear um ativo, fundo, corretora ou produto específico PARA A PESSOA (ex.: 'compre X', 'venda Y', 'o melhor fundo para você é...'), ou se prometer ou estimar retorno futuro. Explicar como um tipo de investimento funciona, citar um código só como exemplo didático ou falar de faixas educacionais NÃO viola.",
+        "Você revisa respostas de um app educacional de investimentos regulado pela CVM. Marque viola=true se o texto recomendar, indicar ou ranquear um ativo, fundo, corretora ou produto específico PARA A PESSOA (ex.: 'compre X', 'venda Y', 'o melhor fundo para você é...'), ou se prometer ou estimar retorno futuro. Explicar como um tipo de investimento funciona, citar um código só como exemplo didático ou falar de faixas educacionais NÃO viola." +
+        (contexto === "simulacao"
+          ? " Neste caso o texto comenta uma SIMULAÇÃO hipotética que já está na tela da pessoa. Citar os números da simulação como hipótese ou cenário NÃO viola. Viola se tratar a simulação como garantia, disser que a pessoa deve montar aquela carteira ou apontar qual das opções ela deve escolher."
+          : ""),
       messages: [{ role: "user", content: `Texto a revisar:\n"""${texto}"""` }],
     });
     if (resposta.stop_reason === "refusal") return false;
@@ -191,4 +194,36 @@ export async function textoPermitido(texto: string): Promise<boolean> {
     registrarErro("checagem regulatória", e instanceof Anthropic.APIError ? String(e.status) : undefined);
     return false;
   }
+}
+
+// Comentário educativo sobre uma simulação de carteira. Todos os números vêm do app;
+// a IA só explica o que eles mostram, em linguagem simples.
+const SISTEMA_SIMULACAO = `Você é o guia de um app educacional de finanças no Brasil. A pessoa acabou de rodar uma SIMULAÇÃO de carteira de exemplo (não é recomendação). Você recebe os números já calculados pelo app e os indicadores de mercado de hoje.
+
+Escreva um comentário educativo em português do Brasil, com tom acolhedor e direto, sem jargão (explique em poucas palavras qualquer termo técnico):
+- 4 a 6 frases, em um único parágrafo, sem títulos, listas nem emojis.
+- Explique o que a simulação ensina: a diferença entre o cenário base e a faixa de cenários, o efeito da inflação e do imposto, e o que a queda numa crise significa na prática.
+- Conecte com os indicadores de hoje (por exemplo, Selic alta deixa a renda fixa atraente; a renda variável precisa de prazo).
+- Use os números que recebeu, arredondados, sempre como hipótese ("na simulação", "neste cenário").
+- Nunca diga que a pessoa deve montar essa carteira, nunca compare as opções dizendo qual é melhor para ela, nunca indique ativo, fundo ou corretora, e nunca prometa retorno.
+- Termine sugerindo um tema para estudar na aba Aprender.`;
+
+export async function comentarSimulacao(resumo: string): Promise<string | null> {
+  const resposta = await claude().beta.messages.create({
+    model: MODELO_ENTREVISTA,
+    max_tokens: 1500,
+    output_config: { effort: "low" },
+    system: [{ type: "text", text: SISTEMA_SIMULACAO, cache_control: { type: "ephemeral" } }],
+    messages: [{ role: "user", content: resumo }],
+    betas: ["server-side-fallback-2026-07-01"],
+    fallbacks: "default",
+  });
+  if (resposta.stop_reason === "refusal") return null;
+  const texto = resposta.content
+    .filter((b): b is Anthropic.Beta.BetaTextBlock => b.type === "text")
+    .map((b) => b.text)
+    .join("\n")
+    .trim();
+  if (!texto) return null;
+  return (await textoPermitido(texto, "simulacao")) ? texto : null;
 }
