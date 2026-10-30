@@ -44,3 +44,7 @@ next-env.d.ts
 
 # dados locais do modo de teste
 /.dados
+
+# arquivos temporários de teste
+cj.txt
+pg.html
