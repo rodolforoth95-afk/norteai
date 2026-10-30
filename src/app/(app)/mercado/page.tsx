@@ -1,0 +1,192 @@
+import { Suspense } from "react";
+import { Landmark, LineChart, TrendingDown, TrendingUp } from "lucide-react";
+import { AvisoEducacional } from "@/components/AvisoEducacional";
+import { Cartao, TituloSecao } from "@/components/ui";
+import { AVISO_MERCADO, EsqueletoLista, LinhaAtivo, SeloVariacao, formatarPreco } from "@/components/mercado";
+import { altasDaSemana, brapiDisponivel, cotacao, destaquesDoDia, futuros, historico, tesouro } from "@/lib/servidor/brapi";
+import { exigirUsuario } from "@/lib/servidor/sessao";
+import { AbasDestaques } from "./AbasDestaques";
+import { BuscaAtivos } from "./BuscaAtivos";
+import { MiniGrafico } from "./MiniGrafico";
+import { BotaoAtualizar } from "@/components/BotaoAtualizar";
+
+export const metadata = { title: "Mercado · Norte.ia" };
+
+// Painel de mercado: dados para acompanhar e aprender, nunca indicação.
+export default async function PaginaMercado() {
+  await exigirUsuario();
+
+  if (!brapiDisponivel()) {
+    return (
+      <section className="flex flex-col gap-6">
+        <h1 className="font-display text-2xl font-bold text-texto">Mercado</h1>
+        <Cartao>
+          <p className="text-sm text-suave">Configure BRAPI_TOKEN no .env.local para ver as cotações.</p>
+        </Cartao>
+      </section>
+    );
+  }
+
+  return (
+    <section className="flex flex-col gap-7">
+      <div className="flex items-end justify-between">
+        <h1 className="font-display text-2xl font-bold text-texto">Mercado</h1>
+        <BotaoAtualizar />
+      </div>
+
+      <BuscaAtivos />
+
+      <Suspense fallback={<div className="h-44 animate-pulse rounded-3xl bg-superficie" />}>
+        <CartaoIbovespa />
+      </Suspense>
+
+      <Suspense fallback={<Cartao><EsqueletoLista /></Cartao>}>
+        <Destaques />
+      </Suspense>
+
+      <Suspense
+        fallback={
+          <Cartao>
+            <TituloSecao titulo="Maiores altas da semana" subtitulo="Calculando os últimos 5 pregões…" />
+            <EsqueletoLista />
+          </Cartao>
+        }
+      >
+        <Semana />
+      </Suspense>
+
+      <Suspense fallback={<div className="h-40 animate-pulse rounded-3xl bg-superficie" />}>
+        <RendaFixaEFuturos />
+      </Suspense>
+
+      <AvisoEducacional extra={AVISO_MERCADO} />
+    </section>
+  );
+}
+
+async function CartaoIbovespa() {
+  const [ibov, pontos] = await Promise.all([cotacao("^BVSP").catch(() => null), historico("^BVSP", "1mo").catch(() => [])]);
+  if (!ibov) return null;
+  return (
+    <div className="relative overflow-hidden rounded-3xl border border-linha bg-superficie p-5">
+      <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-indigo/25 blur-3xl" aria-hidden="true" />
+      <div className="relative flex items-start justify-between gap-3">
+        <div>
+          <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-ciano">
+            <LineChart className="h-4 w-4" aria-hidden="true" />
+            Ibovespa
+          </p>
+          <p className="mt-2 font-display text-3xl font-bold tabular-nums text-texto">
+            {ibov.preco.toLocaleString("pt-BR", { maximumFractionDigits: 0 })} <span className="text-base text-suave">pts</span>
+          </p>
+        </div>
+        <SeloVariacao valor={ibov.variacaoPct} grande />
+      </div>
+      {pontos.length > 1 ? <MiniGrafico pontos={pontos} /> : null}
+      <p className="relative mt-1 text-xs text-suave">
+        Últimos 30 dias · principal índice da bolsa brasileira
+        {ibov.horario ? ` · cotação das ${new Date(ibov.horario).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}` : ""}
+      </p>
+    </div>
+  );
+}
+
+async function Destaques() {
+  const d = await destaquesDoDia().catch(() => null);
+  if (!d) return <Cartao><p className="text-sm text-suave">Não foi possível carregar os destaques agora.</p></Cartao>;
+  return (
+    <AbasDestaques
+      abas={[
+        { id: "altas", rotulo: "Altas do dia", descricao: "Entre as 120 ações mais negociadas hoje", itens: d.altas },
+        { id: "baixas", rotulo: "Baixas do dia", descricao: "Entre as 120 ações mais negociadas hoje", itens: d.baixas },
+        { id: "volume", rotulo: "Mais negociadas", descricao: "Maior volume de negócios hoje", itens: d.maisNegociadas },
+        { id: "fiis", rotulo: "FIIs", descricao: "Fundos imobiliários mais negociados hoje", itens: d.fiis },
+        { id: "etfs", rotulo: "ETFs", descricao: "ETFs mais negociados hoje", itens: d.etfs },
+      ]}
+    />
+  );
+}
+
+async function Semana() {
+  const lista = await altasDaSemana().catch(() => []);
+  if (!lista.length) return null;
+  const altas = lista.filter((a) => a.variacaoPct > 0).slice(0, 6);
+  const baixas = [...lista].reverse().filter((a) => a.variacaoPct < 0).slice(0, 3);
+  return (
+    <Cartao className="flex flex-col gap-4">
+      <TituloSecao titulo="Maiores altas da semana" subtitulo="Variação nos últimos 5 pregões, entre as 20 ações mais negociadas" />
+      <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-menta">
+        <TrendingUp className="h-4 w-4" aria-hidden="true" /> Subiram
+      </p>
+      <ul className="-mx-2 flex flex-col">
+        {altas.map((a, i) => (
+          <LinhaAtivo key={a.simbolo} posicao={i + 1} simbolo={a.simbolo} nome={a.nome} logo={a.logo} preco={a.preco} variacaoPct={a.variacaoPct} />
+        ))}
+      </ul>
+      {baixas.length ? (
+        <>
+          <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-erro">
+            <TrendingDown className="h-4 w-4" aria-hidden="true" /> Caíram
+          </p>
+          <ul className="-mx-2 flex flex-col">
+            {baixas.map((a) => (
+              <LinhaAtivo key={a.simbolo} simbolo={a.simbolo} nome={a.nome} logo={a.logo} preco={a.preco} variacaoPct={a.variacaoPct} />
+            ))}
+          </ul>
+        </>
+      ) : null}
+      <p className="text-xs text-suave">
+        Ativos com salto de mais de 30% em um único dia ficam de fora: costumam ser desdobramentos ou outros eventos que distorcem a comparação.
+      </p>
+    </Cartao>
+  );
+}
+
+async function RendaFixaEFuturos() {
+  const [titulos, win, wdo] = await Promise.all([tesouro(), futuros("WIN"), futuros("WDO")]);
+  if (!titulos.length && !win && !wdo) return null;
+  return (
+    <div className="grid gap-4">
+      {titulos.length ? (
+        <Cartao className="flex flex-col gap-3">
+          <TituloSecao titulo="Tesouro Direto" subtitulo="Taxas de compra divulgadas pelo Tesouro Nacional" />
+          {titulos.map((t) => (
+            <div key={t.simbolo} className="flex items-center gap-3 rounded-2xl bg-superficie-2 px-4 py-3">
+              <Landmark className="h-6 w-6 shrink-0 text-ciano" aria-hidden="true" />
+              <div className="flex-1">
+                <p className="font-display text-sm font-bold text-texto">{t.nome}</p>
+                <p className="text-xs text-suave">Vence em {new Date(`${t.vencimento}T12:00:00`).toLocaleDateString("pt-BR")}</p>
+              </div>
+              <div className="text-right">
+                <p className="font-display text-sm font-bold text-texto">
+                  {t.unidadeTaxa} {t.taxaCompra?.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}%
+                </p>
+                <p className="text-xs text-suave">{formatarPreco(t.precoCompra)} por título</p>
+              </div>
+            </div>
+          ))}
+          <p className="text-xs text-suave">O plano atual da brapi libera só este título. Os demais exigem o plano Pro.</p>
+        </Cartao>
+      ) : null}
+
+      {win || wdo ? (
+        <Cartao className="flex flex-col gap-3">
+          <TituloSecao titulo="Mercado futuro" subtitulo="Contrato com vencimento mais próximo · fechamento do pregão anterior" />
+          <div className="grid grid-cols-2 gap-3">
+            {[win, wdo].filter(Boolean).map((f) => (
+              <div key={f!.simbolo} className="rounded-2xl bg-superficie-2 p-4">
+                <p className="font-display text-sm font-bold text-texto">{f!.simbolo}</p>
+                <p className="text-xs text-suave">{f!.descricao}</p>
+                <p className="mt-2 font-display text-lg font-bold tabular-nums text-texto">
+                  {f!.fechamento?.toLocaleString("pt-BR", { maximumFractionDigits: 2 }) ?? "—"}
+                </p>
+                <SeloVariacao valor={f!.variacaoPct} />
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-suave">Contratos futuros são instrumentos complexos e de alto risco, usados por investidores experientes.</p>
+        </Cartao>
+      ) : null}
+    </div>
+  );
+}

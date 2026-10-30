@@ -1,36 +1,81 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Norte.ia
 
-## Getting Started
+Guia educacional de investimentos com IA (PWA). Next.js + Supabase + Claude.
 
-First, run the development server:
+## Status
+
+- [x] Login, cadastro, verificação de e-mail por código, recuperação de senha, tela Conta
+- [x] Visual v2: tema escuro, gradientes (indigo, violeta, ciano)
+- [x] Entrevista em chat (9 perguntas, respostas livres interpretadas, retomada do ponto exato)
+- [x] Algoritmo de estilo: Cauteloso (risco baixo), Equilibrado (médio), Ousado (alto), com travas
+- [x] Dashboard do perfil com os tipos de investimento de cada estilo e faixas de referência
+- [x] 8 vídeos verticais de ~55 s (5 livres, 3 desbloqueados com coins), com narração por voz
+- [x] Conteúdos educativos por classe
+- [x] Importação de carteira: PDF (extrato/nota), planilha da B3 (XLSX/CSV) ou digitando
+- [x] Dashboard da carteira: composição, aderência, pontos de atenção, mapa e evolução mês a mês
+- [x] Coins e níveis (entrevista, vídeos, leituras, primeira carteira, mês positivo)
+- [x] Conversa com IA (Claude) na entrevista, com checagem regulatória — liga ao preencher ANTHROPIC_API_KEY
+- [x] Aba Mercado com dados da brapi.dev: Ibovespa, altas e baixas do dia, altas da semana, mais negociadas, FIIs, ETFs, Tesouro e futuros
+- [x] Página de cada ativo: cotação, gráfico (5 dias, 1 mês, 3 meses), números do dia, faixa de 52 semanas, perfil da empresa
+- [x] Carteira atualizada pelas cotações do mercado
+- [x] Visual v3: preto com detalhes em laranja amarelado; fontes Barlow (títulos) e IBM Plex Sans (texto)
+- [x] Início com saldo da carteira, jornada (aulas, quizzes, vídeos), próximo passo e módulos; estilo de investidor em Meu perfil (/perfil)
+- [x] 6 trilhas com 30 aulas, ilustrações e quiz por módulo (+30 coins)
+- [x] Gráficos interativos e botão de atualizar cotações
+- [ ] Revisão de segurança e critérios de aceite
+
+## Configurar o Supabase (uma vez)
+
+1. Crie um projeto em [supabase.com](https://supabase.com), na região **South America (São Paulo)**.
+2. Em **SQL Editor**, rode `supabase/migrations/0001_usuario_consentimento.sql` depois `0002_entrevista_carteira_moedas.sql` e `0003_auditoria_ia.sql`.
+3. Em **Authentication > Sign In / Providers > Email**:
+   - deixe **Confirm email** ligado;
+   - **Email OTP Expiration:** `600` segundos (10 minutos);
+   - **Email OTP Length:** `6`;
+   - **Minimum password length:** `8`.
+4. Em **Authentication > Emails > Templates > Confirm signup**, troque o corpo para usar o código em vez do link:
+   ```html
+   <h2>Confirme seu e-mail</h2>
+   <p>Seu código do Norte.ia é:</p>
+   <p style="font-size:28px;font-weight:700;letter-spacing:6px">{{ .Token }}</p>
+   <p>Ele vale por 10 minutos. Se você não criou uma conta, ignore este e-mail.</p>
+   ```
+5. Em **Authentication > URL Configuration**, adicione `http://localhost:3000/auth/callback` (e depois o endereço de produção) em **Redirect URLs**, para o link de redefinição de senha.
+6. Para produção, configure um **SMTP próprio** (Authentication > Emails > SMTP). O e-mail padrão do Supabase tem limite baixo de envios por hora.
+
+## Modo de teste (sem Supabase)
+
+Com `MODO_TESTE=1` no `.env.local`, dá para entrar com o usuário `admin` e a senha `admin`, sem e-mail real. Funciona só com `npm run dev`; em produção (`npm run build`) fica sempre desligado. Os dados do modo de teste ficam em `.dados/teste.json` (apague a pasta para recomeçar). Na aba Carteira há um botão para carregar uma carteira de exemplo com 4 meses de histórico. Cadastro, verificação, troca de senha e exclusão de conta continuam exigindo o Supabase.
+
+## IA (Claude)
+
+1. Crie uma chave em [console.anthropic.com](https://console.anthropic.com) (Settings > API Keys) e cadastre um meio de pagamento.
+2. Cole em `ANTHROPIC_API_KEY=` no `.env.local` e reinicie o `npm run dev`.
+3. Sem chave, a entrevista continua funcionando com a interpretação local das respostas livres.
+
+Como funciona: as perguntas e os botões continuam vindo do app; quando a pessoa escreve com as próprias palavras, o `claude-sonnet-5-5` interpreta, registra a resposta (ferramenta `registrar_resposta`) e responde em até 3 frases. Antes de aparecer na tela, a resposta passa pela checagem regulatória do `claude-haiku-5-5`; se indicar ativo ou prometer retorno, é trocada pela resposta padrão e o caso vai para `auditoria_ia` (sem texto da conversa). A IA nunca recebe nome, e-mail nem dados sensíveis (CPF e afins são barrados antes do envio). Limite: 60 mensagens por pessoa por dia.
+
+Teste de aceite (20 pedidos de indicação de ativo): `npm run testar:ia`.
+
+## Cotações (brapi.dev)
+
+Token em `BRAPI_TOKEN` no `.env.local` (só servidor). O código está em `src/lib/servidor/brapi.ts`.
+
+Plano gratuito (verificado em 30/10/2026): 1 ativo por requisição, uma requisição por vez, histórico diário de até 3 meses, atraso de até 30 min e 15 mil requisições por mês. O app usa cache (cotações 15 min, histórico 1 h, altas da semana 6 h) para caber na cota. Dividendos, cripto, câmbio, Selic/IPCA, Tesouro completo e futuros completos exigem plano pago; ao assinar o Startup, defina `BRAPI_ATIVOS_POR_REQUISICAO=10` para buscar vários ativos de uma vez.
+
+## Rodar localmente
 
 ```bash
+cp .env.example .env.local   # e preencha as chaves (Project Settings > API)
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abra http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Regras do projeto
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Toda chave secreta (`SUPABASE_SERVICE_ROLE_KEY`, `ANTHROPIC_API_KEY`) fica só no servidor.
+- RLS ligado em todas as tabelas.
+- Nenhum dado além de nome, e-mail, senha, maioridade e aceites.
+- Todo número exibido vem do código, nunca da IA.

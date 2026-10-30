@@ -1,0 +1,50 @@
+import { NextResponse } from "next/server";
+import { z } from "zod";
+import { esquemaEmail } from "@/lib/validacao";
+import { criarClienteServidor } from "@/lib/supabase/servidor";
+import { reenviarCodigo } from "@/lib/servidor/codigo";
+import { destinoPosLogin } from "@/lib/servidor/destino";
+import { COOKIE_TESTE, USUARIO_TESTE, ehLoginTeste } from "@/lib/modo-teste";
+import { dentroDoLimite, erro, hashEmail, ipDe, registrarErro } from "@/lib/servidor/util";
+
+const Corpo = z.object({ email: esquemaEmail, senha: z.string().min(1, "Informe sua senha.") });
+
+export async function POST(req: Request) {
+  const corpo = await req.json().catch(() => null);
+
+  if (ehLoginTeste(corpo?.email, corpo?.senha)) {
+    const resposta = NextResponse.json({
+      ok: true,
+      destino: await destinoPosLogin(USUARIO_TESTE.id, true),
+    });
+    resposta.cookies.set(COOKIE_TESTE, "1", { httpOnly: true, sameSite: "lax", path: "/" });
+    return resposta;
+  }
+
+  const lido = Corpo.safeParse(corpo);
+  if (!lido.success) return erro(lido.error.issues[0]?.message ?? "Dados inválidos.", 400);
+  const { email, senha } = lido.data;
+
+  const janela = 15 * 60 * 1000;
+  if (
+    !dentroDoLimite(`entrar:ip:${ipDe(req)}`, 20, janela) ||
+    !dentroDoLimite(`entrar:email:${hashEmail(email)}`, 8, janela)
+  ) {
+    return erro("Muitas tentativas de login. Tente de novo em 15 minutos.", 429);
+  }
+
+  const supabase = await criarClienteServidor();
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password: senha });
+
+  if (error) {
+    if (error.code === "email_not_confirmed") {
+      await reenviarCodigo(supabase, email);
+      return NextResponse.json({ ok: false, verificar: true });
+    }
+    if (error.code === "invalid_credentials") return erro("E-mail ou senha incorretos.", 401);
+    registrarErro("login", error.code);
+    return erro("Não foi possível entrar agora. Tente de novo.", 500);
+  }
+
+  return NextResponse.json({ ok: true, destino: await destinoPosLogin(data.user.id) });
+}

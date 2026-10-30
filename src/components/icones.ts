@@ -1,0 +1,37 @@
+import {
+  Bitcoin,
+  Building2,
+  CalendarDays,
+  CircleDollarSign,
+  Clock,
+  Landmark,
+  Layers,
+  LockKeyhole,
+  PiggyBank,
+  ShieldCheck,
+  Target,
+  TrendingUp,
+  TriangleAlert,
+  Wallet,
+  Zap,
+  type LucideIcon,
+} from "lucide-react";
+import type { Icone } from "@/lib/conteudo/videos";
+
+export const ICONES: Record<Icone, LucideIcon> = {
+  banco: PiggyBank,
+  escudo: ShieldCheck,
+  calendario: CalendarDays,
+  moeda: CircleDollarSign,
+  predio: Building2,
+  grafico: TrendingUp,
+  raio: Zap,
+  cadeado: LockKeyhole,
+  alvo: Target,
+  bitcoin: Bitcoin,
+  camadas: Layers,
+  alerta: TriangleAlert,
+  relogio: Clock,
+  governo: Landmark,
+  carteira: Wallet,
+};

@@ -1,26 +1,102 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Identidade visual v3: preto com detalhes em laranja amarelado (referência: corretoras como XP e Rico) */
+@theme {
+  --color-fundo: #000000;
+  --color-superficie: #111111;
+  --color-superficie-2: #1b1b1b;
+  --color-linha: #2b2b2b;
+  --color-texto: #ffffff;
+  --color-suave: #a6a6a6;
+  --color-indigo: #ff6b00; /* laranja profundo */
+  --color-violeta: #ff8f00; /* laranja */
+  --color-ciano: #ffb020; /* laranja amarelado: destaques e links */
+  --color-menta: #22c55e; /* alta */
+  --color-ambar: #ffc940; /* coins */
+  --color-rosa: #f472b6;
+  --color-erro: #ef4444; /* baixa e erros */
+
+  --font-sans: var(--font-texto), system-ui, sans-serif;
+  --font-display: var(--font-titulo), system-ui, sans-serif;
+
+  --animate-subir: subir 0.5s ease-out both;
+  --animate-brilho: brilho 3s ease-in-out infinite;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@keyframes subir {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
+@keyframes brilho {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.06);
+  }
+}
+
+@utility gradiente-marca {
+  background-image: linear-gradient(120deg, #ff6b00 0%, #ff9500 55%, #ffb800 100%);
+}
+
+@utility texto-gradiente {
+  background-image: linear-gradient(120deg, #ff7a1a 0%, #ffa21f 50%, #ffc94a 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+@utility vidro {
+  background-color: rgb(10 10 10 / 0.8);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+@utility borda-gradiente {
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--color-superficie), var(--color-superficie)) padding-box,
+    linear-gradient(120deg, #ff6b00, #ff9500, #ffb800) border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  color-scheme: dark;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-feature-settings: "tnum" 1; /* números com largura fixa, bons para cotações */
+  background:
+    radial-gradient(60rem 30rem at 85% -10%, rgb(255 107 0 / 0.16), transparent 60%),
+    radial-gradient(50rem 28rem at -10% 10%, rgb(255 176 32 / 0.07), transparent 60%),
+    var(--color-fundo);
+  background-attachment: fixed;
+  color: var(--color-texto);
+  font-family: var(--font-sans);
+  min-height: 100dvh;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-ciano);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }
