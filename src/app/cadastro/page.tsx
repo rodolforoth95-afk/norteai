@@ -45,7 +45,7 @@ export default function PaginaCadastro() {
     if (!valido) return;
     setErroGeral(null);
     setEnviando(true);
-    const { ok, dados } = await postarJson("/api/auth/cadastro", {
+    const { ok, dados } = await postarJson<{ destino?: string; verificar?: boolean }>("/api/auth/cadastro", {
       ...valores,
       maioridade,
       termos,
@@ -53,6 +53,11 @@ export default function PaginaCadastro() {
     setEnviando(false);
     if (!ok) {
       setErroGeral(dados.erro ?? "Não foi possível criar a conta.");
+      return;
+    }
+    if (dados.destino) {
+      // Conta já confirmada (sem código por e-mail): entra direto no app.
+      window.location.assign(dados.destino);
       return;
     }
     guardarEmailPendente(valores.email.trim().toLowerCase());

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { esquemaEmail, esquemaNome, esquemaSenha } from "@/lib/validacao";
 import { criarClienteAdmin, criarClienteServidor } from "@/lib/supabase/servidor";
 import { registrarEnvioCodigo } from "@/lib/servidor/codigo";
+import { destinoPosLogin } from "@/lib/servidor/destino";
 import {
   VERSOES_DOCUMENTOS,
   dentroDoLimite,
@@ -65,6 +66,11 @@ export async function POST(req: Request) {
     return erro("Não foi possível criar a conta agora. Tente de novo.", 500);
   }
 
+  // Com "Confirm email" desligado no Supabase, a conta já nasce confirmada e com sessão:
+  // a pessoa entra direto, sem código. Com ele ligado, segue para a tela do código.
+  if (data.session) {
+    return NextResponse.json({ ok: true, destino: await destinoPosLogin(data.user.id) });
+  }
   await registrarEnvioCodigo(email);
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, verificar: true });
 }
