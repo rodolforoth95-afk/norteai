@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowRight, CandlestickChart, GitCompareArrows, GraduationCap, Landmark, LineChart, TrendingDown, TrendingUp } from "lucide-react";
 import { AvisoEducacional } from "@/components/AvisoEducacional";
 import { Cartao, TituloSecao } from "@/components/ui";
-import { AVISO_MERCADO, EsqueletoLista, LinhaAtivo, SeloVariacao, formatarPreco } from "@/components/mercado";
+import { AVISO_MERCADO, EsqueletoLista, LinhaAtivo, LogoAtivo, SeloVariacao, formatarPreco } from "@/components/mercado";
 import { altasDaSemana, brapiDisponivel, cotacao, destaquesDoDia, futuros, historico, listarAtivos, tesouro } from "@/lib/servidor/brapi";
 import { exigirUsuario } from "@/lib/servidor/sessao";
 import { AbasDestaques } from "./AbasDestaques";
@@ -119,10 +119,11 @@ async function MapaDoDia() {
           <li key={a.simbolo}>
             <Link
               href={`/mercado/${a.simbolo}`}
-              className="flex min-h-16 flex-col items-center justify-center rounded-xl px-1 py-2 text-center transition hover:ring-2 hover:ring-texto/40"
+              className="flex min-h-24 flex-col items-center justify-center rounded-xl px-1 py-2 text-center transition hover:ring-2 hover:ring-texto/40"
               style={{ background: cor(a.variacaoPct!) }}
             >
-              <span className="font-display text-sm font-bold text-texto">{a.simbolo}</span>
+              <LogoAtivo simbolo={a.simbolo} logo={a.logo} tamanho={30} />
+              <span className="mt-1 font-display text-sm font-bold text-texto">{a.simbolo}</span>
               <span className="text-xs font-semibold tabular-nums text-texto">
                 {a.variacaoPct! > 0 ? "+" : ""}
                 {a.variacaoPct!.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%
