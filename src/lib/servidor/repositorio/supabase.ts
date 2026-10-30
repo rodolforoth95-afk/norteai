@@ -74,7 +74,14 @@ export const repositorioSupabase: Repositorio = {
       .eq("usuario_id", uid)
       .maybeSingle();
     if (antiga.error || !antiga.data?.posicao?.length) return null;
-    return deVersaoAnterior(antiga.data.posicao as Posicao[], antiga.data.atualizada_em.slice(0, 10));
+    const convertida = deVersaoAnterior(antiga.data.posicao as Posicao[], antiga.data.atualizada_em.slice(0, 10));
+    // Grava a conversão uma vez, para os identificadores não mudarem a cada leitura.
+    if (error?.code !== TABELA_INEXISTENTE) {
+      await admin.from("carteira_v2").upsert({ usuario_id: uid, dados: convertida, atualizada_em: new Date().toISOString() }, { onConflict: "usuario_id", ignoreDuplicates: true });
+      const gravada = await admin.from("carteira_v2").select("dados").eq("usuario_id", uid).maybeSingle();
+      if (gravada.data) return gravada.data.dados as CarteiraDados;
+    }
+    return convertida;
   },
   async salvarCarteira(uid, dados) {
     const { error } = await criarClienteAdmin()

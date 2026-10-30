@@ -70,8 +70,11 @@ export const repositorioArquivo: Repositorio = {
   async obterCarteira(uid) {
     const d = await de(uid);
     if (d?.carteira2) return d.carteira2;
-    if (d?.carteira?.posicoes.length) return deVersaoAnterior(d.carteira.posicoes, d.carteira.atualizada_em.slice(0, 10));
-    return null;
+    if (!d?.carteira?.posicoes.length) return null;
+    // Grava a conversão uma vez, para os identificadores não mudarem a cada leitura.
+    const convertida = deVersaoAnterior(d.carteira.posicoes, d.carteira.atualizada_em.slice(0, 10));
+    await alterar(uid, (x) => void (x.carteira2 ??= convertida));
+    return (await de(uid))!.carteira2!;
   },
   async salvarCarteira(uid, dados) {
     await alterar(uid, (d) => void (d.carteira2 = dados));
