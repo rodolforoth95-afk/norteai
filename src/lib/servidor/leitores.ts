@@ -3,6 +3,7 @@ import * as XLSX from "xlsx";
 import { extractText, getDocumentProxy } from "unpdf";
 import { classificar, extrairTicker, lerNumeroBR } from "@/lib/dominio/classificar";
 import type { Classe } from "@/lib/dominio/tipos";
+import { dataValida, hojeBR } from "@/lib/dominio/carteira";
 
 // Leitura de arquivos importados. Tudo acontece em memória: o arquivo nunca é
 // gravado em disco, e é descartado ao fim da requisição.
@@ -99,7 +100,7 @@ const RF_LINHA = /(tesouro\s+(selic|ipca\+?|prefixado|renda\+?|educa\+?)[^\n]*?\
 
 // Extrato ou nota em PDF: leitura por padrões (códigos de negociação, títulos de
 // renda fixa e valores em reais). O resultado sempre passa pela prévia editável.
-export async function lerPdf(dados: ArrayBuffer): Promise<LinhaImportada[]> {
+export async function lerPdf(dados: ArrayBuffer): Promise<{ linhas: LinhaImportada[]; data: string | null }> {
   const pdf = await getDocumentProxy(new Uint8Array(dados));
   const { text } = await extractText(pdf, { mergePages: true });
   const linhas: LinhaImportada[] = [];
@@ -123,7 +124,20 @@ export async function lerPdf(dados: ArrayBuffer): Promise<LinhaImportada[]> {
       valor_atual: valores.length ? valores[valores.length - 1] : null,
     });
   }
-  return agrupar(linhas);
+  return { linhas: agrupar(linhas), data: dataDoTexto(text) };
+}
+
+// Data de referência do extrato: primeiro procura "posição em", "data base" etc.;
+// senão, a data mais recente do texto que não passe de hoje.
+export function dataDoTexto(texto: string, hoje = hojeBR()): string | null {
+  const paraIso = (d: string, m: string, a: string) => `${a.length === 2 ? `20${a}` : a}-${m.padStart(2, "0")}-${d.padStart(2, "0")}`;
+  const rotulada = texto.match(/(?:posi[cç][aã]o\s+(?:em|de)|data\s+(?:de\s+)?(?:refer[eê]ncia|base|da\s+posi[cç][aã]o)|refer[eê]ncia)\D{0,15}(\d{1,2})\/(\d{1,2})\/(\d{2,4})/i);
+  if (rotulada) {
+    const iso = paraIso(rotulada[1], rotulada[2], rotulada[3]);
+    if (dataValida(iso, hoje)) return iso;
+  }
+  const todas = [...texto.matchAll(/\b(\d{1,2})\/(\d{1,2})\/(\d{4})\b/g)].map((m) => paraIso(m[1], m[2], m[3])).filter((d) => dataValida(d, hoje));
+  return todas.sort().at(-1) ?? null;
 }
 
 // Junta linhas repetidas do mesmo ativo.

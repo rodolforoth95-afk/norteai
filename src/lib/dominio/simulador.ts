@@ -120,8 +120,8 @@ export const PRODUTOS: Record<string, Produto> = {
     imposto: "regressivo",
     rotuloImposto: "IR de 22,5% a 15% sobre o ganho, conforme o prazo",
     aula: "renda_fixa",
-    taxa: (i) => i.cdi - 0.3,
-    rotuloTaxa: (i) => `Taxa fixa perto de ${pct(i.cdi - 0.3, 1)} a.a.`,
+    taxa: (i) => i.cdi + 0.2, // prêmio de prazo típico sobre o CDI
+    rotuloTaxa: (i) => `Taxa fixa perto de ${pct(i.cdi + 0.2, 1)} a.a.`,
     vol: 3,
     crise: -3,
   },
@@ -297,12 +297,13 @@ export type CarteiraModelo = {
   itens: { produto: string; pct: number }[];
 };
 
-// Três misturas por estilo, sempre dentro das faixas educacionais de FAIXAS.
+// Três misturas por estilo, do menor ao maior risco, sempre dentro das faixas de FAIXAS.
+// Os nomes se repetem nos três estilos: o que muda é o quanto cada um pode arriscar.
 export const CARTEIRAS: Record<Estilo, CarteiraModelo[]> = {
   Cauteloso: [
     {
       id: "cauteloso-reserva",
-      nome: "Reserva sólida",
+      nome: "Mais proteção",
       ideia: "Tudo em renda fixa com liquidez e garantia. Prioriza dormir tranquilo.",
       itens: [
         { produto: "tesouro_selic", pct: 50 },
@@ -312,7 +313,7 @@ export const CARTEIRAS: Record<Estilo, CarteiraModelo[]> = {
     },
     {
       id: "cauteloso-diversificada",
-      nome: "Renda fixa diversificada",
+      nome: "Equilíbrio",
       ideia: "Mistura títulos pós e prefixados e uma pequena parte em fundo multimercado.",
       itens: [
         { produto: "tesouro_selic", pct: 30 },
@@ -324,8 +325,8 @@ export const CARTEIRAS: Record<Estilo, CarteiraModelo[]> = {
     },
     {
       id: "cauteloso-renda",
-      nome: "Renda fixa com renda mensal",
-      ideia: "Base em renda fixa e um primeiro contato com fundos imobiliários.",
+      nome: "Mais crescimento",
+      ideia: "O máximo de risco do estilo Cauteloso: renda fixa como base, com fundos imobiliários e multimercado.",
       itens: [
         { produto: "tesouro_selic", pct: 30 },
         { produto: "cdb", pct: 20 },
@@ -370,14 +371,14 @@ export const CARTEIRAS: Record<Estilo, CarteiraModelo[]> = {
     {
       id: "equilibrado-crescimento",
       nome: "Mais crescimento",
-      ideia: "Metade em renda fixa e metade em ativos que oscilam, com uma pitada de cripto.",
+      ideia: "O máximo de bolsa, exterior e cripto que o estilo Equilibrado comporta. Mais potencial, mais oscilação.",
       itens: [
         { produto: "tesouro_selic", pct: 15 },
-        { produto: "lci_lca", pct: 10 },
+        { produto: "lci_lca", pct: 5 },
         { produto: "tesouro_ipca", pct: 20 },
-        { produto: "credito_privado", pct: 5 },
-        { produto: "acoes_br", pct: 25 },
-        { produto: "fiis", pct: 10 },
+        { produto: "credito_privado", pct: 10 },
+        { produto: "acoes_br", pct: 30 },
+        { produto: "fiis", pct: 5 },
         { produto: "exterior", pct: 10 },
         { produto: "bitcoin", pct: 3 },
         { produto: "multimercado", pct: 2 },
@@ -387,7 +388,7 @@ export const CARTEIRAS: Record<Estilo, CarteiraModelo[]> = {
   Ousado: [
     {
       id: "ousado-colchao",
-      nome: "Crescimento com colchão",
+      nome: "Mais proteção",
       ideia: "45% em renda fixa para amortecer as quedas e o restante bem diversificado.",
       itens: [
         { produto: "tesouro_selic", pct: 15 },
@@ -403,7 +404,7 @@ export const CARTEIRAS: Record<Estilo, CarteiraModelo[]> = {
     },
     {
       id: "ousado-diversificado",
-      nome: "Crescimento diversificado",
+      nome: "Equilíbrio",
       ideia: "Um terço em renda fixa; bolsa brasileira como motor, com exterior e cripto.",
       itens: [
         { produto: "tesouro_selic", pct: 10 },
@@ -418,8 +419,8 @@ export const CARTEIRAS: Record<Estilo, CarteiraModelo[]> = {
     },
     {
       id: "ousado-potencial",
-      nome: "Máximo potencial",
-      ideia: "Só 25% em renda fixa. Maior potencial e quedas bem mais fortes no caminho.",
+      nome: "Mais crescimento",
+      ideia: "O limite do estilo Ousado: só 25% em renda fixa. Maior potencial e quedas bem mais fortes no caminho.",
       itens: [
         { produto: "tesouro_selic", pct: 10 },
         { produto: "tesouro_ipca", pct: 15 },

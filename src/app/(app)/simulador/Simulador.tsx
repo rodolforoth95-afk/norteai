@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, useTransition } from "react";
+import { useMemo, useRef, useState, useTransition } from "react";
 import {
   AlertTriangle,
   BookOpen,
@@ -52,16 +52,26 @@ const COR_PRODUTO: Record<string, string> = {
 
 const VALORES_RAPIDOS = [1000, 5000, 10000, 50000];
 const APORTES_RAPIDOS = [0, 200, 500, 1000];
+const NIVEIS_RISCO = ["Menor risco do seu estilo", "Risco intermediário", "Maior risco do seu estilo"];
 
 export function Simulador({ estilo, carteiras, ind }: { estilo: Estilo; carteiras: CarteiraModelo[]; ind: Indicadores }) {
   const [valor, setValor] = useState(10000);
   const [aporte, setAporte] = useState(500);
   const [meses, setMeses] = useState(60);
+  // Os exemplos só aparecem depois de "Simular", com os valores daquele momento.
+  const [simulada, setSimulada] = useState<{ valor: number; aporte: number; meses: number } | null>(null);
   const [selecionada, setSelecionada] = useState(carteiras[1]?.id ?? carteiras[0].id);
+  const resultados = useRef<HTMLDivElement>(null);
 
-  const entrada = useMemo(() => ({ valor, aporte, meses }), [valor, aporte, meses]);
-  const simulacoes = useMemo(() => carteiras.map((c) => simular(c, entrada, ind)), [carteiras, entrada, ind]);
+  const simulacoes = useMemo(() => (simulada ? carteiras.map((c) => simular(c, simulada, ind)) : []), [carteiras, simulada, ind]);
   const atual = simulacoes.find((s) => s.carteira.id === selecionada) ?? simulacoes[0];
+  const mudou = simulada !== null && (simulada.valor !== valor || simulada.aporte !== aporte || simulada.meses !== meses);
+  const podeSimular = valor > 0 || aporte > 0;
+
+  function simularAgora() {
+    setSimulada({ valor, aporte, meses });
+    requestAnimationFrame(() => resultados.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  }
 
   return (
     <section className="flex flex-col gap-6">
@@ -72,17 +82,21 @@ export function Simulador({ estilo, carteiras, ind }: { estilo: Estilo; carteira
         </span>
         <h1 className="font-display text-2xl font-bold text-texto lg:text-3xl">Simulador de carteiras</h1>
         <p className="max-w-3xl text-sm text-suave lg:text-base">
-          Veja o que aconteceria com o seu dinheiro em 3 carteiras de exemplo para o estilo{" "}
-          <span className="font-semibold text-ciano">{estilo}</span> ({INFO_ESTILO[estilo].risco.toLowerCase()}). Os números usam os juros e a
-          inflação de hoje e o comportamento histórico de cada tipo de investimento. Mexa nos valores e compare.
+          Informe quanto tem hoje, quanto vai aportar por mês e por quanto tempo. Depois, veja 3 carteiras de exemplo para o estilo{" "}
+          <span className="font-semibold text-ciano">{estilo}</span> ({INFO_ESTILO[estilo].risco.toLowerCase()}), da mais protegida à que busca mais
+          crescimento, calculadas com os juros e a inflação de hoje.
         </p>
       </header>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr]">
         <Cartao className="flex flex-col gap-5">
+          <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-ciano">
+            <span className="gradiente-marca flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold text-black">1</span>
+            Seus valores
+          </p>
           <CampoDinheiro
             id="valor"
-            rotulo="Quanto você tem para investir?"
+            rotulo="Quanto você tem para investir hoje?"
             valor={valor}
             max={LIMITES.valorMax}
             onChange={setValor}
@@ -90,14 +104,15 @@ export function Simulador({ estilo, carteiras, ind }: { estilo: Estilo; carteira
           />
           <CampoDinheiro
             id="aporte"
-            rotulo="Quanto pretende guardar por mês?"
+            rotulo="Aporte mensal"
+            ajuda="Quanto você vai colocar a mais todo mês."
             valor={aporte}
             max={LIMITES.aporteMax}
             onChange={setAporte}
             rapidos={APORTES_RAPIDOS}
           />
           <fieldset>
-            <legend className="text-sm font-semibold text-texto">Por quanto tempo?</legend>
+            <legend className="text-sm font-semibold text-texto">Por quanto tempo vai aportar?</legend>
             <div className="mt-2 grid grid-cols-5 gap-1.5">
               {PRAZOS.map((p) => (
                 <button
@@ -114,37 +129,86 @@ export function Simulador({ estilo, carteiras, ind }: { estilo: Estilo; carteira
               ))}
             </div>
           </fieldset>
+          <div className="rounded-2xl bg-superficie-2 px-4 py-3 text-sm text-suave">
+            Total que você vai investir:{" "}
+            <span className="font-display font-bold text-texto">{brl(valor + aporte * meses)}</span>
+            <span className="block text-xs">
+              {brl(valor)} hoje + {meses} aportes de {brl(aporte)}
+            </span>
+          </div>
+          <button type="button" onClick={simularAgora} disabled={!podeSimular} className={classesBotao("primario", true)}>
+            <Wand2 className="h-5 w-5" aria-hidden="true" />
+            {simulada ? (mudou ? "Simular com os novos valores" : "Simular de novo") : "Simular"}
+          </button>
         </Cartao>
 
         <PainelIndicadores ind={ind} />
       </div>
 
-      <div>
-        <TituloSecao titulo="3 carteiras de exemplo" subtitulo="Toque em uma para ver os detalhes. Todas respeitam as faixas do seu estilo." />
-        <div role="radiogroup" aria-label="Carteiras de exemplo" className="mt-3 grid gap-3 md:grid-cols-3">
-          {simulacoes.map((s) => (
-            <CartaoOpcao key={s.carteira.id} s={s} ativa={s.carteira.id === atual.carteira.id} onClick={() => setSelecionada(s.carteira.id)} />
-          ))}
-        </div>
-      </div>
+      {simulada && atual ? (
+        <>
+          <div ref={resultados} className="scroll-mt-24">
+            <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-ciano">
+              <span className="gradiente-marca flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold text-black">2</span>
+              Carteiras de exemplo
+            </p>
+            <TituloSecao
+              titulo="Do mais protegido ao mais arrojado"
+              subtitulo={`${brl(simulada.valor)} hoje + ${brl(simulada.aporte)} por mês, por ${PRAZOS.find((p) => p.meses === simulada.meses)?.rotulo}. Todas dentro das faixas do estilo ${estilo}.`}
+            />
+            {mudou ? (
+              <p className="mt-2 flex items-center gap-2 text-xs text-ambar" role="status">
+                <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+                Você mudou os valores. Toque em Simular para atualizar os exemplos.
+              </p>
+            ) : null}
+            <div role="radiogroup" aria-label="Carteiras de exemplo" className="mt-3 grid gap-3 md:grid-cols-3">
+              {simulacoes.map((s, i) => (
+                <CartaoOpcao
+                  key={s.carteira.id}
+                  s={s}
+                  nivel={NIVEIS_RISCO[i] ?? ""}
+                  ativa={s.carteira.id === atual.carteira.id}
+                  onClick={() => setSelecionada(s.carteira.id)}
+                />
+              ))}
+            </div>
+          </div>
 
-      <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <div className="flex flex-col gap-6">
-          <Cartao>
-            <TituloSecao titulo={`Projeção: ${atual.carteira.nome}`} subtitulo="Cenário base com a faixa entre um período ruim e um bom" />
-            <GraficoProjecao s={atual} />
-            <Legenda />
-          </Cartao>
-          <Composicao s={atual} ind={ind} />
-        </div>
-        <div className="flex flex-col gap-6">
-          <Resultado s={atual} meses={meses} ind={ind} />
-          <TesteCrise s={atual} />
-          <UltimosMeses s={atual} ind={ind} />
-        </div>
-      </div>
+          <Comparativo simulacoes={simulacoes} />
 
-      <Analise key={`${atual.carteira.id}-${valor}-${aporte}-${meses}`} carteira={atual.carteira.id} entrada={entrada} />
+          <div className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
+            <div className="flex flex-col gap-6">
+              <Cartao>
+                <TituloSecao titulo={`Projeção: ${atual.carteira.nome}`} subtitulo="Cenário base com a faixa entre um período ruim e um bom" />
+                <GraficoProjecao s={atual} />
+                <Legenda />
+              </Cartao>
+              <Composicao s={atual} ind={ind} />
+            </div>
+            <div className="flex flex-col gap-6">
+              <Resultado s={atual} meses={simulada.meses} ind={ind} />
+              <TesteCrise s={atual} />
+              <UltimosMeses s={atual} ind={ind} />
+            </div>
+          </div>
+
+          <Analise
+            key={`${atual.carteira.id}-${simulada.valor}-${simulada.aporte}-${simulada.meses}`}
+            carteira={atual.carteira.id}
+            entrada={simulada}
+          />
+        </>
+      ) : (
+        <div className="flex flex-col items-center gap-3 rounded-3xl border border-dashed border-linha px-6 py-10 text-center">
+          <FlaskConical className="h-8 w-8 text-suave" aria-hidden="true" />
+          <p className="font-display text-lg font-semibold text-texto">Preencha seus valores e toque em Simular</p>
+          <p className="max-w-md text-sm text-suave">
+            Vamos mostrar 3 carteiras de exemplo para o seu estilo: Mais proteção, Equilíbrio e Mais crescimento, com projeção, imposto, inflação e teste
+            de crise.
+          </p>
+        </div>
+      )}
 
       <ComoLer ind={ind} />
 
@@ -158,6 +222,7 @@ export function Simulador({ estilo, carteiras, ind }: { estilo: Estilo; carteira
 function CampoDinheiro({
   id,
   rotulo,
+  ajuda,
   valor,
   max,
   onChange,
@@ -165,6 +230,7 @@ function CampoDinheiro({
 }: {
   id: string;
   rotulo: string;
+  ajuda?: string;
   valor: number;
   max: number;
   onChange: (v: number) => void;
@@ -175,6 +241,7 @@ function CampoDinheiro({
       <label htmlFor={id} className="text-sm font-semibold text-texto">
         {rotulo}
       </label>
+      {ajuda ? <p className="text-xs text-suave">{ajuda}</p> : null}
       <div className="mt-2 flex min-h-14 items-center gap-2 rounded-2xl border border-linha bg-superficie-2 px-4 focus-within:border-ciano">
         <span className="text-lg font-semibold text-suave">R$</span>
         <input
@@ -250,7 +317,7 @@ function PainelIndicadores({ ind }: { ind: Indicadores }) {
 
 // --- Opções ---------------------------------------------------------------------
 
-function CartaoOpcao({ s, ativa, onClick }: { s: Simulacao; ativa: boolean; onClick: () => void }) {
+function CartaoOpcao({ s, nivel, ativa, onClick }: { s: Simulacao; nivel: string; ativa: boolean; onClick: () => void }) {
   const nivelRisco = Math.min(100, (s.vol / 15) * 100);
   return (
     <button
@@ -264,6 +331,7 @@ function CartaoOpcao({ s, ativa, onClick }: { s: Simulacao; ativa: boolean; onCl
     >
       <div className="flex items-start justify-between gap-2">
         <div>
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-ciano">{nivel}</p>
           <p className="font-display text-base font-bold text-texto">{s.carteira.nome}</p>
           <p className="mt-0.5 text-xs leading-snug text-suave">{s.carteira.ideia}</p>
         </div>
@@ -300,6 +368,53 @@ function CartaoOpcao({ s, ativa, onClick }: { s: Simulacao; ativa: boolean; onCl
         </div>
       </div>
     </button>
+  );
+}
+
+function Comparativo({ simulacoes }: { simulacoes: Simulacao[] }) {
+  const linhas: { rotulo: string; valor: (s: Simulacao) => string; destaque?: boolean }[] = [
+    { rotulo: "Renda fixa", valor: (s) => `${s.porClasse.find((c) => c.classe === "renda_fixa")?.pct ?? 0}%` },
+    { rotulo: "Bolsa, FIIs, exterior e cripto", valor: (s) => `${100 - (s.porClasse.find((c) => c.classe === "renda_fixa")?.pct ?? 0)}%` },
+    { rotulo: "Retorno esperado (hipótese)", valor: (s) => `${pct(s.taxaEsperada)} a.a.` },
+    { rotulo: "Cenário base no fim", valor: (s) => brl(s.finalBase), destaque: true },
+    { rotulo: "Período ruim", valor: (s) => brl(s.finalPessimista) },
+    { rotulo: "Período bom", valor: (s) => brl(s.finalOtimista) },
+    { rotulo: "Líquido de IR", valor: (s) => brl(s.finalLiquido) },
+    { rotulo: "Queda numa crise como 2020", valor: (s) => (s.quedaCrisePct === 0 ? "≈ 0%" : pct(s.quedaCrisePct)) },
+    { rotulo: "Chance de um ano negativo", valor: (s) => pct(s.chancePerdaUmAno, 0) },
+  ];
+  return (
+    <Cartao className="overflow-x-auto">
+      <TituloSecao titulo="Comparativo lado a lado" subtitulo="Mais potencial sempre vem com mais oscilação" />
+      <table className="mt-3 w-full min-w-[520px] text-sm">
+        <thead>
+          <tr className="text-left text-xs text-suave">
+            <th className="py-2 font-medium">
+              <span className="sr-only">Indicador</span>
+            </th>
+            {simulacoes.map((s) => (
+              <th key={s.carteira.id} className="py-2 text-right font-semibold text-texto">
+                {s.carteira.nome}
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-linha">
+          {linhas.map((l) => (
+            <tr key={l.rotulo}>
+              <th scope="row" className="py-2 text-left font-normal text-suave">
+                {l.rotulo}
+              </th>
+              {simulacoes.map((s) => (
+                <td key={s.carteira.id} className={`py-2 text-right ${l.destaque ? "font-display font-bold text-ciano" : "text-texto"}`}>
+                  {l.valor(s)}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </Cartao>
   );
 }
 

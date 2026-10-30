@@ -227,3 +227,63 @@ export async function comentarSimulacao(resumo: string): Promise<string | null> 
   if (!texto) return null;
   return (await textoPermitido(texto, "simulacao")) ? texto : null;
 }
+
+// Leitura de extrato por imagem (print do app da corretora) ou PDF escaneado.
+// Devolve só os investimentos e a data de referência; nada é guardado.
+export type ItemLidoIA = { nome: string; classe: string; quantidade: number | null; valor: number | null };
+
+const SISTEMA_EXTRATO = `Você lê extratos de investimentos de corretoras e bancos brasileiros (prints de tela, fotos ou PDFs) e devolve os dados estruturados.
+- Liste cada investimento uma vez: o código de negociação quando houver (ex.: PETR4, HGLG11, BOVA11) ou o nome do produto (ex.: Tesouro Selic 2029, CDB Banco X 110% CDI, LCI, Fundo Y).
+- valor: o saldo atual/bruto em reais daquele investimento (número, sem R$, ponto como separador decimal). Se não houver, null.
+- quantidade: número de cotas/ações quando aparecer; senão null.
+- classe: renda_fixa (Tesouro, CDB, LCI, LCA, debêntures, CRI, CRA, poupança, fundos de renda fixa), acoes_etfs (ações, BDRs, ETFs de ações brasileiras), fiis (fundos imobiliários), multimercado, cripto (bitcoin, ethereum, ETFs de cripto), exterior (ETFs ou ativos internacionais) ou desconhecida.
+- data_referencia: a data da posição/extrato no formato AAAA-MM-DD, se aparecer; senão null.
+- Ignore totais, subtotais, saldo em conta corrente, nomes de pessoas, CPF, agência e número de conta.`;
+
+export async function lerExtratoComIA(arquivo: { tipo: "imagem" | "pdf"; mediaType: string; base64: string }) {
+  const conteudo: Anthropic.ContentBlockParam =
+    arquivo.tipo === "pdf"
+      ? { type: "document", source: { type: "base64", media_type: "application/pdf", data: arquivo.base64 } }
+      : {
+          type: "image",
+          source: { type: "base64", media_type: arquivo.mediaType as "image/png" | "image/jpeg" | "image/webp" | "image/gif", data: arquivo.base64 },
+        };
+  const resposta = await claude().messages.create({
+    model: MODELO_ENTREVISTA,
+    max_tokens: 8000,
+    output_config: {
+      effort: "low",
+      format: {
+        type: "json_schema",
+        schema: {
+          type: "object",
+          properties: {
+            data_referencia: { type: ["string", "null"] },
+            itens: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  nome: { type: "string" },
+                  classe: { type: "string", enum: ["renda_fixa", "acoes_etfs", "fiis", "multimercado", "cripto", "exterior", "desconhecida"] },
+                  quantidade: { type: ["number", "null"] },
+                  valor: { type: ["number", "null"] },
+                },
+                required: ["nome", "classe", "quantidade", "valor"],
+                additionalProperties: false,
+              },
+            },
+          },
+          required: ["data_referencia", "itens"],
+          additionalProperties: false,
+        },
+      },
+    },
+    system: SISTEMA_EXTRATO,
+    messages: [{ role: "user", content: [conteudo, { type: "text", text: "Extraia os investimentos deste extrato." }] }],
+  });
+  if (resposta.stop_reason === "refusal") return null;
+  const bloco = resposta.content.find((b): b is Anthropic.TextBlock => b.type === "text");
+  if (!bloco) return null;
+  return JSON.parse(bloco.text) as { data_referencia: string | null; itens: ItemLidoIA[] };
+}

@@ -119,3 +119,48 @@ export const indicadores = unstable_cache(buscar, ["indicadores-simulador-v1"], 
 });
 
 export { TAG_INDICADORES };
+
+// Taxas mensais (% no mês) para comparar a carteira: CDI, poupança e inflação.
+// Chave: AAAA-MM. Últimos 10 anos.
+export type TaxasMensais = { cdi: Record<string, number>; poupanca: Record<string, number>; ipca: Record<string, number> };
+
+async function sgsPeriodo(serie: number, anos: number) {
+  const fim = new Date();
+  const inicio = new Date(fim.getFullYear() - anos, fim.getMonth(), 1);
+  const br = (d: Date) => `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
+  const r = await fetch(`https://api.bcb.gov.br/dados/serie/bcdata.sgs.${serie}/dados?formato=json&dataInicial=${br(inicio)}&dataFinal=${br(fim)}`, {
+    signal: AbortSignal.timeout(10000),
+    cache: "no-store",
+  });
+  if (!r.ok) throw new Error(`SGS ${serie}: ${r.status}`);
+  const dados = (await r.json()) as PontoSGS[];
+  return Object.fromEntries(
+    dados
+      .map((p) => {
+        const [, m, a] = p.data.split("/");
+        return [`${a}-${m}`, Number(p.valor)] as const;
+      })
+      .filter(([, v]) => Number.isFinite(v)),
+  );
+}
+
+// Lança erro se alguma série vier vazia, para o cache não guardar uma resposta com falha.
+async function buscarTaxasMensais(): Promise<TaxasMensais> {
+  const [cdi, poupanca, ipca] = await Promise.all([sgsPeriodo(4391, 10), sgsPeriodo(196, 10), sgsPeriodo(433, 10)]);
+  if (!Object.keys(cdi).length || !Object.keys(poupanca).length || !Object.keys(ipca).length) throw new Error("série mensal vazia");
+  return { cdi, poupanca, ipca };
+}
+
+const taxasEmCache = unstable_cache(buscarTaxasMensais, ["taxas-mensais-v2"], {
+  revalidate: 12 * 60 * 60,
+  tags: [TAG_INDICADORES],
+});
+
+export async function taxasMensais(): Promise<TaxasMensais> {
+  try {
+    return await taxasEmCache();
+  } catch (e) {
+    registrarErro("taxas mensais", e instanceof Error ? e.message.slice(0, 60) : undefined);
+    return { cdi: {}, poupanca: {}, ipca: {} };
+  }
+}

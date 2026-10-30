@@ -27,12 +27,13 @@ Guia educacional de investimentos com IA (PWA). Next.js + Supabase + Claude.
 - [x] Login de demonstração admin/admin na versão publicada (variável ADMIN_ATIVO=1)
 - [x] Telas de carregamento, erro e página não encontrada; cabeçalhos de segurança; imagem para compartilhar o link
 - [x] Simulador de carteiras (/simulador): 3 carteiras de exemplo por estilo, projeção com faixa de cenários, IR, inflação, teste de crise e últimos 3 meses reais; indicadores do Banco Central, brapi e CoinGecko; explicação pela IA (ou pelo app, sem chave). Conferência: `npm run testar:simulador`
+- [x] Carteira v2: extrato por investimento (aplicação, resgate, atualização de saldo), datas só até hoje, importação com conferência (PDF, planilha, imagem pela IA, digitação), cadastro em 3 passos, edição e exclusão; painel com linha histórica, comparativo com CDI, poupança e IPCA (Banco Central), rendimento separado dos aportes e rentabilidade mês a mês. Conferência: `npm run testar:carteira`
 - [ ] Revisão de segurança e critérios de aceite
 
 ## Configurar o Supabase (uma vez)
 
 1. Crie um projeto em [supabase.com](https://supabase.com), na região **South America (São Paulo)**.
-2. Em **SQL Editor**, rode `supabase/migrations/0001_usuario_consentimento.sql` depois `0002_entrevista_carteira_moedas.sql` e `0003_auditoria_ia.sql`.
+2. Em **SQL Editor**, rode, nesta ordem: `0001_usuario_consentimento.sql`, `0002_entrevista_carteira_moedas.sql`, `0003_auditoria_ia.sql` e `0004_carteira_movimentacoes.sql` (pasta `supabase/migrations`).
 3. Em **Authentication > Sign In / Providers > Email**:
    - deixe **Confirm email** ligado;
    - **Email OTP Expiration:** `600` segundos (10 minutos);

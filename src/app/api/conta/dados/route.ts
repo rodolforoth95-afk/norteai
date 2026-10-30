@@ -10,11 +10,10 @@ export async function GET() {
     ? []
     : ((await (await criarClienteServidor()).from("consentimento").select("documento, versao, aceito_em").order("aceito_em")).data ?? []);
 
-  const [entrevista, perfil, carteira, evolucao, coins, concluidos] = await Promise.all([
+  const [entrevista, perfil, carteira, coins, concluidos] = await Promise.all([
     repo.obterEntrevista(uid),
     repo.obterPerfil(uid),
     repo.obterCarteira(uid),
-    repo.listarSnapshots(uid),
     repo.listarMoedas(uid),
     repo.listarConcluidos(uid),
   ]);
@@ -26,7 +25,6 @@ export async function GET() {
     entrevista,
     perfil,
     carteira,
-    evolucao,
     coins,
     conteudos_concluidos: concluidos,
   };

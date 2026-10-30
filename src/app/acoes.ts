@@ -11,9 +11,6 @@ import { VIDEOS } from "@/lib/conteudo/videos";
 import { AULAS } from "@/lib/conteudo/aulas";
 import { moduloPorSlug } from "@/lib/conteudo/modulos";
 import { exigirUsuario } from "@/lib/servidor/sessao";
-import { registrarCarteira } from "@/lib/servidor/carteira";
-import { substituirSnapshotsTeste } from "@/lib/servidor/repositorio/arquivo";
-import { carteiraExemplo } from "@/lib/servidor/exemplo";
 import { TAG_MERCADO, brapiDisponivel, cotacoes, tagAtivo } from "@/lib/servidor/brapi";
 import { dentroDoLimite, registrarErro } from "@/lib/servidor/util";
 import { CARTEIRAS, LIMITES, comentarioPadrao, resumoParaIA, simular } from "@/lib/dominio/simulador";
@@ -112,63 +109,6 @@ export async function desbloquearVideo(slug: string) {
   return ok ? { ok: true } : { erro: "Você já desbloqueou este treinamento." };
 }
 
-// --- Carteira ---------------------------------------------------------------------
-
-const EsquemaPosicao = z.object({
-  classe: z.enum(["renda_fixa", "acoes_etfs", "fiis", "multimercado", "cripto", "exterior"]),
-  codigo_ou_nome: z.string().trim().min(1, "Informe o nome ou código.").max(80),
-  quantidade: z.number().nonnegative().nullable(),
-  valor_atual: z.number().positive("Informe um valor maior que zero.").max(1e9),
-  data_referencia: z.string().nullable(),
-});
-
-const EsquemaImportacao = z.object({
-  origem: z.enum(["b3", "pdf", "planilha", "manual"]),
-  posicoes: z.array(EsquemaPosicao).min(1, "Adicione pelo menos um investimento.").max(300),
-});
-
-export async function confirmarImportacao(dados: unknown) {
-  const { uid, repo } = await exigirUsuario();
-  const lido = EsquemaImportacao.safeParse(dados);
-  if (!lido.success) return { erro: lido.error.issues[0]?.message ?? "Dados inválidos." };
-  const posicoes: Posicao[] = lido.data.posicoes.map((p) => ({ ...p, id: randomUUID() }));
-  const ganhos = await registrarCarteira(repo, uid, lido.data.origem, posicoes);
-  revalidatePath("/", "layout");
-  return { ok: true, ganhos };
-}
-
-// Atualiza o valor das posições com código de negociação e quantidade usando a
-// cotação da brapi (atraso de até 30 min). Registra um ponto na evolução e as coins.
-export async function atualizarCotacoes() {
-  const { uid, repo } = await exigirUsuario();
-  if (!brapiDisponivel()) return { erro: "Cotações indisponíveis: configure a brapi." };
-  const carteira = await repo.obterCarteira(uid);
-  if (!carteira?.posicoes.length) return { erro: "Importe uma carteira primeiro." };
-
-  const comCodigo = carteira.posicoes.filter((p) => p.quantidade && extrairTicker(p.codigo_ou_nome) === p.codigo_ou_nome.toUpperCase());
-  if (!comCodigo.length) return { erro: "Nenhum investimento com código e quantidade para atualizar." };
-
-  for (const p of comCodigo) revalidateTag(tagAtivo(p.codigo_ou_nome));
-  let precos: Awaited<ReturnType<typeof cotacoes>>;
-  try {
-    precos = await cotacoes(comCodigo.map((p) => p.codigo_ou_nome));
-  } catch {
-    return { erro: "Não foi possível buscar as cotações agora. Tente mais tarde." };
-  }
-  const porSimbolo = new Map(precos.map((c) => [c.simbolo, c.preco]));
-  const hoje = new Date().toISOString().slice(0, 10);
-  let atualizados = 0;
-  const posicoes = carteira.posicoes.map((p) => {
-    const preco = porSimbolo.get(p.codigo_ou_nome.toUpperCase());
-    if (!preco || !p.quantidade) return p;
-    atualizados++;
-    return { ...p, valor_atual: Math.round(preco * p.quantidade * 100) / 100, data_referencia: hoje };
-  });
-  const ganhos = await registrarCarteira(repo, uid, carteira.origem, posicoes);
-  revalidatePath("/", "layout");
-  return { ok: true, atualizados, total: carteira.posicoes.length, ganhos };
-}
-
 // Botão "Atualizar" do Mercado e da página do ativo: descarta o cache para a próxima
 // leitura buscar na brapi. Limite por pessoa para não esgotar a cota mensal do plano.
 export async function atualizarMercado() {
@@ -188,16 +128,6 @@ export async function atualizarAtivo(simbolo: string) {
 }
 
 // Só no modo de teste: carteira fictícia com 4 meses de histórico.
-export async function carregarCarteiraExemplo() {
-  const { uid, repo, teste } = await exigirUsuario();
-  if (!teste) return { erro: "Disponível só no modo de teste." };
-  const { posicoes, snapshots } = carteiraExemplo();
-  await repo.salvarCarteira(uid, "exemplo", posicoes);
-  await substituirSnapshotsTeste(uid, snapshots);
-  revalidatePath("/", "layout");
-  return { ok: true };
-}
-
 // --- Simulador de carteiras -----------------------------------------------------
 
 const EntradaSimulacao = z.object({

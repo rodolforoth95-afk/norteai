@@ -2,14 +2,16 @@ import "server-only";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { Carteira, EstadoEntrevista, LancamentoMoedas, Perfil, Snapshot } from "@/lib/dominio/tipos";
+import { deVersaoAnterior, type CarteiraDados } from "@/lib/dominio/carteira";
 import type { Repositorio } from "./tipo";
 
 // Armazenamento em arquivo JSON, só para o modo de teste local.
 type DadosUsuario = {
   entrevista: EstadoEntrevista | null;
   perfis: Perfil[];
-  carteira: Carteira | null;
-  snapshots: Snapshot[];
+  carteira: Carteira | null; // versão anterior (só leitura, para conversão)
+  snapshots: Snapshot[]; // versão anterior
+  carteira2?: CarteiraDados;
   moedas: LancamentoMoedas[];
   concluidos: string[];
   auditoria?: { tipo: string; criado_em: string }[];
@@ -66,20 +68,13 @@ export const repositorioArquivo: Repositorio = {
   },
 
   async obterCarteira(uid) {
-    return (await de(uid))?.carteira ?? null;
+    const d = await de(uid);
+    if (d?.carteira2) return d.carteira2;
+    if (d?.carteira?.posicoes.length) return deVersaoAnterior(d.carteira.posicoes, d.carteira.atualizada_em.slice(0, 10));
+    return null;
   },
-  async salvarCarteira(uid, origem, posicoes) {
-    return alterar(uid, (d) => {
-      d.carteira = { origem, posicoes, atualizada_em: new Date().toISOString() };
-      return d.carteira;
-    });
-  },
-
-  async listarSnapshots(uid) {
-    return (await de(uid))?.snapshots ?? [];
-  },
-  async adicionarSnapshot(uid, snapshot) {
-    await alterar(uid, (d) => void d.snapshots.push(snapshot));
+  async salvarCarteira(uid, dados) {
+    await alterar(uid, (d) => void (d.carteira2 = dados));
   },
 
   async listarMoedas(uid) {
@@ -106,8 +101,3 @@ export const repositorioArquivo: Repositorio = {
     await alterar(uid, (d) => void (d.auditoria ??= []).push({ tipo, criado_em: new Date().toISOString() }));
   },
 };
-
-// Usado para gerar a carteira de exemplo do modo de teste (snapshots com datas passadas).
-export async function substituirSnapshotsTeste(uid: string, snapshots: Snapshot[]) {
-  await alterar(uid, (d) => void (d.snapshots = snapshots));
-}

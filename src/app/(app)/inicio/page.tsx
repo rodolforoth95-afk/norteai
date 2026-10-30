@@ -7,7 +7,8 @@ import { MODULOS, progressoModulo } from "@/lib/conteudo/modulos";
 import { aulaPorSlug } from "@/lib/conteudo/aulas";
 import { VIDEOS } from "@/lib/conteudo/videos";
 import { resumoMoedas } from "@/lib/dominio/moedas";
-import { fechamentosMensais, formatarReais, formatarVariacao, marcosDeEvolucao, totalPorClasse } from "@/lib/dominio/motor";
+import { formatarReais, formatarVariacao } from "@/lib/dominio/motor";
+import { resumoCarteira } from "@/lib/dominio/carteira";
 import { INFO_ESTILO } from "@/lib/dominio/catalogo";
 import { brapiDisponivel, cotacao } from "@/lib/servidor/brapi";
 import { exigirUsuario } from "@/lib/servidor/sessao";
@@ -16,20 +17,20 @@ import { MiniGrafico } from "../mercado/MiniGrafico";
 // Tela inicial: saldo da carteira, progresso e atalhos para os módulos do app.
 export default async function PaginaInicio() {
   const { uid, repo, primeiroNome } = await exigirUsuario();
-  const [perfil, carteira, snapshots, moedas, concluidos, entrevista, ibov] = await Promise.all([
+  const [perfil, carteiraDados, moedas, concluidos, entrevista, ibov] = await Promise.all([
     repo.obterPerfil(uid),
     repo.obterCarteira(uid),
-    repo.listarSnapshots(uid),
     repo.listarMoedas(uid),
     repo.listarConcluidos(uid),
     repo.obterEntrevista(uid),
     brapiDisponivel() ? cotacao("^BVSP").catch(() => null) : Promise.resolve(null),
   ]);
 
-  const total = carteira ? Object.values(totalPorClasse(carteira.posicoes)).reduce((s, v) => s + v, 0) : 0;
-  const marcos = marcosDeEvolucao(snapshots);
-  const variacaoTotal = marcos.at(-1)?.variacao ?? null;
-  const meses = fechamentosMensais(snapshots).map((m) => ({ data: m.mes, fechamento: m.total }));
+  const resumo = carteiraDados?.investimentos.length ? resumoCarteira(carteiraDados) : null;
+  const carteira = resumo && resumo.quantidade > 0 ? resumo : null;
+  const total = carteira?.patrimonio ?? 0;
+  const variacaoTotal = carteira?.rentabilidadeAcumulada ?? null;
+  const meses = (carteira?.serie ?? []).map((m) => ({ data: m.mes, fechamento: m.saldo }));
 
   const moedasResumo = resumoMoedas(moedas);
   const progressoTrilhas = MODULOS.map((m) => ({ m, ...progressoModulo(m, concluidos) }));
@@ -49,7 +50,7 @@ export default async function PaginaInicio() {
   const proximo = !perfil
     ? { rotulo: "Comece pela entrevista", detalhe: "9 perguntas para conhecer seu estilo · +50 coins", href: "/entrevista" }
     : !carteira
-      ? { rotulo: "Importe sua carteira", detalhe: "PDF, planilha da B3 ou digitando · +50 coins", href: "/carteira/importar" }
+      ? { rotulo: "Cadastre sua carteira", detalhe: "Extrato em PDF, planilha, foto ou digitando · +50 coins", href: "/carteira/importar" }
       : proximaAula
         ? { rotulo: `Continue: ${aulaPorSlug(proximaAula)?.titulo}`, detalhe: `Trilha ${proximaTrilha!.m.titulo}`, href: `/aprender/${proximaAula}` }
         : proximaTrilha
@@ -78,7 +79,7 @@ export default async function PaginaInicio() {
           <p className="relative mt-2 font-display text-4xl font-bold tabular-nums text-texto">{formatarReais(total)}</p>
           <div className="relative mt-2 flex items-center gap-2">
             <SeloVariacao valor={variacaoTotal} />
-            <span className="text-xs text-suave">{variacaoTotal === null ? "atualize todo mês para ver a evolução" : `desde o início (${formatarVariacao(variacaoTotal)})`}</span>
+            <span className="text-xs text-suave">{variacaoTotal === null ? "atualize todo mês para ver a evolução" : `de rentabilidade acumulada (${formatarVariacao(variacaoTotal)})`}</span>
           </div>
           {meses.length > 1 ? <MiniGrafico pontos={meses} /> : null}
         </Link>
@@ -136,7 +137,7 @@ export default async function PaginaInicio() {
       {/* Módulos */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 lg:gap-4">
         <Modulo href="/mercado" icone={<CandlestickChart className="h-6 w-6" />} titulo="Mercado" detalhe={ibov ? <>Ibovespa <SeloVariacao valor={ibov.variacaoPct} /></> : "Cotações e destaques"} />
-        <Modulo href="/carteira" icone={<PieChart className="h-6 w-6" />} titulo="Carteira" detalhe={carteira ? `${carteira.posicoes.length} investimentos` : "Importar"} />
+        <Modulo href="/carteira" icone={<PieChart className="h-6 w-6" />} titulo="Carteira" detalhe={carteira ? `${carteira.quantidade} investimentos` : "Adicionar"} />
         <Modulo href="/aprender" icone={<BookOpen className="h-6 w-6" />} titulo="Trilhas" detalhe={`${Math.round((aulasLidas / totalAulas) * 100)}% concluído`} />
         <Modulo href="/perfil" icone={<UserRound className="h-6 w-6" />} titulo="Meu perfil" detalhe={perfil ? <span className="font-semibold text-ciano">{perfil.estilo} · {INFO_ESTILO[perfil.estilo].risco.toLowerCase()}</span> : "Fazer entrevista"} />
         <Modulo href="/aprender" icone={<Clapperboard className="h-6 w-6" />} titulo="Vídeos" detalhe={`${videosVistos} de ${videosLivres.length} assistidos`} />

@@ -1,12 +1,5 @@
-import type {
-  Carteira,
-  EstadoEntrevista,
-  LancamentoMoedas,
-  OrigemCarteira,
-  Perfil,
-  Posicao,
-  Snapshot,
-} from "@/lib/dominio/tipos";
+import type { EstadoEntrevista, LancamentoMoedas, Perfil } from "@/lib/dominio/tipos";
+import type { CarteiraDados } from "@/lib/dominio/carteira";
 
 // Acesso aos dados do usuário. Duas implementações:
 // - arquivo local (.dados/teste.json), usada no modo de teste;
@@ -18,11 +11,10 @@ export interface Repositorio {
   obterPerfil(uid: string): Promise<Perfil | null>;
   salvarPerfil(uid: string, perfil: Omit<Perfil, "versao" | "criado_em">): Promise<Perfil>;
 
-  obterCarteira(uid: string): Promise<Carteira | null>;
-  salvarCarteira(uid: string, origem: OrigemCarteira, posicoes: Posicao[]): Promise<Carteira>;
-
-  listarSnapshots(uid: string): Promise<Snapshot[]>;
-  adicionarSnapshot(uid: string, snapshot: Snapshot): Promise<void>;
+  // Carteira com o extrato de cada investimento. Quem tinha a carteira antiga
+  // recebe a versão convertida até a primeira gravação.
+  obterCarteira(uid: string): Promise<CarteiraDados | null>;
+  salvarCarteira(uid: string, dados: CarteiraDados): Promise<void>;
 
   listarMoedas(uid: string): Promise<LancamentoMoedas[]>;
   // Devolve false se já houver um lançamento com o mesmo tipo e referência.

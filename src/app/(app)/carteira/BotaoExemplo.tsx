@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { FlaskConical } from "lucide-react";
 import { Botao } from "@/components/Botao";
-import { carregarCarteiraExemplo } from "@/app/acoes";
+import { carregarCarteiraExemplo } from "@/app/acoes-carteira";
 
 // Só aparece no modo de teste.
 export function BotaoExemplo() {

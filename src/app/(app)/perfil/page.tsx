@@ -200,7 +200,7 @@ export default async function PaginaPerfil() {
       </Cartao>
 
       {/* Carteira */}
-      {!carteira ? (
+      {!carteira?.investimentos.length ? (
         <div className="borda-gradiente rounded-3xl p-5">
           <p className="font-display text-lg font-semibold text-texto">Já investe?</p>
           <p className="mt-1 text-sm text-suave">Importe sua carteira (PDF, planilha da B3 ou digitando) e veja se ela combina com seu estilo. Ganhe +50 coins.</p>

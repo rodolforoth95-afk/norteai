@@ -1,90 +1,136 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useId, useState, useTransition, type ChangeEvent } from "react";
-import { ChevronDown, FileSpreadsheet, FileText, Keyboard, Plus, ShieldCheck, Trash2, TriangleAlert, Upload } from "lucide-react";
+import { useId, useMemo, useState, type ChangeEvent } from "react";
+import {
+  ArrowLeft,
+  Check,
+  ChevronDown,
+  FileSpreadsheet,
+  FileText,
+  ImageIcon,
+  Keyboard,
+  Plus,
+  ShieldCheck,
+  Sparkles,
+  Trash2,
+  TriangleAlert,
+} from "lucide-react";
 import { Botao } from "@/components/Botao";
-import { Alerta } from "@/components/Campo";
-import { AvisoEducacional } from "@/components/AvisoEducacional";
-import { CLASSES, ORDEM_CLASSES, TIPOS } from "@/lib/dominio/catalogo";
+import { CLASSES, ORDEM_CLASSES } from "@/lib/dominio/catalogo";
 import { classificar, lerNumeroBR } from "@/lib/dominio/classificar";
-import { formatarReais, percentuais } from "@/lib/dominio/motor";
+import { formatarData, hojeBR, normalizarNome } from "@/lib/dominio/carteira";
 import type { Classe } from "@/lib/dominio/tipos";
-import { confirmarImportacao } from "@/app/acoes";
+import { confirmarImportacao } from "@/app/acoes-carteira";
+import { AvisoErro, CampoData, ESTILO_CAMPO, brl, lerDinheiro, paraTextoDinheiro, sinalReais, tom, useAcao } from "../comum";
+
+export type Existente = { id: string; nome: string; classe: Classe; saldo: number; quantidade: number | null; ultimaData: string | null };
+
+type Origem = "pdf" | "planilha" | "imagem" | "manual";
 
 type Linha = {
   chave: string;
+  nome: string;
   classe: Classe | "";
-  codigo_ou_nome: string;
   quantidade: string;
   valor: string;
+  alvo: string; // "" = novo; id = atualiza um investimento existente
+  ignorar: boolean;
+  aplicado: string;
+  resgatado: string;
+  movimentos: boolean; // mostra os campos de aplicação/resgate
 };
-
-type Origem = "b3" | "pdf" | "planilha" | "manual";
-
-const SUGESTOES = [...new Set([
-  ...TIPOS.map((t) => t.nome),
-  "Tesouro Selic 2029",
-  "Tesouro IPCA+ 2035",
-  "Tesouro Prefixado 2028",
-  "CDB pós-fixado",
-  "LCI",
-  "LCA",
-  "BOVA11",
-  "IVVB11",
-  "SMAL11",
-  "HASH11",
-  "Bitcoin",
-  "Ethereum",
-])];
 
 let contador = 0;
 const novaLinha = (p: Partial<Linha> = {}): Linha => ({
   chave: `l${++contador}`,
+  nome: "",
   classe: "",
-  codigo_ou_nome: "",
   quantidade: "",
   valor: "",
+  alvo: "",
+  ignorar: false,
+  aplicado: "",
+  resgatado: "",
+  movimentos: false,
   ...p,
 });
 
-function paraTexto(n: number | null) {
-  return n === null ? "" : n.toLocaleString("pt-BR", { maximumFractionDigits: 2 });
+function correspondente(existentes: Existente[], nome: string, usados: Set<string>) {
+  const alvo = normalizarNome(nome);
+  if (!alvo) return "";
+  const livres = existentes.filter((e) => !usados.has(e.id));
+  const exato = livres.find((e) => normalizarNome(e.nome) === alvo);
+  if (exato) return exato.id;
+  if (alvo.length < 6) return "";
+  return livres.find((e) => {
+    const n = normalizarNome(e.nome);
+    return n.length >= 6 && (n.includes(alvo) || alvo.includes(n));
+  })?.id ?? "";
 }
 
-export function Importador() {
+const FONTES: { id: Origem; rotulo: string; detalhe: string; aceita: string; Icone: typeof FileText }[] = [
+  { id: "pdf", rotulo: "Extrato em PDF", detalhe: "Posição da corretora, banco ou nota de corretagem", aceita: ".pdf", Icone: FileText },
+  { id: "planilha", rotulo: "Planilha", detalhe: "Posição da B3 (Excel) ou CSV", aceita: ".xlsx,.xls,.csv", Icone: FileSpreadsheet },
+  { id: "imagem", rotulo: "Foto ou print", detalhe: "Tela do app da corretora (lida pela IA)", aceita: ".png,.jpg,.jpeg,.webp", Icone: ImageIcon },
+  { id: "manual", rotulo: "Digitar vários", detalhe: "Atualize saldos ou cadastre de uma vez", aceita: "", Icone: Keyboard },
+];
+
+export function Importador({ existentes, iaLigada }: { existentes: Existente[]; iaLigada: boolean }) {
   const router = useRouter();
-  const [modo, setModo] = useState<"arquivo" | "manual">("arquivo");
-  const [origem, setOrigem] = useState<Origem>("manual");
-  const [linhas, setLinhas] = useState<Linha[] | null>(null);
-  const [data, setData] = useState(() => new Date().toISOString().slice(0, 10));
-  const [erro, setErro] = useState<string | null>(null);
-  const [lendo, setLendo] = useState(false);
-  const [nomeArquivo, setNomeArquivo] = useState<string | null>(null);
-  const [instrucoes, setInstrucoes] = useState(false);
-  const [salvando, iniciar] = useTransition();
   const idArquivo = useId();
+  const [etapa, setEtapa] = useState<"fonte" | "revisar" | "pronto">("fonte");
+  const [fonte, setFonte] = useState<(typeof FONTES)[number] | null>(null);
+  const [origem, setOrigem] = useState<Origem>("manual");
+  const [linhas, setLinhas] = useState<Linha[]>([]);
+  const [data, setData] = useState(hojeBR());
+  const [dataSugerida, setDataSugerida] = useState<string | null>(null);
+  const [ausentes, setAusentes] = useState<Record<string, "manter" | "zerar">>({});
+  const [lendo, setLendo] = useState(false);
+  const [aviso, setAviso] = useState<string | null>(null);
+  const [instrucoes, setInstrucoes] = useState(false);
+  const [resultado, setResultado] = useState<{ resumo: Record<string, number>; ganhos: string[] } | null>(null);
+  const { executar, pendente, erro, setErro } = useAcao();
+
+  function montarLinhas(lidas: { classe: Classe | null; codigo_ou_nome: string; quantidade: number | null; valor_atual: number | null }[]) {
+    const usados = new Set<string>();
+    return lidas.map((l) => {
+      const alvo = correspondente(existentes, l.codigo_ou_nome, usados);
+      if (alvo) usados.add(alvo);
+      const existente = existentes.find((e) => e.id === alvo);
+      return novaLinha({
+        nome: l.codigo_ou_nome,
+        classe: l.classe ?? existente?.classe ?? "",
+        quantidade: l.quantidade === null ? "" : String(l.quantidade).replace(".", ","),
+        valor: paraTextoDinheiro(l.valor_atual),
+        alvo,
+      });
+    });
+  }
 
   async function enviarArquivo(e: ChangeEvent<HTMLInputElement>) {
     const arquivo = e.target.files?.[0];
     e.target.value = "";
     if (!arquivo) return;
     setErro(null);
+    setAviso(null);
     setLendo(true);
-    setNomeArquivo(arquivo.name);
     const form = new FormData();
     form.append("arquivo", arquivo);
     try {
       const r = await fetch("/api/carteira/importar", { method: "POST", body: form });
       const dados = await r.json();
       if (!r.ok) throw new Error(dados.erro ?? "Não foi possível ler o arquivo.");
-      if (!dados.linhas.length) throw new Error("Não encontramos investimentos nesse arquivo. Confira se é o extrato de posição ou digite manualmente.");
+      if (!dados.linhas.length) throw new Error("Não encontramos investimentos nesse arquivo. Confira se é o extrato de posição ou digite os valores.");
       setOrigem(dados.origem);
-      setLinhas(
-        dados.linhas.map((l: { classe: Classe | null; codigo_ou_nome: string; quantidade: number | null; valor_atual: number | null }) =>
-          novaLinha({ classe: l.classe ?? "", codigo_ou_nome: l.codigo_ou_nome, quantidade: paraTexto(l.quantidade), valor: paraTexto(l.valor_atual) }),
-        ),
-      );
+      setLinhas(montarLinhas(dados.linhas));
+      if (dados.data) {
+        setData(dados.data);
+        setDataSugerida(dados.data);
+      }
+      if (dados.viaIA) setAviso("Lido pela IA. Confira nomes e valores com atenção antes de salvar.");
+      setEtapa("revisar");
     } catch (err) {
       setErro(err instanceof Error ? err.message : "Não foi possível ler o arquivo.");
     } finally {
@@ -93,223 +139,452 @@ export function Importador() {
   }
 
   function comecarManual() {
-    setModo("manual");
     setOrigem("manual");
     setErro(null);
-    setLinhas((l) => l ?? [novaLinha()]);
+    // Já traz os investimentos atuais para atualizar o saldo de todos de uma vez.
+    setLinhas(
+      existentes.filter((e) => e.saldo > 0).length
+        ? existentes
+            .filter((e) => e.saldo > 0)
+            .map((e) =>
+              novaLinha({ nome: e.nome, classe: e.classe, quantidade: e.quantidade === null ? "" : String(e.quantidade).replace(".", ","), valor: "", alvo: e.id }),
+            )
+        : [novaLinha()],
+    );
+    setEtapa("revisar");
   }
 
-  function alterar(chave: string, campo: keyof Linha, valor: string) {
+  function alterar(chave: string, mudanca: Partial<Linha>) {
     setLinhas((ls) =>
-      (ls ?? []).map((l) => {
+      ls.map((l) => {
         if (l.chave !== chave) return l;
-        const nova = { ...l, [campo]: valor };
-        // Autoclassificação ao digitar o nome, se a classe ainda não foi escolhida.
-        if (campo === "codigo_ou_nome" && !l.classe) nova.classe = classificar(valor) ?? "";
+        const nova = { ...l, ...mudanca };
+        if (mudanca.nome !== undefined && !l.classe) nova.classe = classificar(mudanca.nome) ?? "";
+        if (mudanca.alvo) nova.classe = existentes.find((e) => e.id === mudanca.alvo)?.classe ?? nova.classe;
         return nova;
       }),
     );
   }
 
-  const validas = (linhas ?? []).map((l) => ({ ...l, num: lerNumeroBR(l.valor) }));
-  const porClasse = Object.fromEntries(ORDEM_CLASSES.map((c) => [c, 0])) as Record<Classe, number>;
-  for (const l of validas) if (l.classe && l.num) porClasse[l.classe] += l.num;
-  const { total, pct } = percentuais(porClasse);
-  const pendentes = validas.filter((l) => l.codigo_ou_nome.trim() && (!l.classe || !l.num || l.num <= 0)).length;
+  const usados = new Set(linhas.filter((l) => !l.ignorar && l.alvo).map((l) => l.alvo));
+  const naoVieram = existentes.filter((e) => e.saldo > 0 && !usados.has(e.id));
+  const ativas = linhas.filter((l) => !l.ignorar && l.nome.trim() && l.valor.trim());
+  // Linha de investimento existente com saldo em branco = sem atualização (fica como está).
+  const faltaValor = (l: Linha) => (l.valor.trim() ? lerDinheiro(l.valor) === null : !l.alvo);
+  const pendentes = linhas.filter((l) => !l.ignorar && l.nome.trim() && (!l.classe || faltaValor(l)));
+  const dataFutura = data > hojeBR();
+
+  // O que muda com esta importação.
+  const resumo = useMemo(() => {
+    let novos = 0;
+    let atualizados = 0;
+    let dinheiroNovo = 0;
+    let rendimento = 0;
+    let antes = existentes.reduce((s, e) => s + e.saldo, 0);
+    let depois = antes;
+    for (const l of linhas) {
+      if (l.ignorar || !l.nome.trim()) continue;
+      const valor = lerDinheiro(l.valor);
+      if (valor === null) continue;
+      if (!l.alvo) {
+        novos++;
+        dinheiroNovo += valor;
+        depois += valor;
+      } else {
+        const e = existentes.find((x) => x.id === l.alvo);
+        if (!e) continue;
+        atualizados++;
+        const ap = lerDinheiro(l.aplicado) ?? 0;
+        const rs = lerDinheiro(l.resgatado) ?? 0;
+        dinheiroNovo += ap - rs;
+        rendimento += valor - e.saldo - ap + rs;
+        depois += valor - e.saldo;
+      }
+    }
+    let zerados = 0;
+    for (const e of naoVieram) {
+      if (ausentes[e.id] === "zerar") {
+        zerados++;
+        depois -= e.saldo;
+        dinheiroNovo -= e.saldo;
+      }
+    }
+    antes = Math.round(antes * 100) / 100;
+    return { novos, atualizados, zerados, dinheiroNovo, rendimento, antes, depois };
+  }, [linhas, existentes, naoVieram, ausentes]);
 
   function confirmar() {
     setErro(null);
-    const posicoes = validas
-      .filter((l) => l.codigo_ou_nome.trim())
-      .map((l) => ({
-        classe: l.classe as Classe,
-        codigo_ou_nome: l.codigo_ou_nome.trim(),
-        quantidade: l.quantidade ? lerNumeroBR(l.quantidade) : null,
-        valor_atual: l.num ?? 0,
-        data_referencia: data || null,
-      }));
-    iniciar(async () => {
-      const r = await confirmarImportacao({ origem, posicoes });
-      if ("erro" in r && r.erro) return setErro(r.erro);
-      const ganhos = "ganhos" in r && r.ganhos?.length ? `?ganhos=${encodeURIComponent(r.ganhos.join(" · "))}` : "";
-      router.push(`/carteira${ganhos}`);
-      router.refresh();
-    });
+    if (dataFutura) return setErro("A data do extrato não pode ser depois de hoje.");
+    if (pendentes.length) return setErro("Complete a classe e o valor dos itens destacados (ou marque para ignorar).");
+    const itens = ativas.map((l) => ({
+      acao: (l.alvo ? "atualizar" : "novo") as "atualizar" | "novo",
+      investimentoId: l.alvo || null,
+      nome: l.nome.trim(),
+      classe: l.classe as Classe,
+      quantidade: l.quantidade.trim() ? lerNumeroBR(l.quantidade) : null,
+      valor: lerDinheiro(l.valor) ?? 0,
+      aplicado: lerDinheiro(l.aplicado) ?? 0,
+      resgatado: lerDinheiro(l.resgatado) ?? 0,
+    }));
+    const listaAusentes = naoVieram.map((e) => ({ investimentoId: e.id, acao: ausentes[e.id] ?? ("manter" as const) }));
+    executar(
+      () => confirmarImportacao({ data, origem, itens, ausentes: listaAusentes }),
+      (r) => {
+        setResultado({ resumo: r.resumo ?? {}, ganhos: r.ganhos ?? [] });
+        setEtapa("pronto");
+      },
+    );
   }
 
-  return (
-    <div className="flex flex-col gap-6">
-      <div className="grid grid-cols-2 gap-1 rounded-2xl border border-linha bg-superficie p-1" role="tablist" aria-label="Forma de importar">
-        {(
-          [
-            ["arquivo", "Enviar arquivo", Upload],
-            ["manual", "Digitar", Keyboard],
-          ] as const
-        ).map(([id, rotulo, Icone]) => (
-          <button
-            key={id}
-            type="button"
-            role="tab"
-            aria-selected={modo === id}
-            onClick={() => (id === "manual" ? comecarManual() : setModo("arquivo"))}
-            className={`flex min-h-11 items-center justify-center gap-2 rounded-xl text-sm font-medium ${modo === id ? "gradiente-marca text-black" : "text-suave"}`}
-          >
-            <Icone className="h-4 w-4" aria-hidden="true" />
-            {rotulo}
+  // --- Etapa 3: pronto -------------------------------------------------------------
+  if (etapa === "pronto" && resultado) {
+    return (
+      <div className="flex flex-col items-center gap-4 rounded-3xl border border-menta/40 bg-menta/5 px-6 py-10 text-center">
+        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-menta/20 text-menta">
+          <Check className="h-7 w-7" aria-hidden="true" />
+        </span>
+        <p className="font-display text-xl font-bold text-texto">Carteira atualizada em {formatarData(data)}</p>
+        <p className="text-sm text-suave">
+          {resultado.resumo.novos ?? 0} novos · {resultado.resumo.atualizados ?? 0} atualizados · {resultado.resumo.zerados ?? 0} zerados
+        </p>
+        {resultado.ganhos.length ? <p className="text-sm font-semibold text-ambar">{resultado.ganhos.join(" · ")}</p> : null}
+        <Botao onClick={() => router.push("/carteira")}>Ver minha carteira</Botao>
+      </div>
+    );
+  }
+
+  // --- Etapa 1: escolher a fonte -----------------------------------------------------
+  if (etapa === "fonte") {
+    return (
+      <div className="flex flex-col gap-5">
+        <div className="grid gap-2 sm:grid-cols-2">
+          {FONTES.map((f) => {
+            const desabilitada = f.id === "imagem" && !iaLigada;
+            return (
+              <button
+                key={f.id}
+                type="button"
+                disabled={desabilitada}
+                onClick={() => {
+                  if (f.id === "manual") return comecarManual();
+                  setFonte(f);
+                  setErro(null);
+                  setTimeout(() => document.getElementById(idArquivo)?.click(), 0);
+                }}
+                className={`flex min-h-24 items-start gap-3 rounded-2xl border p-4 text-left transition ${
+                  fonte?.id === f.id ? "border-ciano bg-ciano/10" : "border-linha bg-superficie hover:border-ciano"
+                } disabled:cursor-not-allowed disabled:opacity-50`}
+              >
+                <span className="gradiente-marca flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-black">
+                  <f.Icone className="h-5 w-5" aria-hidden="true" />
+                </span>
+                <span>
+                  <span className="block font-semibold text-texto">{f.rotulo}</span>
+                  <span className="block text-xs text-suave">{desabilitada ? "Disponível quando a IA estiver ligada" : f.detalhe}</span>
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        <input id={idArquivo} type="file" accept={fonte?.aceita || ".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.webp"} onChange={enviarArquivo} disabled={lendo} className="sr-only" />
+        {lendo ? (
+          <p className="flex items-center gap-2 rounded-2xl border border-linha bg-superficie px-4 py-3 text-sm text-texto" role="status">
+            <Sparkles className="h-4 w-4 animate-pulse text-ciano" aria-hidden="true" />
+            Lendo o arquivo…
+          </p>
+        ) : null}
+        {erro ? <AvisoErro>{erro}</AvisoErro> : null}
+
+        <Link href="/carteira/adicionar" className="flex items-center justify-between rounded-2xl border border-dashed border-linha px-4 py-3 text-sm text-suave hover:border-ciano hover:text-texto">
+          Prefere cadastrar um investimento por vez, com a data da aplicação?
+          <span className="font-semibold text-ciano">Adicionar</span>
+        </Link>
+
+        <p className="flex items-start gap-2 text-xs text-suave">
+          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-menta" aria-hidden="true" />
+          O arquivo é lido e descartado na hora. Guardamos só os investimentos que você confirmar. Antes de enviar um print, corte nome, CPF e número da conta.
+        </p>
+
+        <div className="rounded-2xl border border-linha bg-superficie/60">
+          <button type="button" onClick={() => setInstrucoes((v) => !v)} aria-expanded={instrucoes} className="flex min-h-12 w-full items-center justify-between px-4 text-left text-sm font-medium text-texto">
+            Como baixar a posição na B3
+            <ChevronDown className={`h-5 w-5 transition ${instrucoes ? "rotate-180" : ""}`} aria-hidden="true" />
           </button>
-        ))}
+          {instrucoes ? (
+            <ol className="flex list-decimal flex-col gap-2 px-9 pb-4 text-sm text-suave">
+              <li>Acesse a Área do Investidor da B3 (investidor.b3.com.br) com sua conta gov.br.</li>
+              <li>Abra Extratos e depois Posição.</li>
+              <li>Escolha a data de referência (a mais recente disponível).</li>
+              <li>Toque em Baixar, formato Excel (.xlsx), e envie aqui.</li>
+            </ol>
+          ) : null}
+        </div>
+      </div>
+    );
+  }
+
+  // --- Etapa 2: revisar ----------------------------------------------------------------
+  return (
+    <div className="flex flex-col gap-5">
+      <button type="button" onClick={() => setEtapa("fonte")} className="-ml-1 inline-flex min-h-11 items-center gap-2 self-start text-sm font-medium text-suave hover:text-texto">
+        <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+        Trocar arquivo
+      </button>
+
+      <div className="grid gap-4 rounded-3xl border border-linha bg-superficie p-5 sm:grid-cols-[1fr_1.2fr] sm:items-end">
+        <CampoData
+          rotulo="Data do extrato"
+          valor={data}
+          onChange={setData}
+          ajuda={dataSugerida ? `Encontramos ${formatarData(dataSugerida)} no arquivo.` : "A data a que os saldos se referem. Hoje ou antes."}
+        />
+        <p className="text-sm text-suave">
+          Os saldos serão registrados nesta data. Investimentos que já existem recebem uma <strong className="text-texto">atualização de saldo</strong>; os novos entram como{" "}
+          <strong className="text-texto">aplicação</strong>.
+        </p>
       </div>
 
-      {modo === "arquivo" ? (
-        <div className="flex flex-col gap-4">
-          <label
-            htmlFor={idArquivo}
-            className="borda-gradiente flex cursor-pointer flex-col items-center gap-3 rounded-3xl px-6 py-8 text-center transition hover:brightness-110"
-          >
-            <span className="gradiente-marca flex h-14 w-14 items-center justify-center rounded-2xl">
-              <Upload className="h-7 w-7 text-white" aria-hidden="true" />
-            </span>
-            <span className="font-display text-lg font-semibold text-texto">{lendo ? "Lendo arquivo…" : "Escolher arquivo"}</span>
-            <span className="text-sm text-suave">PDF (extrato ou nota de corretagem), XLSX ou CSV · até 5 MB</span>
-            <span className="flex gap-4 text-xs text-suave">
-              <span className="flex items-center gap-1"><FileText className="h-4 w-4" aria-hidden="true" />PDF</span>
-              <span className="flex items-center gap-1"><FileSpreadsheet className="h-4 w-4" aria-hidden="true" />Planilha B3</span>
-            </span>
-            {nomeArquivo && !lendo ? <span className="text-xs text-ciano">{nomeArquivo}</span> : null}
-          </label>
-          <input id={idArquivo} type="file" accept=".pdf,.xlsx,.xls,.csv" onChange={enviarArquivo} disabled={lendo} className="sr-only" />
-
-          <p className="flex items-start gap-2 text-xs text-suave">
-            <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-menta" aria-hidden="true" />
-            O arquivo é lido e descartado na hora. Guardamos só os investimentos que você confirmar.
-          </p>
-
-          <div className="rounded-2xl border border-linha bg-superficie/60">
-            <button type="button" onClick={() => setInstrucoes((v) => !v)} aria-expanded={instrucoes} className="flex min-h-12 w-full items-center justify-between px-4 text-left text-sm font-medium text-texto">
-              Como exportar a planilha da B3
-              <ChevronDown className={`h-5 w-5 transition ${instrucoes ? "rotate-180" : ""}`} aria-hidden="true" />
-            </button>
-            {instrucoes ? (
-              <ol className="flex list-decimal flex-col gap-2 px-9 pb-4 text-sm text-suave">
-                <li>Acesse a Área do Investidor da B3 (investidor.b3.com.br) e entre com sua conta gov.br ou CPF e senha.</li>
-                <li>No menu, abra Extratos e depois Posição.</li>
-                <li>Escolha a data de referência mais recente.</li>
-                <li>Toque em Baixar e escolha o formato Excel (.xlsx).</li>
-                <li>Volte aqui e envie o arquivo.</li>
-              </ol>
-            ) : null}
-          </div>
-        </div>
+      {aviso ? (
+        <p className="flex items-start gap-2 rounded-2xl border border-ciano/40 bg-ciano/10 px-4 py-3 text-sm text-texto">
+          <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-ciano" aria-hidden="true" />
+          {aviso}
+        </p>
       ) : null}
 
-      {erro ? <Alerta>{erro}</Alerta> : null}
+      <div className="flex items-end justify-between">
+        <div>
+          <h2 className="font-display text-lg font-semibold text-texto">Confira cada investimento</h2>
+          <p className="text-sm text-suave">
+            {resumo.atualizados} já existem · {resumo.novos} novos
+          </p>
+        </div>
+      </div>
 
-      {linhas ? (
-        <div className="flex flex-col gap-4">
-          <div className="flex items-end justify-between">
-            <div>
-              <h2 className="font-display text-lg font-semibold text-texto">{modo === "manual" ? "Seus investimentos" : "Revise antes de salvar"}</h2>
-              <p className="text-sm text-suave">{linhas.length} {linhas.length === 1 ? "item" : "itens"}</p>
-            </div>
-            <label className="flex flex-col text-xs text-suave">
-              Data de referência
-              <input type="date" value={data} onChange={(e) => setData(e.target.value)} className="mt-1 min-h-11 rounded-xl border border-linha bg-superficie px-2 text-sm text-texto" />
-            </label>
-          </div>
+      <ul className="flex flex-col gap-3">
+        {linhas.map((l) => {
+          const existente = existentes.find((e) => e.id === l.alvo);
+          const valor = lerDinheiro(l.valor);
+          const ap = lerDinheiro(l.aplicado) ?? 0;
+          const rs = lerDinheiro(l.resgatado) ?? 0;
+          const rend = existente && valor !== null ? valor - existente.saldo - ap + rs : null;
+          const incompleto = !l.ignorar && Boolean(l.nome.trim()) && (!l.classe || faltaValor(l));
+          return (
+            <li
+              key={l.chave}
+              className={`rounded-2xl border p-4 ${l.ignorar ? "border-linha opacity-50" : incompleto ? "border-ambar/60 bg-ambar/5" : "border-linha bg-superficie"}`}
+            >
+              <div className="flex flex-wrap items-center gap-2">
+                <span
+                  className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide ${
+                    l.ignorar ? "bg-superficie-2 text-suave" : existente ? "bg-ciano/15 text-ciano" : "bg-menta/15 text-menta"
+                  }`}
+                >
+                  {l.ignorar ? "Ignorado" : existente ? "Atualiza" : "Novo"}
+                </span>
+                <input
+                  value={l.nome}
+                  onChange={(e) => alterar(l.chave, { nome: e.target.value })}
+                  placeholder="Nome ou código"
+                  aria-label="Nome ou código"
+                  className="min-h-10 min-w-0 flex-1 rounded-lg border border-transparent bg-transparent px-2 font-semibold text-texto hover:border-linha focus:border-ciano focus:outline-none"
+                />
+                <button
+                  type="button"
+                  onClick={() => alterar(l.chave, { ignorar: !l.ignorar })}
+                  className="min-h-9 rounded-lg px-2 text-xs font-medium text-suave hover:text-texto"
+                >
+                  {l.ignorar ? "Incluir" : "Ignorar"}
+                </button>
+                {origem === "manual" && !existente ? (
+                  <button type="button" onClick={() => setLinhas((ls) => ls.filter((x) => x.chave !== l.chave))} aria-label="Remover linha" className="flex h-9 w-9 items-center justify-center rounded-lg text-suave hover:text-erro">
+                    <Trash2 className="h-4 w-4" aria-hidden="true" />
+                  </button>
+                ) : null}
+              </div>
 
-          {pendentes > 0 ? (
-            <p className="flex items-start gap-2 rounded-2xl border border-ambar/40 bg-ambar/10 px-4 py-3 text-sm text-ambar" role="status">
-              <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
-              {pendentes === 1 ? "1 item precisa" : `${pendentes} itens precisam`} de classe ou valor. Eles estão destacados.
-            </p>
-          ) : null}
-
-          <datalist id="sugestoes-ativos">
-            {SUGESTOES.map((s) => (
-              <option key={s} value={s} />
-            ))}
-          </datalist>
-
-          <ul className="flex flex-col gap-3">
-            {validas.map((l, i) => {
-              const incompleto = Boolean(l.codigo_ou_nome.trim()) && (!l.classe || !l.num);
-              return (
-                <li key={l.chave} className={`rounded-3xl border p-4 ${incompleto ? "border-ambar/60 bg-ambar/5" : "border-linha bg-superficie/80"}`}>
-                  <div className="flex items-center gap-2">
-                    <label className="sr-only" htmlFor={`${l.chave}-nome`}>Nome ou código do investimento {i + 1}</label>
-                    <input
-                      id={`${l.chave}-nome`}
-                      list="sugestoes-ativos"
-                      value={l.codigo_ou_nome}
-                      onChange={(e) => alterar(l.chave, "codigo_ou_nome", e.target.value)}
-                      placeholder="Nome ou código (ex.: Tesouro Selic, BOVA11)"
-                      className="min-h-11 min-w-0 flex-1 rounded-xl border border-linha bg-superficie-2 px-3 text-sm font-medium text-texto placeholder:text-suave/70 focus:border-violeta focus:outline-none"
-                    />
-                    <button type="button" onClick={() => setLinhas((ls) => (ls ?? []).filter((x) => x.chave !== l.chave))} aria-label={`Remover ${l.codigo_ou_nome || "item"}`} className="flex h-11 w-11 items-center justify-center rounded-xl text-suave hover:text-erro">
-                      <Trash2 className="h-5 w-5" aria-hidden="true" />
-                    </button>
-                  </div>
-                  <div className="mt-2 grid grid-cols-[1.4fr_0.8fr_1fr] gap-2">
-                    <label className="flex min-w-0 flex-col text-[11px] text-suave">
-                      Classe
-                      <select value={l.classe} onChange={(e) => alterar(l.chave, "classe", e.target.value)} className={`mt-1 min-h-11 w-full min-w-0 rounded-xl border bg-superficie-2 px-2 text-sm text-texto ${!l.classe ? "border-ambar" : "border-linha"}`}>
-                        <option value="">Escolha…</option>
-                        {ORDEM_CLASSES.map((c) => (
-                          <option key={c} value={c}>{CLASSES[c].nome}</option>
+              {!l.ignorar ? (
+                <>
+                  <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    <label className="col-span-2 flex flex-col gap-1 text-[11px] text-suave sm:col-span-1">
+                      Corresponde a
+                      <select value={l.alvo} onChange={(e) => alterar(l.chave, { alvo: e.target.value })} className={`${ESTILO_CAMPO} min-h-11 text-sm`}>
+                        <option value="">Novo investimento</option>
+                        {existentes.map((e) => (
+                          <option key={e.id} value={e.id} disabled={usados.has(e.id) && e.id !== l.alvo}>
+                            {e.nome}
+                          </option>
                         ))}
                       </select>
                     </label>
-                    <label className="flex min-w-0 flex-col text-[11px] text-suave">
-                      Qtd.
-                      <input inputMode="decimal" value={l.quantidade} onChange={(e) => alterar(l.chave, "quantidade", e.target.value)} placeholder="—" className="mt-1 min-h-11 w-full min-w-0 rounded-xl border border-linha bg-superficie-2 px-2 text-sm text-texto" />
+                    <label className="flex flex-col gap-1 text-[11px] text-suave">
+                      Classe
+                      <select
+                        value={l.classe}
+                        onChange={(e) => alterar(l.chave, { classe: e.target.value as Classe })}
+                        className={`${ESTILO_CAMPO} min-h-11 text-sm ${!l.classe ? "border-ambar" : ""}`}
+                      >
+                        <option value="">Escolha…</option>
+                        {ORDEM_CLASSES.map((c) => (
+                          <option key={c} value={c}>
+                            {CLASSES[c].nome}
+                          </option>
+                        ))}
+                      </select>
                     </label>
-                    <label className="flex min-w-0 flex-col text-[11px] text-suave">
-                      Valor atual (R$)
-                      <input inputMode="decimal" value={l.valor} onChange={(e) => alterar(l.chave, "valor", e.target.value)} placeholder="0,00" className={`mt-1 min-h-11 w-full min-w-0 rounded-xl border bg-superficie-2 px-2 text-sm text-texto ${l.codigo_ou_nome && !l.num ? "border-ambar" : "border-linha"}`} />
+                    <label className="flex flex-col gap-1 text-[11px] text-suave">
+                      Quantidade
+                      <input
+                        inputMode="decimal"
+                        value={l.quantidade}
+                        onChange={(e) => alterar(l.chave, { quantidade: e.target.value.replace(/[^\d.,]/g, "") })}
+                        placeholder="—"
+                        className={`${ESTILO_CAMPO} min-h-11 text-sm`}
+                      />
+                    </label>
+                    <label className="flex flex-col gap-1 text-[11px] text-suave">
+                      Saldo na data (R$)
+                      <input
+                        inputMode="decimal"
+                        value={l.valor}
+                        onChange={(e) => alterar(l.chave, { valor: e.target.value.replace(/[^\d.,]/g, "") })}
+                        placeholder={existente ? "Em branco = sem mudança" : "0,00"}
+                        className={`${ESTILO_CAMPO} min-h-11 text-sm font-semibold ${l.nome && faltaValor(l) ? "border-ambar" : ""}`}
+                      />
                     </label>
                   </div>
-                </li>
-              );
-            })}
+
+                  {existente ? (
+                    <div className="mt-3 rounded-xl bg-superficie-2 px-3 py-2 text-xs">
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <span className="text-suave">
+                          Antes: <span className="font-semibold text-texto">{brl(existente.saldo)}</span>
+                          {existente.ultimaData ? ` em ${formatarData(existente.ultimaData)}` : ""}
+                        </span>
+                        {rend !== null ? (
+                          <span className={`font-semibold ${tom(rend)}`}>
+                            {rend >= 0 ? "Rendeu" : "Caiu"} {sinalReais(rend)}
+                          </span>
+                        ) : null}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => alterar(l.chave, { movimentos: !l.movimentos })}
+                        aria-expanded={l.movimentos}
+                        className="mt-1 inline-flex min-h-8 items-center gap-1 font-medium text-ciano"
+                      >
+                        Teve aplicação ou resgate desde então?
+                        <ChevronDown className={`h-3.5 w-3.5 transition ${l.movimentos ? "rotate-180" : ""}`} aria-hidden="true" />
+                      </button>
+                      {l.movimentos ? (
+                        <div className="mt-2 grid grid-cols-2 gap-2">
+                          <label className="flex flex-col gap-1 text-[11px] text-suave">
+                            Apliquei (R$)
+                            <input
+                              inputMode="decimal"
+                              value={l.aplicado}
+                              onChange={(e) => alterar(l.chave, { aplicado: e.target.value.replace(/[^\d.,]/g, "") })}
+                              placeholder="0,00"
+                              className={`${ESTILO_CAMPO} min-h-10 text-sm`}
+                            />
+                          </label>
+                          <label className="flex flex-col gap-1 text-[11px] text-suave">
+                            Resgatei (R$)
+                            <input
+                              inputMode="decimal"
+                              value={l.resgatado}
+                              onChange={(e) => alterar(l.chave, { resgatado: e.target.value.replace(/[^\d.,]/g, "") })}
+                              placeholder="0,00"
+                              className={`${ESTILO_CAMPO} min-h-10 text-sm`}
+                            />
+                          </label>
+                          <p className="col-span-2 text-[11px] text-suave">Assim o dinheiro novo não é contado como rendimento.</p>
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </>
+              ) : null}
+            </li>
+          );
+        })}
+      </ul>
+
+      <button
+        type="button"
+        onClick={() => setLinhas((ls) => [...ls, novaLinha()])}
+        className="flex min-h-12 items-center justify-center gap-2 rounded-2xl border border-dashed border-linha text-sm font-medium text-texto hover:border-ciano"
+      >
+        <Plus className="h-4 w-4" aria-hidden="true" />
+        Adicionar linha
+      </button>
+
+      {naoVieram.length ? (
+        <div className="rounded-3xl border border-ambar/40 bg-ambar/5 p-5">
+          <p className="flex items-center gap-2 font-semibold text-texto">
+            <TriangleAlert className="h-4 w-4 text-ambar" aria-hidden="true" />
+            {naoVieram.length === 1 ? "1 investimento não está" : `${naoVieram.length} investimentos não estão`} nesta importação
+          </p>
+          <p className="mt-1 text-sm text-suave">Se você resgatou tudo, marque “Zerar”. Se só não apareceu neste extrato (outra corretora, por exemplo), mantenha.</p>
+          <ul className="mt-3 flex flex-col gap-2">
+            {naoVieram.map((e) => (
+              <li key={e.id} className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-superficie px-3 py-2">
+                <span className="text-sm">
+                  <span className="font-semibold text-texto">{e.nome}</span>
+                  <span className="text-suave"> · {brl(e.saldo)}</span>
+                </span>
+                <span className="flex gap-1" role="radiogroup" aria-label={`O que fazer com ${e.nome}`}>
+                  {(["manter", "zerar"] as const).map((a) => (
+                    <button
+                      key={a}
+                      type="button"
+                      role="radio"
+                      aria-checked={(ausentes[e.id] ?? "manter") === a}
+                      onClick={() => setAusentes((x) => ({ ...x, [e.id]: a }))}
+                      className={`min-h-9 rounded-lg border px-3 text-xs font-semibold ${
+                        (ausentes[e.id] ?? "manter") === a ? (a === "zerar" ? "border-erro bg-erro/15 text-erro" : "border-ciano bg-ciano/15 text-texto") : "border-linha text-suave"
+                      }`}
+                    >
+                      {a === "manter" ? "Manter" : "Zerar"}
+                    </button>
+                  ))}
+                </span>
+              </li>
+            ))}
           </ul>
-
-          <Botao variante="secundario" onClick={() => setLinhas((ls) => [...(ls ?? []), novaLinha()])}>
-            <Plus className="h-4 w-4" aria-hidden="true" />
-            Adicionar investimento
-          </Botao>
-
-          {total > 0 ? (
-            <div className="rounded-3xl border border-linha bg-superficie/80 p-5">
-              <div className="flex items-baseline justify-between">
-                <span className="text-sm text-suave">Total</span>
-                <span className="font-display text-2xl font-bold text-texto">{formatarReais(total)}</span>
-              </div>
-              <div className="mt-3 flex h-2.5 overflow-hidden rounded-full bg-superficie-2">
-                {ORDEM_CLASSES.filter((c) => porClasse[c] > 0).map((c) => (
-                  <span key={c} style={{ width: `${pct[c]}%`, background: CLASSES[c].cor }} />
-                ))}
-              </div>
-              <ul className="mt-3 flex flex-col gap-1 text-sm">
-                {ORDEM_CLASSES.filter((c) => porClasse[c] > 0).map((c) => (
-                  <li key={c} className="flex justify-between">
-                    <span className="flex items-center gap-2 text-suave">
-                      <span className="h-2.5 w-2.5 rounded-full" style={{ background: CLASSES[c].cor }} aria-hidden="true" />
-                      {CLASSES[c].nome}
-                    </span>
-                    <span className="text-texto">{formatarReais(porClasse[c])} · {pct[c].toFixed(0)}%</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ) : null}
-
-          <Botao larguraTotal onClick={confirmar} carregando={salvando} disabled={pendentes > 0 || total <= 0}>
-            Confirmar importação
-          </Botao>
         </div>
       ) : null}
 
-      <AvisoEducacional />
+      <div className="rounded-3xl border border-linha bg-superficie p-5">
+        <p className="font-display text-lg font-semibold text-texto">O que muda</p>
+        <dl className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {[
+            ["Patrimônio antes", brl(resumo.antes), "text-texto"],
+            ["Patrimônio depois", brl(resumo.depois), "text-texto"],
+            ["Dinheiro novo (líquido)", sinalReais(resumo.dinheiroNovo), tom(resumo.dinheiroNovo)],
+            ["Rendimento do período", sinalReais(resumo.rendimento), tom(resumo.rendimento)],
+          ].map(([r, v, c]) => (
+            <div key={r} className="rounded-2xl bg-superficie-2 p-3">
+              <dt className="text-[11px] text-suave">{r}</dt>
+              <dd className={`font-display text-base font-bold ${c}`}>{v}</dd>
+            </div>
+          ))}
+        </dl>
+        <p className="mt-2 text-xs text-suave">
+          {resumo.atualizados} atualizados · {resumo.novos} novos · {resumo.zerados} zerados
+        </p>
+      </div>
+
+      {pendentes.length ? (
+        <p className="flex items-start gap-2 rounded-2xl border border-ambar/40 bg-ambar/10 px-4 py-3 text-sm text-ambar" role="status">
+          <TriangleAlert className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
+          {pendentes.length === 1 ? "1 item precisa" : `${pendentes.length} itens precisam`} de classe ou saldo. Complete ou marque para ignorar.
+        </p>
+      ) : null}
+      {erro ? <AvisoErro>{erro}</AvisoErro> : null}
+      <Botao larguraTotal onClick={confirmar} carregando={pendente} disabled={dataFutura || (!ativas.length && !naoVieram.some((e) => ausentes[e.id] === "zerar"))}>
+        Confirmar e salvar em {formatarData(data)}
+      </Botao>
     </div>
   );
 }

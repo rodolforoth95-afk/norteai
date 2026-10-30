@@ -1,11 +1,15 @@
 import "server-only";
 import { criarClienteAdmin } from "@/lib/supabase/servidor";
 import type { Perfil, Posicao } from "@/lib/dominio/tipos";
+import { deVersaoAnterior, type CarteiraDados } from "@/lib/dominio/carteira";
+import { ErroCarteira } from "../carteira";
 import type { Repositorio } from "./tipo";
 
 // Implementação no Supabase. Usa o cliente administrativo porque as gravações
 // (perfil calculado, coins) não podem ser feitas pelo próprio usuário; o uid
 // sempre vem da sessão verificada no servidor. O RLS protege as leituras diretas.
+
+const TABELA_INEXISTENTE = "PGRST205";
 
 function falhar(contexto: string, erro: { code?: string } | null) {
   if (erro) throw new Error(`[norteia] ${contexto} (${erro.code ?? "erro"})`);
@@ -58,56 +62,28 @@ export const repositorioSupabase: Repositorio = {
 
   async obterCarteira(uid) {
     const admin = criarClienteAdmin();
-    const { data, error } = await admin
+    const { data, error } = await admin.from("carteira_v2").select("dados").eq("usuario_id", uid).maybeSingle();
+    // Tabela ainda não criada (migração 0004 pendente): segue com a carteira antiga.
+    if (error?.code !== TABELA_INEXISTENTE) falhar("ler carteira", error);
+    if (data) return data.dados as CarteiraDados;
+
+    // Carteira da versão anterior (só posições): converte para o novo formato.
+    const antiga = await admin
       .from("carteira")
-      .select("id, origem, atualizada_em, posicao(id, classe, codigo_ou_nome, quantidade, valor_atual, data_referencia)")
+      .select("atualizada_em, posicao(id, classe, codigo_ou_nome, quantidade, valor_atual, data_referencia)")
       .eq("usuario_id", uid)
       .maybeSingle();
-    falhar("ler carteira", error);
-    if (!data) return null;
-    return { origem: data.origem, atualizada_em: data.atualizada_em, posicoes: (data.posicao ?? []) as Posicao[] };
+    if (antiga.error || !antiga.data?.posicao?.length) return null;
+    return deVersaoAnterior(antiga.data.posicao as Posicao[], antiga.data.atualizada_em.slice(0, 10));
   },
-  async salvarCarteira(uid, origem, posicoes) {
-    const admin = criarClienteAdmin();
-    const atualizada_em = new Date().toISOString();
-    const { data: carteira, error } = await admin
-      .from("carteira")
-      .upsert({ usuario_id: uid, origem, atualizada_em }, { onConflict: "usuario_id" })
-      .select("id")
-      .single();
-    falhar("salvar carteira", error);
-    const { error: erroApagar } = await admin.from("posicao").delete().eq("carteira_id", carteira!.id);
-    falhar("limpar posições", erroApagar);
-    if (posicoes.length) {
-      const { error: erroInserir } = await admin.from("posicao").insert(
-        posicoes.map(({ classe, codigo_ou_nome, quantidade, valor_atual, data_referencia }) => ({
-          carteira_id: carteira!.id,
-          classe,
-          codigo_ou_nome,
-          quantidade,
-          valor_atual,
-          data_referencia,
-        })),
-      );
-      falhar("salvar posições", erroInserir);
-    }
-    return { origem, atualizada_em, posicoes };
-  },
-
-  async listarSnapshots(uid) {
-    const { data, error } = await criarClienteAdmin()
-      .from("carteira_snapshot")
-      .select("data, total, por_classe")
-      .eq("usuario_id", uid)
-      .order("data");
-    falhar("ler evolução", error);
-    return (data ?? []).map((s) => ({ ...s, total: Number(s.total) }));
-  },
-  async adicionarSnapshot(uid, s) {
+  async salvarCarteira(uid, dados) {
     const { error } = await criarClienteAdmin()
-      .from("carteira_snapshot")
-      .insert({ usuario_id: uid, data: s.data, total: s.total, por_classe: s.por_classe });
-    falhar("salvar evolução", error);
+      .from("carteira_v2")
+      .upsert({ usuario_id: uid, dados, atualizada_em: new Date().toISOString() }, { onConflict: "usuario_id" });
+    if (error?.code === TABELA_INEXISTENTE) {
+      throw new ErroCarteira("O banco de dados precisa ser atualizado (migração 0004) antes de salvar a carteira.");
+    }
+    falhar("salvar carteira", error);
   },
 
   async listarMoedas(uid) {
