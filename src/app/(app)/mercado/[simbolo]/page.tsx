@@ -1,14 +1,15 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowLeft, ArrowRight, ExternalLink, GraduationCap } from "lucide-react";
+import { ArrowLeft, ArrowRight, ExternalLink, GitCompareArrows, GraduationCap } from "lucide-react";
 import { AvisoEducacional } from "@/components/AvisoEducacional";
 import { Cartao, TituloSecao } from "@/components/ui";
 import { AVISO_MERCADO, LogoAtivo, SeloVariacao, formatarCompacto, formatarPreco } from "@/components/mercado";
 import { CLASSES } from "@/lib/dominio/catalogo";
 import { classificar } from "@/lib/dominio/classificar";
-import { cotacao, historico, perfilEmpresa } from "@/lib/servidor/brapi";
+import { PERIODO_ANALISE, candles as buscarCandles, cotacao, perfilEmpresa } from "@/lib/servidor/brapi";
+import { leiturasEducativas, niveisDePreco, pivosMensais } from "@/lib/dominio/tecnica";
 import { exigirUsuario } from "@/lib/servidor/sessao";
-import { GraficoAtivo } from "./GraficoAtivo";
+import { PainelTecnico } from "./PainelTecnico";
 import { BotaoAtualizar } from "@/components/BotaoAtualizar";
 
 export default async function PaginaAtivo({ params }: { params: Promise<{ simbolo: string }> }) {
@@ -18,11 +19,20 @@ export default async function PaginaAtivo({ params }: { params: Promise<{ simbol
 
   const c = await cotacao(simbolo).catch(() => null);
   if (!c) notFound();
-  const [pontos, perfil] = await Promise.all([historico(simbolo, "1mo").catch(() => []), simbolo.startsWith("^") ? null : perfilEmpresa(simbolo)]);
-  const classe = simbolo.startsWith("^") ? null : classificar(simbolo);
-  // O histórico e a cotação atualizam em momentos diferentes: o ponto de hoje usa a cotação atual.
+  const indice = simbolo.startsWith("^");
+  const [velas, perfil] = await Promise.all([buscarCandles(simbolo).catch(() => []), indice ? null : perfilEmpresa(simbolo)]);
+  const classe = indice ? null : classificar(simbolo);
+  // O histórico e a cotação atualizam em momentos diferentes: o candle de hoje usa a cotação atual.
   const hoje = new Date().toISOString().slice(0, 10);
-  if (pontos.at(-1)?.data === hoje) pontos[pontos.length - 1] = { data: hoje, fechamento: c.preco };
+  const ultimo = velas.at(-1);
+  if (ultimo?.data === hoje) {
+    velas[velas.length - 1] = { ...ultimo, fechamento: c.preco, maxima: Math.max(ultimo.maxima, c.preco), minima: Math.min(ultimo.minima, c.preco) };
+  }
+  const niveis = niveisDePreco(velas, c.preco);
+  const pivos = pivosMensais(velas, c.preco);
+  const formatar = (v: number) => (indice ? `${v.toLocaleString("pt-BR", { maximumFractionDigits: 0 })} pts` : formatarPreco(v));
+  const leituras = leiturasEducativas(velas, niveis, c.preco, formatar);
+  const periodoTexto = { "3mo": "3 meses", "6mo": "6 meses", "1y": "12 meses", "2y": "2 anos", "5y": "5 anos" }[PERIODO_ANALISE] ?? PERIODO_ANALISE;
 
   const estatisticas: [string, string][] = [
     ["Abertura", formatarPreco(c.abertura)],
@@ -47,32 +57,47 @@ export default async function PaginaAtivo({ params }: { params: Promise<{ simbol
         Mercado
       </Link>
 
-      <header className="flex items-center gap-4">
-        <LogoAtivo simbolo={simbolo} logo={c.logo} tamanho={56} />
-        <div className="min-w-0 flex-1">
-          <h1 className="font-display text-2xl font-bold text-texto">{simbolo}</h1>
-          <p className="truncate text-sm text-suave">{c.nome}</p>
+      <header className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex items-center gap-4">
+          <LogoAtivo simbolo={simbolo} logo={c.logo} tamanho={56} />
+          <div className="min-w-0">
+            <h1 className="font-display text-2xl font-bold text-texto lg:text-3xl">{simbolo}</h1>
+            <p className="truncate text-sm text-suave">{c.nome}</p>
+          </div>
         </div>
-        <BotaoAtualizar simbolo={simbolo} horario={c.horario} />
+        <div className="flex items-center justify-between gap-4 lg:justify-end">
+          <div className="lg:text-right">
+            <p className="font-display text-3xl font-bold tabular-nums text-texto lg:text-4xl">{formatar(c.preco)}</p>
+            <p className="mt-1 flex items-center gap-2 lg:justify-end">
+              <SeloVariacao valor={c.variacaoPct} grande />
+              <span className={`text-sm font-medium tabular-nums ${c.variacao >= 0 ? "text-menta" : "text-erro"}`}>
+                {c.variacao >= 0 ? "+" : ""}
+                {indice ? c.variacao.toLocaleString("pt-BR", { maximumFractionDigits: 0 }) : formatarPreco(c.variacao)} hoje
+              </span>
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Link
+              href={`/mercado/comparar?s=${encodeURIComponent(simbolo)}`}
+              className="flex min-h-11 items-center gap-2 rounded-xl border border-linha bg-superficie px-3 text-sm font-medium text-texto hover:border-violeta"
+            >
+              <GitCompareArrows className="h-4 w-4 text-ciano" aria-hidden="true" />
+              <span className="hidden sm:inline">Comparar</span>
+            </Link>
+            <BotaoAtualizar simbolo={simbolo} horario={c.horario} />
+          </div>
+        </div>
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr] lg:items-start">
-      <div className="flex min-w-0 flex-col gap-6">
-      <div>
-        <p className="font-display text-4xl font-bold tabular-nums text-texto">{formatarPreco(c.preco)}</p>
-        <div className="mt-2 flex items-center gap-2">
-          <SeloVariacao valor={c.variacaoPct} grande />
-          <span className={`text-sm font-medium tabular-nums ${c.variacao >= 0 ? "text-menta" : "text-erro"}`}>
-            {c.variacao >= 0 ? "+" : ""}
-            {formatarPreco(c.variacao)} hoje
-          </span>
-        </div>
-      </div>
+      {velas.length >= 10 ? (
+        <PainelTecnico simbolo={simbolo} indice={indice} candles={velas} niveis={niveis} pivos={pivos} leituras={leituras} periodoAnalise={periodoTexto} />
+      ) : (
+        <Cartao>
+          <p className="text-sm text-suave">Histórico insuficiente para o gráfico deste ativo.</p>
+        </Cartao>
+      )}
 
-      <GraficoAtivo key={`${c.horario}-${pontos.at(-1)?.fechamento}`} simbolo={simbolo} inicial={pontos} />
-      </div>
-      <div className="flex min-w-0 flex-col gap-6">
-
+      <div className="grid gap-6 lg:grid-cols-3 lg:items-start">
       <Cartao className="flex flex-col gap-4">
         <TituloSecao titulo="Números do dia" />
         <dl className="grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
@@ -124,7 +149,6 @@ export default async function PaginaAtivo({ params }: { params: Promise<{ simbol
         </Link>
       ) : null}
 
-      </div>
       </div>
 
       <AvisoEducacional extra={`${AVISO_MERCADO} Rentabilidade passada não garante resultado futuro.`} />

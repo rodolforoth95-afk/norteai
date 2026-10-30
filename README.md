@@ -28,6 +28,7 @@ Guia educacional de investimentos com IA (PWA). Next.js + Supabase + Claude.
 - [x] Telas de carregamento, erro e página não encontrada; cabeçalhos de segurança; imagem para compartilhar o link
 - [x] Simulador de carteiras (/simulador): 3 carteiras de exemplo por estilo, projeção com faixa de cenários, IR, inflação, teste de crise e últimos 3 meses reais; indicadores do Banco Central, brapi e CoinGecko; explicação pela IA (ou pelo app, sem chave). Conferência: `npm run testar:simulador`
 - [x] Carteira v2: extrato por investimento (aplicação, resgate, atualização de saldo), datas só até hoje, importação com conferência (PDF, planilha, imagem pela IA, digitação), cadastro em 3 passos, edição e exclusão; painel com linha histórica, comparativo com CDI, poupança e IPCA (Banco Central), rendimento separado dos aportes e rentabilidade mês a mês. Conferência: `npm run testar:carteira`
+- [x] Mercado v2: mapa de calor do dia; página do ativo com candles, médias móveis, volume, suportes e resistências (topos e fundos + pivôs mensais) selecionáveis no gráfico e em tabela, leituras educativas e desempenho mês a mês; comparador de até 5 ativos (base 100, mês a mês, risco). Histórico: 3 meses no plano gratuito da brapi (`BRAPI_PERIODO_ANALISE=1y` com plano pago)
 - [ ] Revisão de segurança e critérios de aceite
 
 ## Configurar o Supabase (uma vez)

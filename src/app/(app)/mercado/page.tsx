@@ -1,9 +1,10 @@
 import { Suspense } from "react";
-import { Landmark, LineChart, TrendingDown, TrendingUp } from "lucide-react";
+import Link from "next/link";
+import { ArrowRight, CandlestickChart, GitCompareArrows, GraduationCap, Landmark, LineChart, TrendingDown, TrendingUp } from "lucide-react";
 import { AvisoEducacional } from "@/components/AvisoEducacional";
 import { Cartao, TituloSecao } from "@/components/ui";
 import { AVISO_MERCADO, EsqueletoLista, LinhaAtivo, SeloVariacao, formatarPreco } from "@/components/mercado";
-import { altasDaSemana, brapiDisponivel, cotacao, destaquesDoDia, futuros, historico, tesouro } from "@/lib/servidor/brapi";
+import { altasDaSemana, brapiDisponivel, cotacao, destaquesDoDia, futuros, historico, listarAtivos, tesouro } from "@/lib/servidor/brapi";
 import { exigirUsuario } from "@/lib/servidor/sessao";
 import { AbasDestaques } from "./AbasDestaques";
 import { BuscaAtivos } from "./BuscaAtivos";
@@ -29,14 +30,39 @@ export default async function PaginaMercado() {
 
   return (
     <section className="flex flex-col gap-7">
-      <div className="flex items-end justify-between">
-        <h1 className="font-display text-2xl font-bold text-texto">Mercado</h1>
+      <div className="flex items-end justify-between gap-3">
+        <div>
+          <h1 className="font-display text-2xl font-bold text-texto lg:text-3xl">Mercado</h1>
+          <p className="text-sm text-suave">Cotações da B3 para acompanhar e estudar. Dados com atraso de até 30 minutos.</p>
+        </div>
         <BotaoAtualizar />
       </div>
 
-      <div className="lg:max-w-xl">
-        <BuscaAtivos />
+      <div className="grid gap-3 lg:grid-cols-[1.4fr_1fr_1fr]">
+        <div className="lg:col-span-1">
+          <BuscaAtivos />
+        </div>
+        <Link href="/mercado/comparar" className="flex min-h-14 items-center gap-3 rounded-2xl border border-linha bg-superficie px-4 transition hover:border-ciano">
+          <GitCompareArrows className="h-6 w-6 shrink-0 text-ciano" aria-hidden="true" />
+          <span className="flex-1">
+            <span className="block text-sm font-semibold text-texto">Comparar ativos</span>
+            <span className="block text-xs text-suave">Até 5 lado a lado, mês a mês</span>
+          </span>
+          <ArrowRight className="h-4 w-4 text-suave" aria-hidden="true" />
+        </Link>
+        <Link href="/aprender/suporte-resistencia" className="flex min-h-14 items-center gap-3 rounded-2xl border border-linha bg-superficie px-4 transition hover:border-ciano">
+          <GraduationCap className="h-6 w-6 shrink-0 text-ciano" aria-hidden="true" />
+          <span className="flex-1">
+            <span className="block text-sm font-semibold text-texto">Suportes e resistências</span>
+            <span className="block text-xs text-suave">Aprenda a ler o gráfico de cada ativo</span>
+          </span>
+          <ArrowRight className="h-4 w-4 text-suave" aria-hidden="true" />
+        </Link>
       </div>
+
+      <Suspense fallback={<div className="h-56 animate-pulse rounded-3xl bg-superficie" />}>
+        <MapaDoDia />
+      </Suspense>
 
       <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
         <div className="flex min-w-0 flex-col gap-6">
@@ -72,6 +98,47 @@ export default async function PaginaMercado() {
   );
 }
 
+// Mapa de calor: as ações mais negociadas do dia, coloridas pela variação.
+async function MapaDoDia() {
+  const lista = await listarAtivos({ tipo: "stock", ordenar: "volume", limite: 30 }).catch(() => []);
+  const itens = lista.filter((a) => a.variacaoPct !== null && a.preco !== null).slice(0, 24);
+  if (!itens.length) return null;
+  const subiram = itens.filter((a) => a.variacaoPct! > 0).length;
+  const cor = (v: number) => {
+    const forca = Math.min(1, Math.abs(v) / 4);
+    return v >= 0 ? `rgba(34, 197, 94, ${0.18 + forca * 0.6})` : `rgba(239, 68, 68, ${0.18 + forca * 0.6})`;
+  };
+  return (
+    <Cartao className="flex flex-col gap-3">
+      <TituloSecao
+        titulo="Mapa do dia"
+        subtitulo={`As 24 ações mais negociadas hoje: ${subiram} em alta, ${itens.length - subiram} em queda ou estáveis. Toque para ver o gráfico com suportes e resistências.`}
+      />
+      <ul className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 lg:grid-cols-8">
+        {itens.map((a) => (
+          <li key={a.simbolo}>
+            <Link
+              href={`/mercado/${a.simbolo}`}
+              className="flex min-h-16 flex-col items-center justify-center rounded-xl px-1 py-2 text-center transition hover:ring-2 hover:ring-texto/40"
+              style={{ background: cor(a.variacaoPct!) }}
+            >
+              <span className="font-display text-sm font-bold text-texto">{a.simbolo}</span>
+              <span className="text-xs font-semibold tabular-nums text-texto">
+                {a.variacaoPct! > 0 ? "+" : ""}
+                {a.variacaoPct!.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <p className="flex items-center gap-1.5 text-[11px] text-suave">
+        <CandlestickChart className="h-3.5 w-3.5" aria-hidden="true" />
+        Quanto mais forte a cor, maior a variação. Mostra só o movimento do dia, não é indicação.
+      </p>
+    </Cartao>
+  );
+}
+
 async function CartaoIbovespa() {
   const [ibov, pontos] = await Promise.all([cotacao("^BVSP").catch(() => null), historico("^BVSP", "1mo").catch(() => [])]);
   if (!ibov) return null;
@@ -88,7 +155,10 @@ async function CartaoIbovespa() {
             {ibov.preco.toLocaleString("pt-BR", { maximumFractionDigits: 0 })} <span className="text-base text-suave">pts</span>
           </p>
         </div>
-        <SeloVariacao valor={ibov.variacaoPct} grande />
+        <div className="flex flex-col items-end gap-2">
+          <SeloVariacao valor={ibov.variacaoPct} grande />
+          <Link href="/mercado/%5EBVSP" className="text-xs font-semibold text-ciano">Ver gráfico</Link>
+        </div>
       </div>
       {pontos.length > 1 ? <MiniGrafico pontos={pontos} /> : null}
       <p className="relative mt-1 text-xs text-suave">

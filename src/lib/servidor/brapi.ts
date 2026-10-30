@@ -1,4 +1,5 @@
 import "server-only";
+import type { Candle } from "@/lib/dominio/tecnica";
 import { unstable_cache } from "next/cache";
 
 // Cliente da brapi.dev (cotações da B3). Só roda no servidor; o token fica em BRAPI_TOKEN.
@@ -173,6 +174,32 @@ export async function historico(simbolo: string, periodo: Periodo = "1mo"): Prom
 }
 
 // --- Perfil da empresa (setor, site, descrição) ---------------------------------------
+
+// Candles diários (abertura, máxima, mínima, fechamento e volume) para a análise técnica
+// e os comparativos. O plano gratuito libera até 3 meses; com plano pago, defina
+// BRAPI_PERIODO_ANALISE (ex.: 6mo, 1y) para ampliar.
+
+const PERIODOS_ANALISE = ["3mo", "6mo", "1y", "2y", "5y"];
+export const PERIODO_ANALISE = PERIODOS_ANALISE.includes(process.env.BRAPI_PERIODO_ANALISE ?? "") ? process.env.BRAPI_PERIODO_ANALISE! : "3mo";
+
+export async function candles(simbolo: string): Promise<Candle[]> {
+  const r = await chamar<{
+    results: {
+      data: { historicalDataPrice: { date: number; open: number | null; high: number | null; low: number | null; close: number | null; volume: number | null }[] };
+    }[];
+  }>(`/v2/stocks/historical?symbols=${encodeURIComponent(simbolo)}&range=${PERIODO_ANALISE}&interval=1d&sortOrder=asc`, 60 * 60, [tagAtivo(simbolo)]);
+  return (r.results[0]?.data.historicalDataPrice ?? [])
+    .filter((p) => [p.open, p.high, p.low, p.close].every((v) => typeof v === "number" && v > 0))
+    .map((p) => ({
+      data: new Date(p.date * 1000).toISOString().slice(0, 10),
+      abertura: p.open!,
+      maxima: p.high!,
+      minima: p.low!,
+      fechamento: p.close!,
+      volume: p.volume ?? 0,
+    }))
+    .sort((a, b) => a.data.localeCompare(b.data));
+}
 
 export type PerfilEmpresa = { setor: string | null; industria: string | null; site: string | null; descricao: string | null; cidade: string | null };
 
