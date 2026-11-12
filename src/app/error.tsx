@@ -9,7 +9,7 @@ export default function Erro({ reset }: { error: Error & { digest?: string }; re
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col items-center justify-center gap-5 px-5 text-center">
       <Mascote className="h-20 w-20" sorriso={false} />
-      <h1 className="font-display text-2xl font-bold text-texto">Ops, algo deu errado</h1>
+      <h1 className="font-display text-[1.75rem] font-black tracking-[-0.01em] text-texto">Ops, algo deu errado</h1>
       <p className="text-suave">Não consegui carregar esta tela agora. Tente de novo em instantes, eu continuo aqui.</p>
       <div className="flex flex-col gap-2 sm:flex-row">
         <button type="button" onClick={reset} className="gradiente-marca inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl px-5 font-semibold text-white">

@@ -3,14 +3,14 @@ import { COR_RISCO } from "@/lib/dominio/catalogo";
 import type { Risco } from "@/lib/dominio/tipos";
 
 export function Cartao({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <div className={`rounded-3xl border border-linha bg-superficie/80 p-5 ${className}`}>{children}</div>;
+  return <div className={`rounded-2xl border border-linha bg-superficie p-5 shadow-[0_1px_2px_rgb(20_33_92/0.04)] ${className}`}>{children}</div>;
 }
 
 export function TituloSecao({ titulo, subtitulo, acao }: { titulo: string; subtitulo?: string; acao?: ReactNode }) {
   return (
     <div className="flex items-end justify-between gap-3">
       <div>
-        <h2 className="font-display text-lg font-semibold text-texto">{titulo}</h2>
+        <h2 className="font-display text-[17px] font-extrabold text-texto">{titulo}</h2>
         {subtitulo ? <p className="mt-0.5 text-sm text-suave">{subtitulo}</p> : null}
       </div>
       {acao}

@@ -190,7 +190,7 @@ export function PainelCarteira({
       {/* Cabeçalho e ações */}
       <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h1 className="font-display text-2xl font-bold text-texto lg:text-3xl">Carteira</h1>
+          <h1 className="font-display text-[1.75rem] font-black tracking-[-0.01em] text-texto lg:text-[2rem]">Carteira</h1>
           <p className="text-sm text-suave">
             {ativas.length} investimentos · atualizado até {nomeMesLongo(atual.mes).toLowerCase()}
           </p>
@@ -234,8 +234,8 @@ export function PainelCarteira({
 
       {/* Indicadores principais */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-[1.3fr_1fr_1fr_1fr]">
-        <div data-tema="escuro" className="gradiente-noite relative col-span-2 overflow-hidden rounded-3xl p-5 lg:col-span-1">
-          <p className="text-xs font-semibold uppercase tracking-wider text-ciano">Patrimônio</p>
+        <div data-tema="escuro" className="gradiente-noite relative col-span-2 overflow-hidden rounded-2xl p-5 lg:col-span-1">
+          <p className="text-sm text-suave">Patrimônio</p>
           <p className="mt-1 font-display text-3xl font-bold tabular-nums text-texto lg:text-4xl">{brl(atual.saldo)}</p>
           <p className="mt-2 text-xs text-suave">
             Aplicado: <span className="font-semibold text-texto">{brl(atual.aplicado)}</span>
@@ -502,7 +502,7 @@ export function PainelCarteira({
 
 function Kpi({ rotulo, valor, detalhe, classe, Icone, largo = false }: { rotulo: string; valor: string; detalhe: string; classe: string; Icone: typeof TrendingUp; largo?: boolean }) {
   return (
-    <div className={`rounded-3xl border border-linha bg-superficie p-4 lg:col-span-1 lg:p-5 ${largo ? "col-span-2" : ""}`}>
+    <div className={`rounded-2xl border border-linha bg-superficie p-4 lg:col-span-1 lg:p-5 ${largo ? "col-span-2" : ""}`}>
       <p className="flex items-center justify-between text-xs text-suave">
         {rotulo}
         <Icone className={`h-4 w-4 ${classe}`} aria-hidden="true" />

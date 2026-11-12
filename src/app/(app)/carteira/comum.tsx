@@ -166,7 +166,7 @@ export function Janela({ titulo, onFechar, children }: { titulo: string; onFecha
   return (
     <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-label={titulo} onClick={onFechar}>
       <div
-        className="max-h-[92vh] w-full overflow-y-auto rounded-t-3xl border border-linha bg-superficie p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:max-w-lg sm:rounded-3xl"
+        className="max-h-[92vh] w-full overflow-y-auto rounded-t-3xl border border-linha bg-superficie p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))] sm:max-w-lg sm:rounded-2xl"
         onClick={(e) => e.stopPropagation()}
         onKeyDown={(e) => e.key === "Escape" && onFechar()}
       >

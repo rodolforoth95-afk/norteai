@@ -46,11 +46,11 @@ export function DetalheInvestimento({ investimento, estado, pctCarteira, serie, 
     <div className="flex flex-col gap-6">
       <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-suave">
+          <p className="flex items-center gap-2 text-sm text-suave">
             <span className="h-2.5 w-2.5 rounded-full" style={{ background: CLASSES[investimento.classe].cor }} aria-hidden="true" />
             {CLASSES[investimento.classe].nome}
           </p>
-          <h1 className="mt-1 font-display text-3xl font-bold text-texto">{investimento.nome}</h1>
+          <h1 className="mt-1 font-display text-[1.75rem] font-black tracking-[-0.01em] text-texto">{investimento.nome}</h1>
           <p className="mt-1 text-sm text-suave">
             {investimento.quantidade ? `${investimento.quantidade.toLocaleString("pt-BR")} un. · ` : ""}
             {pctCarteira.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}% da carteira

@@ -99,7 +99,7 @@ export function FormNovoInvestimento() {
 
   if (salvo) {
     return (
-      <div className="flex flex-col items-center gap-4 rounded-3xl border border-menta/40 bg-menta/5 px-6 py-10 text-center">
+      <div className="flex flex-col items-center gap-4 rounded-2xl border border-menta/40 bg-menta/5 px-6 py-10 text-center">
         <span className="flex h-14 w-14 items-center justify-center rounded-full bg-menta/20 text-menta">
           <Check className="h-7 w-7" aria-hidden="true" />
         </span>

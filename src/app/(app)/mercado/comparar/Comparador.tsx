@@ -266,9 +266,9 @@ export function Comparador({ iniciais, periodoAnalise }: { iniciais: string[]; p
           </Cartao>
         </>
       ) : carregando ? (
-        <div className="h-80 animate-pulse rounded-3xl bg-superficie" />
+        <div className="h-80 animate-pulse rounded-2xl bg-superficie" />
       ) : (
-        <p className="rounded-3xl border border-dashed border-linha px-6 py-10 text-center text-sm text-suave">Adicione até {MAXIMO} ativos para comparar.</p>
+        <p className="rounded-2xl border border-dashed border-linha px-6 py-10 text-center text-sm text-suave">Adicione até {MAXIMO} ativos para comparar.</p>
       )}
     </div>
   );

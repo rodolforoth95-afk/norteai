@@ -80,7 +80,7 @@ export function Simulador({ estilo, carteiras, ind }: { estilo: Estilo; carteira
           <FlaskConical className="h-3.5 w-3.5" aria-hidden="true" />
           Simulação educativa · não é recomendação
         </span>
-        <h1 className="font-display text-2xl font-bold text-texto lg:text-3xl">Simulador de carteiras</h1>
+        <h1 className="font-display text-[1.75rem] font-black tracking-[-0.01em] text-texto lg:text-[2rem]">Simulador de carteiras</h1>
         <p className="max-w-3xl text-sm text-suave lg:text-base">
           Informe quanto tem hoje, quanto vai aportar por mês e por quanto tempo. Depois, veja 3 carteiras de exemplo para o estilo{" "}
           <span className="font-semibold text-ciano">{estilo}</span> ({INFO_ESTILO[estilo].risco.toLowerCase()}), da mais protegida à que busca mais
@@ -90,7 +90,7 @@ export function Simulador({ estilo, carteiras, ind }: { estilo: Estilo; carteira
 
       <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr]">
         <Cartao className="flex flex-col gap-5">
-          <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-ciano">
+          <p className="flex items-center gap-2 text-sm font-semibold text-texto">
             <span className="gradiente-marca flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold text-white">1</span>
             Seus valores
           </p>
@@ -148,7 +148,7 @@ export function Simulador({ estilo, carteiras, ind }: { estilo: Estilo; carteira
       {simulada && atual ? (
         <>
           <div ref={resultados} className="scroll-mt-24">
-            <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-ciano">
+            <p className="flex items-center gap-2 text-sm font-semibold text-texto">
               <span className="gradiente-marca flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold text-white">2</span>
               Carteiras de exemplo
             </p>
@@ -200,7 +200,7 @@ export function Simulador({ estilo, carteiras, ind }: { estilo: Estilo; carteira
           />
         </>
       ) : (
-        <div className="flex flex-col items-center gap-3 rounded-3xl border border-dashed border-linha px-6 py-10 text-center">
+        <div className="flex flex-col items-center gap-3 rounded-2xl border border-dashed border-linha px-6 py-10 text-center">
           <FlaskConical className="h-8 w-8 text-suave" aria-hidden="true" />
           <p className="font-display text-lg font-semibold text-texto">Preencha seus valores e toque em Simular</p>
           <p className="max-w-md text-sm text-suave">
@@ -297,7 +297,7 @@ function PainelIndicadores({ ind }: { ind: Indicadores }) {
 
   return (
     <Cartao className="flex flex-col gap-4">
-      <TituloSecao titulo="O mercado hoje" subtitulo="A base dos cálculos, buscada na hora" />
+      <TituloSecao titulo="Taxas usadas no cálculo" subtitulo="Banco Central, B3 e CoinGecko, atualizadas a cada hora" />
       <dl className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         {itens.map((i) => (
           <div key={i.rotulo} className="rounded-2xl border border-linha bg-superficie-2/60 p-3">
@@ -325,13 +325,13 @@ function CartaoOpcao({ s, nivel, ativa, onClick }: { s: Simulacao; nivel: string
       role="radio"
       aria-checked={ativa}
       onClick={onClick}
-      className={`flex flex-col gap-3 rounded-3xl border p-4 text-left transition ${
+      className={`flex flex-col gap-3 rounded-2xl border p-4 text-left transition ${
         ativa ? "border-ciano bg-ciano/10 shadow-[0_0_0_1px_var(--destaque)]" : "border-linha bg-superficie hover:border-violeta"
       }`}
     >
       <div className="flex items-start justify-between gap-2">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-wide text-ciano">{nivel}</p>
+          <p className="text-xs font-medium text-suave">{nivel}</p>
           <p className="font-display text-base font-bold text-texto">{s.carteira.nome}</p>
           <p className="mt-0.5 text-xs leading-snug text-suave">{s.carteira.ideia}</p>
         </div>
@@ -558,7 +558,7 @@ function Composicao({ s, ind }: { s: Simulacao; ind: Indicadores }) {
   const [aberto, setAberto] = useState<string | null>(null);
   return (
     <Cartao>
-      <TituloSecao titulo="O que tem dentro" subtitulo="Toque em cada parte para entender o que é" />
+      <TituloSecao titulo="Composição" subtitulo="Toque em uma linha para ver liquidez, garantia e imposto" />
       <ul className="mt-3 flex flex-col gap-2">
         {s.itens.map((x) => {
           const p = x.produto;
@@ -724,7 +724,7 @@ function Analise({ carteira, entrada }: { carteira: string; entrada: { valor: nu
   }
 
   return (
-    <div className="borda-gradiente rounded-3xl p-5 lg:p-6">
+    <div className="borda-gradiente rounded-2xl p-5 lg:p-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
         <div className="flex items-center gap-3 lg:w-72 lg:shrink-0 lg:flex-col lg:items-start">
           <span className="gradiente-marca flex h-11 w-11 items-center justify-center rounded-2xl text-white">
@@ -732,7 +732,7 @@ function Analise({ carteira, entrada }: { carteira: string; entrada: { valor: nu
           </span>
           <div>
             <p className="font-display text-lg font-bold text-texto">Entenda esta simulação</p>
-            <p className="text-sm text-suave">Uma explicação em linguagem simples, com os números do momento.</p>
+            <p className="text-sm text-suave">O que esses números significam para o seu prazo, em poucas frases.</p>
           </div>
         </div>
         <div className="flex-1" aria-live="polite">

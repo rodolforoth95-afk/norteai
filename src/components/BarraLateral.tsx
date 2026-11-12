@@ -21,13 +21,13 @@ const ITENS = [
 export function BarraLateral({ saldo, nivel, nome }: { saldo: number; nivel: string; nome: string }) {
   const caminho = usePathname();
   return (
-    <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-linha bg-superficie px-4 py-6 lg:flex">
-      <Link href="/inicio" aria-label="Início" className="px-2">
+    <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-linha bg-superficie px-3 py-5 lg:flex">
+      <Link href="/inicio" aria-label="Início" className="px-3">
         <Logo />
       </Link>
 
-      <nav aria-label="Navegação principal" className="mt-8 flex-1">
-        <ul className="flex flex-col gap-1">
+      <nav aria-label="Navegação principal" className="mt-7 flex-1">
+        <ul className="flex flex-col gap-0.5">
           {ITENS.map(({ href, rotulo, Icone }) => {
             const ativo = caminho.startsWith(href);
             return (
@@ -35,12 +35,11 @@ export function BarraLateral({ saldo, nivel, nome }: { saldo: number; nivel: str
                 <Link
                   href={href}
                   aria-current={ativo ? "page" : undefined}
-                  className={`flex min-h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium transition ${
-                    ativo ? "bg-violeta/12 text-texto" : "text-suave hover:bg-superficie-2 hover:text-texto"
+                  className={`flex min-h-10 items-center gap-3 rounded-lg px-3 text-sm transition ${
+                    ativo ? "bg-superficie-2 font-semibold text-texto" : "font-medium text-suave hover:bg-superficie-2/70 hover:text-texto"
                   }`}
                 >
-                  <span className={`h-5 w-1 rounded-full ${ativo ? "gradiente-marca" : "bg-transparent"}`} aria-hidden="true" />
-                  <Icone className={`h-5 w-5 ${ativo ? "text-ciano" : ""}`} aria-hidden="true" />
+                  <Icone className={`h-[18px] w-[18px] ${ativo ? "text-ciano" : ""}`} strokeWidth={ativo ? 2.25 : 1.75} aria-hidden="true" />
                   {rotulo}
                 </Link>
               </li>
@@ -49,17 +48,25 @@ export function BarraLateral({ saldo, nivel, nome }: { saldo: number; nivel: str
         </ul>
       </nav>
 
-      <div className="flex flex-col gap-3">
-        <Link href="/aprender#coins" className="rounded-2xl border border-ambar/30 bg-ambar/10 p-3">
-          <span className="flex items-center gap-2 text-sm font-bold text-ambar">
-            <Coins className="h-4 w-4" aria-hidden="true" />
-            {saldo} coins
-          </span>
-          <span className="mt-0.5 block text-xs text-suave">Nível {nivel}</span>
-        </Link>
-        <AlternarTema comRotulo />
-        <BotaoSair comRotulo />
-        {nome ? <p className="truncate px-1 text-xs text-suave">Conectado como {nome}</p> : null}
+      <Link href="/aprender#coins" className="mx-1 mb-3 flex items-center justify-between rounded-lg px-2 py-2 text-sm hover:bg-superficie-2">
+        <span className="flex items-center gap-2 font-semibold tabular-nums text-texto">
+          <Coins className="h-4 w-4 text-gravata" aria-hidden="true" />
+          {saldo.toLocaleString("pt-BR")} coins
+        </span>
+        <span className="text-xs text-suave">nível {nivel}</span>
+      </Link>
+      <div className="flex items-center gap-2 border-t border-linha px-1 pt-3">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-superficie-2 font-display text-sm font-extrabold text-texto" aria-hidden="true">
+          {(nome || "?").charAt(0).toUpperCase()}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-sm font-semibold text-texto">{nome || "Sua conta"}</span>
+          <Link href="/conta" className="block text-xs text-suave hover:text-texto">
+            Minha conta
+          </Link>
+        </span>
+        <AlternarTema />
+        <BotaoSair />
       </div>
     </aside>
   );

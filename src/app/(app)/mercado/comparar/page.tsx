@@ -35,7 +35,7 @@ export default async function PaginaComparar({ searchParams }: { searchParams: P
         Mercado
       </Link>
       <div>
-        <h1 className="font-display text-2xl font-bold text-texto lg:text-3xl">Comparar ativos</h1>
+        <h1 className="font-display text-[1.75rem] font-black tracking-[-0.01em] text-texto lg:text-[2rem]">Comparar ativos</h1>
         <p className="mt-1 max-w-3xl text-sm text-suave">
           Coloque até 5 ações, FIIs, ETFs ou o Ibovespa lado a lado e veja como cada um se comportou mês a mês: quanto subiu ou caiu, quanto oscilou e qual foi o maior susto do período.
         </p>

@@ -23,9 +23,8 @@ export default async function PaginaPerfil() {
   if (!perfil) {
     return (
       <section className="flex flex-col gap-6">
-        <h1 className="font-display text-2xl font-bold text-texto">Meu perfil</h1>
-        <div className="borda-gradiente relative overflow-hidden rounded-3xl p-6">
-          <div className="gradiente-marca pointer-events-none absolute -right-12 -top-12 h-40 w-40 animate-brilho rounded-full opacity-40 blur-3xl" aria-hidden="true" />
+        <h1 className="font-display text-[1.75rem] font-black tracking-[-0.01em] text-texto">Meu perfil</h1>
+        <div className="borda-gradiente relative overflow-hidden rounded-2xl p-6">
           <Sparkles className="h-8 w-8 text-ciano" aria-hidden="true" />
           <p className="mt-4 text-sm text-suave">Seu estilo de investidor (educacional)</p>
           <p className="mt-1 font-display text-2xl font-bold text-texto">Descubra em 4 minutos</p>
@@ -55,11 +54,10 @@ export default async function PaginaPerfil() {
 
   return (
     <section className="flex flex-col gap-7">
-      <h1 className="animate-subir font-display text-2xl font-bold text-texto">Meu perfil</h1>
+      <h1 className="animate-subir font-display text-[1.75rem] font-black tracking-[-0.01em] text-texto">Meu perfil</h1>
 
       {/* Cartão do estilo */}
-      <div data-tema="escuro" className="gradiente-noite relative animate-subir overflow-hidden rounded-3xl p-6 text-white">
-        <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 animate-brilho rounded-full bg-indigo/45 blur-3xl" aria-hidden="true" />
+      <div data-tema="escuro" className="gradiente-noite relative animate-subir overflow-hidden rounded-2xl p-6 text-white">
         <p className="relative text-sm text-white/80">Seu estilo de investidor (educacional)</p>
         <p className="relative mt-1 font-display text-4xl font-bold">{perfil.estilo}</p>
         <p className="relative mt-1 inline-flex rounded-full bg-white/15 px-3 py-0.5 text-sm font-medium">{info.risco}</p>
@@ -95,10 +93,10 @@ export default async function PaginaPerfil() {
       </div>
 
       {/* Primeiro passo */}
-      <div className="rounded-3xl border border-ambar/50 bg-ambar/5 p-5">
-        <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-ambar">
-          <Flag className="h-4 w-4" aria-hidden="true" />
-          Seu primeiro passo
+      <div className="rounded-2xl border border-linha border-l-4 border-l-gravata bg-superficie p-5">
+        <p className="flex items-center gap-2 text-sm text-suave">
+          <Flag className="h-4 w-4 text-gravata" aria-hidden="true" />
+          Por onde começar, pelas suas respostas
         </p>
         <p className="mt-2 font-display text-lg font-semibold text-texto">{passo.titulo}</p>
         <p className="mt-1 text-sm leading-relaxed text-suave">{passo.texto}</p>
@@ -117,7 +115,7 @@ export default async function PaginaPerfil() {
         <TituloSecao titulo={`Investimentos do estilo ${perfil.estilo}`} subtitulo="Tipos que costumam compor carteiras deste estilo. Não são uma indicação para você." />
         {grupos.map((grupo) => (
           <div key={grupo} className="grid gap-3 lg:grid-cols-2">
-            <p className="text-xs font-bold uppercase tracking-wider text-suave lg:col-span-2">{grupo}</p>
+            <p className="text-sm font-semibold text-suave lg:col-span-2">{grupo}</p>
             {tipos
               .filter((t) => CLASSES[t.classe].grupo === grupo)
               .map((t) => (
@@ -201,7 +199,7 @@ export default async function PaginaPerfil() {
 
       {/* Carteira */}
       {!carteira?.investimentos.length ? (
-        <div className="borda-gradiente rounded-3xl p-5">
+        <div className="borda-gradiente rounded-2xl p-5">
           <p className="font-display text-lg font-semibold text-texto">Já investe?</p>
           <p className="mt-1 text-sm text-suave">Importe sua carteira (PDF, planilha da B3 ou digitando) e veja se ela combina com seu estilo. Ganhe +50 coins.</p>
           <div className="mt-4">

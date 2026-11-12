@@ -118,7 +118,7 @@ export function PainelTecnico({
       <Cartao className="flex flex-col gap-3 !p-4 lg:!p-5">
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div aria-live="polite">
-            <p className="text-[11px] uppercase tracking-wider text-suave">{dataLonga(focado.data)}</p>
+            <p className="text-xs text-suave">{dataLonga(focado.data)}</p>
             <p className="font-display text-2xl font-semibold tabular-nums text-texto">
               {preco(focado.fechamento)} <span className={`text-sm font-semibold ${tom(varFoco)}`}>{pctSinal(varFoco, 2)}</span>
             </p>

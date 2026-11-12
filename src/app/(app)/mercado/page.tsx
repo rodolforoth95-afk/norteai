@@ -21,7 +21,7 @@ export default async function PaginaMercado() {
   if (!brapiDisponivel()) {
     return (
       <section className="flex flex-col gap-6">
-        <h1 className="font-display text-2xl font-bold text-texto">Mercado</h1>
+        <h1 className="font-display text-[1.75rem] font-black tracking-[-0.01em] text-texto">Mercado</h1>
         <Cartao>
           <p className="text-sm text-suave">Configure BRAPI_TOKEN no .env.local para ver as cotações.</p>
         </Cartao>
@@ -33,8 +33,8 @@ export default async function PaginaMercado() {
     <section className="flex flex-col gap-7">
       <div className="flex items-end justify-between gap-3">
         <div>
-          <h1 className="font-display text-2xl font-bold text-texto lg:text-3xl">Mercado</h1>
-          <p className="text-sm text-suave">Cotações da B3 para acompanhar e estudar. Dados com atraso de até 30 minutos.</p>
+          <h1 className="font-display text-[1.75rem] font-black tracking-[-0.01em] text-texto lg:text-[2rem]">Mercado</h1>
+          <p className="text-sm text-suave">Cotações da B3 com até 30 minutos de atraso. Abra um ativo para ver suportes, resistências e o desempenho mês a mês.</p>
         </div>
         <BotaoAtualizar />
       </div>
@@ -61,13 +61,13 @@ export default async function PaginaMercado() {
         </Link>
       </div>
 
-      <Suspense fallback={<div className="h-56 animate-pulse rounded-3xl bg-superficie" />}>
+      <Suspense fallback={<div className="h-56 animate-pulse rounded-2xl bg-superficie" />}>
         <MapaDoDia />
       </Suspense>
 
       <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
         <div className="flex min-w-0 flex-col gap-6">
-      <Suspense fallback={<div className="h-44 animate-pulse rounded-3xl bg-superficie" />}>
+      <Suspense fallback={<div className="h-44 animate-pulse rounded-2xl bg-superficie" />}>
         <CartaoIbovespa />
       </Suspense>
 
@@ -88,7 +88,7 @@ export default async function PaginaMercado() {
         <Semana />
       </Suspense>
 
-      <Suspense fallback={<div className="h-40 animate-pulse rounded-3xl bg-superficie" />}>
+      <Suspense fallback={<div className="h-40 animate-pulse rounded-2xl bg-superficie" />}>
         <RendaFixaEFuturos />
       </Suspense>
         </div>
@@ -128,11 +128,10 @@ async function CartaoIbovespa() {
   const [ibov, pontos] = await Promise.all([cotacao("^BVSP").catch(() => null), historico("^BVSP", "1mo").catch(() => [])]);
   if (!ibov) return null;
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-linha bg-superficie p-5">
-      <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full bg-indigo/25 blur-3xl" aria-hidden="true" />
+    <div className="relative overflow-hidden rounded-2xl border border-linha bg-superficie p-5">
       <div className="relative flex items-start justify-between gap-3">
         <div>
-          <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-ciano">
+          <p className="flex items-center gap-1.5 text-sm font-semibold text-texto">
             <LineChart className="h-4 w-4" aria-hidden="true" />
             Ibovespa
           </p>
@@ -178,7 +177,7 @@ async function Semana() {
   return (
     <Cartao className="flex flex-col gap-4">
       <TituloSecao titulo="Maiores altas da semana" subtitulo="Variação nos últimos 5 pregões, entre as 20 ações mais negociadas" />
-      <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-menta">
+      <p className="flex items-center gap-1.5 text-sm font-semibold text-menta">
         <TrendingUp className="h-4 w-4" aria-hidden="true" /> Subiram
       </p>
       <ul className="-mx-2 flex flex-col">
@@ -188,7 +187,7 @@ async function Semana() {
       </ul>
       {baixas.length ? (
         <>
-          <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-erro">
+          <p className="flex items-center gap-1.5 text-sm font-semibold text-erro">
             <TrendingDown className="h-4 w-4" aria-hidden="true" /> Caíram
           </p>
           <ul className="-mx-2 flex flex-col">

@@ -8,6 +8,10 @@ import { moduloPorSlug, progressoModulo } from "@/lib/conteudo/modulos";
 import { exigirUsuario } from "@/lib/servidor/sessao";
 import { QuizModulo } from "./QuizModulo";
 
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  return { title: moduloPorSlug((await params).slug)?.titulo ?? "Trilha" };
+}
+
 export default async function PaginaModulo({ params }: { params: Promise<{ slug: string }> }) {
   const modulo = moduloPorSlug((await params).slug);
   if (!modulo) notFound();
@@ -29,7 +33,7 @@ export default async function PaginaModulo({ params }: { params: Promise<{ slug:
           <IconeModulo icone={modulo.icone} className="h-8 w-8" />
         </span>
         <div>
-          <h1 className="font-display text-2xl font-bold leading-tight text-texto">{modulo.titulo}</h1>
+          <h1 className="font-display text-[1.75rem] font-black tracking-[-0.01em] leading-tight text-texto">{modulo.titulo}</h1>
           <p className="mt-1 text-sm text-suave">{modulo.descricao}</p>
           <p className="mt-2 flex items-center gap-3 text-xs text-suave">
             <span className="flex items-center gap-1">

@@ -12,6 +12,11 @@ import { exigirUsuario } from "@/lib/servidor/sessao";
 import { PainelTecnico } from "./PainelTecnico";
 import { BotaoAtualizar } from "@/components/BotaoAtualizar";
 
+export async function generateMetadata({ params }: { params: Promise<{ simbolo: string }> }) {
+  const simbolo = decodeURIComponent((await params).simbolo).toUpperCase();
+  return { title: simbolo === "^BVSP" ? "Ibovespa" : simbolo };
+}
+
 export default async function PaginaAtivo({ params }: { params: Promise<{ simbolo: string }> }) {
   await exigirUsuario();
   const simbolo = decodeURIComponent((await params).simbolo).toUpperCase();
@@ -61,7 +66,7 @@ export default async function PaginaAtivo({ params }: { params: Promise<{ simbol
         <div className="flex items-center gap-4">
           <LogoAtivo simbolo={simbolo} logo={c.logo} tamanho={56} />
           <div className="min-w-0">
-            <h1 className="font-display text-2xl font-bold text-texto lg:text-3xl">{simbolo}</h1>
+            <h1 className="font-display text-[1.75rem] font-black tracking-[-0.01em] text-texto lg:text-[2rem]">{simbolo}</h1>
             <p className="truncate text-sm text-suave">{c.nome}</p>
           </div>
         </div>
@@ -139,7 +144,7 @@ export default async function PaginaAtivo({ params }: { params: Promise<{ simbol
       ) : null}
 
       {classe ? (
-        <Link href={`/aprender/${classe}`} className="borda-gradiente flex items-center gap-4 rounded-3xl p-5">
+        <Link href={`/aprender/${classe}`} className="borda-gradiente flex items-center gap-4 rounded-2xl p-5">
           <GraduationCap className="h-8 w-8 shrink-0 text-ciano" aria-hidden="true" />
           <span className="flex-1">
             <span className="block text-xs text-suave">Entenda o tipo de investimento</span>

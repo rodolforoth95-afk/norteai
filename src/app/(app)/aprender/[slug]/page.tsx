@@ -13,6 +13,10 @@ import { BotaoLido } from "./BotaoLido";
 import { IlustracaoAula } from "@/components/Ilustracoes";
 import { moduloDaAula } from "@/lib/conteudo/modulos";
 
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  return { title: aulaPorSlug((await params).slug)?.titulo ?? "Aula" };
+}
+
 // Tela 6 — Conteúdo educativo
 export default async function PaginaAula({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
@@ -47,7 +51,7 @@ export default async function PaginaAula({ params }: { params: Promise<{ slug: s
             {aula.minutos} min de leitura
           </span>
         </div>
-        <h1 className="font-display text-3xl font-bold leading-tight text-texto">{aula.titulo}</h1>
+        <h1 className="font-display text-[1.75rem] font-black tracking-[-0.01em] leading-tight text-texto">{aula.titulo}</h1>
       </header>
 
       {video ? (
@@ -61,7 +65,7 @@ export default async function PaginaAula({ params }: { params: Promise<{ slug: s
           />
         </div>
       ) : aula.classe ? (
-        <div className="flex aspect-video items-center justify-center rounded-3xl border border-dashed border-linha text-sm text-suave">Vídeo em breve</div>
+        <div className="flex aspect-video items-center justify-center rounded-2xl border border-dashed border-linha text-sm text-suave">Vídeo em breve</div>
       ) : null}
 
       {aula.ilustracao ? <IlustracaoAula tipo={aula.ilustracao} /> : null}
@@ -104,8 +108,8 @@ export default async function PaginaAula({ params }: { params: Promise<{ slug: s
       ) : null}
 
       {faixa && perfil && aula.classe ? (
-        <div className="borda-gradiente rounded-3xl p-5">
-          <p className="text-xs font-bold uppercase tracking-wider text-ciano">No seu estilo</p>
+        <div className="borda-gradiente rounded-2xl p-5">
+          <p className="text-sm font-semibold text-texto">No seu estilo</p>
           <p className="mt-2 text-texto">
             {faixa.max === 0
               ? `Em carteiras de referência do estilo ${perfil.estilo}, ${CLASSES[aula.classe].nome.toLowerCase()} não costuma aparecer.`
@@ -116,7 +120,7 @@ export default async function PaginaAula({ params }: { params: Promise<{ slug: s
 
       <BotaoLido slug={aula.slug} lido={concluidos.includes(`leitura:${aula.slug}`)} />
       {proxima ? (
-        <Link href={`/aprender/${proxima.slug}`} className="flex items-center gap-3 rounded-3xl border border-linha bg-superficie p-4 transition hover:border-violeta">
+        <Link href={`/aprender/${proxima.slug}`} className="flex items-center gap-3 rounded-2xl border border-linha bg-superficie p-4 transition hover:border-violeta">
           <span className="flex-1">
             <span className="block text-xs text-suave">Próxima aula</span>
             <span className="block font-display font-semibold text-texto">{proxima.titulo}</span>
@@ -124,7 +128,7 @@ export default async function PaginaAula({ params }: { params: Promise<{ slug: s
           <ArrowRight className="h-5 w-5 text-ciano" aria-hidden="true" />
         </Link>
       ) : modulo ? (
-        <Link href={`/aprender/modulo/${modulo.slug}`} className="flex items-center gap-3 rounded-3xl border border-linha bg-superficie p-4 transition hover:border-violeta">
+        <Link href={`/aprender/modulo/${modulo.slug}`} className="flex items-center gap-3 rounded-2xl border border-linha bg-superficie p-4 transition hover:border-violeta">
           <span className="flex-1">
             <span className="block text-xs text-suave">Fim do módulo</span>
             <span className="block font-display font-semibold text-texto">Fazer o quiz de {modulo.titulo}</span>

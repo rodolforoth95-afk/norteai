@@ -64,7 +64,7 @@
 }
 
 @utility gradiente-marca {
-  background-image: linear-gradient(120deg, #2d5bff 0%, #4a73ff 100%);
+  background-color: #2d5bff;
 }
 
 @utility gradiente-noite {
@@ -72,10 +72,7 @@
 }
 
 @utility texto-gradiente {
-  background-image: linear-gradient(120deg, var(--destaque) 0%, var(--azul-claro) 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
+  color: var(--destaque);
 }
 
 @utility vidro {
@@ -85,10 +82,9 @@
 }
 
 @utility borda-gradiente {
-  border: 1px solid transparent;
-  background:
-    linear-gradient(var(--superficie), var(--superficie)) padding-box,
-    linear-gradient(120deg, #2d5bff, #8fa8ff 60%, #ff8a3d) border-box;
+  border: 1px solid var(--linha);
+  background: var(--superficie);
+  box-shadow: 0 1px 2px rgb(20 33 92 / 0.04);
 }
 
 /* Modo claro (padrão da marca): branco com azul-noite no texto. */
@@ -147,11 +143,7 @@ html {
 
 body {
   font-feature-settings: "tnum" 1; /* números com largura fixa, bons para cotações */
-  background:
-    radial-gradient(60rem 30rem at 85% -10%, var(--brilho), transparent 60%),
-    radial-gradient(50rem 28rem at -10% 10%, var(--brilho-2), transparent 60%),
-    var(--fundo);
-  background-attachment: fixed;
+  background: var(--fundo);
   color: var(--texto);
   font-family: var(--font-sans);
   min-height: 100dvh;

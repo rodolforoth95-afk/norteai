@@ -9,7 +9,7 @@ const TEXTO = "var(--suave)";
 
 function Moldura({ titulo, children }: { titulo: string; children: React.ReactNode }) {
   return (
-    <figure className="rounded-3xl border border-linha bg-superficie p-4">
+    <figure className="rounded-2xl border border-linha bg-superficie p-4">
       <svg viewBox="0 0 320 170" className="w-full [&_text]:fill-suave" role="img" aria-label={titulo}>
         {children}
       </svg>

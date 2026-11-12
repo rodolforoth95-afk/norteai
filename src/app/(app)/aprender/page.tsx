@@ -9,6 +9,8 @@ import { VIDEOS } from "@/lib/conteudo/videos";
 import { RECOMPENSAS, resumoMoedas, rotuloLancamento } from "@/lib/dominio/moedas";
 import { exigirUsuario } from "@/lib/servidor/sessao";
 
+export const metadata = { title: "Aprender" };
+
 export default async function PaginaAprender() {
   const { uid, repo } = await exigirUsuario();
   const [moedas, concluidos] = await Promise.all([repo.listarMoedas(uid), repo.listarConcluidos(uid)]);
@@ -24,9 +26,9 @@ export default async function PaginaAprender() {
   return (
     <section className="flex flex-col gap-8">
       <div>
-        <h1 className="font-display text-2xl font-bold text-texto">Aprender</h1>
+        <h1 className="font-display text-[1.75rem] font-black tracking-[-0.01em] text-texto">Aprender</h1>
         <p className="mt-1 text-sm text-suave">
-          {aulasLidas} de {totalAulas} aulas concluídas em {MODULOS.length} trilhas
+          {aulasLidas} de {totalAulas} aulas lidas. Cada aula leva de 3 a 7 minutos e cada trilha termina com um quiz curto que vale 30 coins.
         </p>
         <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-superficie-2">
           <div className="gradiente-marca h-full rounded-full" style={{ width: `${(aulasLidas / totalAulas) * 100}%` }} />
@@ -38,7 +40,7 @@ export default async function PaginaAprender() {
         <ul className="grid grid-cols-1 gap-3 lg:grid-cols-2">
           {progresso.map(({ m, lidas, quiz, pct }, i) => (
             <li key={m.slug} className="min-w-0">
-              <Link href={`/aprender/modulo/${m.slug}`} className="flex min-w-0 items-center gap-4 rounded-3xl border border-linha bg-superficie p-4 transition hover:border-violeta">
+              <Link href={`/aprender/modulo/${m.slug}`} className="flex min-w-0 items-center gap-4 rounded-2xl border border-linha bg-superficie p-4 transition hover:border-violeta">
                 <span className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-superficie-2 text-ciano">
                   <IconeModulo icone={m.icone} className="h-7 w-7" />
                   <span className="absolute -left-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-fundo font-display text-xs font-bold text-suave ring-1 ring-linha">

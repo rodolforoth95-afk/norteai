@@ -240,7 +240,7 @@ export function Importador({ existentes, iaLigada }: { existentes: Existente[]; 
   // --- Etapa 3: pronto -------------------------------------------------------------
   if (etapa === "pronto" && resultado) {
     return (
-      <div className="flex flex-col items-center gap-4 rounded-3xl border border-menta/40 bg-menta/5 px-6 py-10 text-center">
+      <div className="flex flex-col items-center gap-4 rounded-2xl border border-menta/40 bg-menta/5 px-6 py-10 text-center">
         <span className="flex h-14 w-14 items-center justify-center rounded-full bg-menta/20 text-menta">
           <Check className="h-7 w-7" aria-hidden="true" />
         </span>
@@ -332,7 +332,7 @@ export function Importador({ existentes, iaLigada }: { existentes: Existente[]; 
         Trocar arquivo
       </button>
 
-      <div className="grid gap-4 rounded-3xl border border-linha bg-superficie p-5 sm:grid-cols-[1fr_1.2fr] sm:items-end">
+      <div className="grid gap-4 rounded-2xl border border-linha bg-superficie p-5 sm:grid-cols-[1fr_1.2fr] sm:items-end">
         <CampoData
           rotulo="Data do extrato"
           valor={data}
@@ -376,7 +376,7 @@ export function Importador({ existentes, iaLigada }: { existentes: Existente[]; 
             >
               <div className="flex flex-wrap items-center gap-2">
                 <span
-                  className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide ${
+                  className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${
                     l.ignorar ? "bg-superficie-2 text-suave" : existente ? "bg-ciano/15 text-ciano" : "bg-menta/15 text-menta"
                   }`}
                 >
@@ -520,7 +520,7 @@ export function Importador({ existentes, iaLigada }: { existentes: Existente[]; 
       </button>
 
       {naoVieram.length ? (
-        <div className="rounded-3xl border border-ambar/40 bg-ambar/5 p-5">
+        <div className="rounded-2xl border border-ambar/40 bg-ambar/5 p-5">
           <p className="flex items-center gap-2 font-semibold text-texto">
             <TriangleAlert className="h-4 w-4 text-ambar" aria-hidden="true" />
             {naoVieram.length === 1 ? "1 investimento não está" : `${naoVieram.length} investimentos não estão`} nesta importação
@@ -555,7 +555,7 @@ export function Importador({ existentes, iaLigada }: { existentes: Existente[]; 
         </div>
       ) : null}
 
-      <div className="rounded-3xl border border-linha bg-superficie p-5">
+      <div className="rounded-2xl border border-linha bg-superficie p-5">
         <p className="font-display text-lg font-semibold text-texto">O que muda</p>
         <dl className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[

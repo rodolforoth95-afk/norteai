@@ -26,7 +26,7 @@ export function QuizModulo({
 
   if (!liberado && !aprovado) {
     return (
-      <div className="flex items-center gap-3 rounded-3xl border border-dashed border-linha p-5 text-sm text-suave">
+      <div className="flex items-center gap-3 rounded-2xl border border-dashed border-linha p-5 text-sm text-suave">
         <Lock className="h-5 w-5 shrink-0" aria-hidden="true" />
         Conclua metade das aulas para liberar o quiz do módulo.
       </div>
@@ -44,7 +44,7 @@ export function QuizModulo({
   }
 
   return (
-    <div className="borda-gradiente flex flex-col gap-5 rounded-3xl p-5">
+    <div className="borda-gradiente flex flex-col gap-5 rounded-2xl p-5">
       <div className="flex items-center justify-between">
         <h2 className="font-display text-lg font-semibold text-texto">Quiz do módulo</h2>
         {aprovado && !resultado ? <span className="flex items-center gap-1 text-sm font-semibold text-menta"><CheckCircle2 className="h-4 w-4" aria-hidden="true" />Aprovado</span> : <span className="text-xs text-ambar">+30 coins</span>}

@@ -294,8 +294,7 @@ function Encerramento({ perfil, moedas, aoVer }: { perfil: Perfil; moedas: numbe
           mês e você tem <strong>{minuscula(r.reserva_meses)}</strong> de reserva.
         </p>
       </BalaoIA>
-      <div className="borda-gradiente relative animate-subir overflow-hidden rounded-3xl p-5">
-        <div className="gradiente-marca pointer-events-none absolute -right-10 -top-10 h-32 w-32 animate-brilho rounded-full opacity-40 blur-2xl" aria-hidden="true" />
+      <div className="borda-gradiente relative animate-subir overflow-hidden rounded-2xl p-5">
         <p className="text-sm text-suave">Seu estilo de investidor (educacional)</p>
         <p className="texto-gradiente mt-1 font-display text-3xl font-bold">{perfil.estilo}</p>
         <p className="mt-1 text-sm font-medium" style={{ color: info.cor }}>
@@ -336,7 +335,7 @@ function BalaoIA({ children }: { children: React.ReactNode }) {
       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-superficie-2">
         <Mascote className="h-7 w-7" />
       </span>
-      <div className="max-w-[85%] rounded-3xl rounded-bl-md border border-linha bg-superficie/90 px-4 py-3 text-sm leading-relaxed text-texto">
+      <div className="max-w-[85%] rounded-2xl rounded-bl-md border border-linha bg-superficie/90 px-4 py-3 text-sm leading-relaxed text-texto">
         {children}
       </div>
     </div>
@@ -346,7 +345,7 @@ function BalaoIA({ children }: { children: React.ReactNode }) {
 function BalaoUsuario({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex animate-subir justify-end">
-      <div className="gradiente-marca max-w-[85%] rounded-3xl rounded-br-md px-4 py-3 text-sm font-medium text-white">
+      <div className="gradiente-marca max-w-[85%] rounded-2xl rounded-br-md px-4 py-3 text-sm font-medium text-white">
         {children}
       </div>
     </div>
