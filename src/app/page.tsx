@@ -19,6 +19,10 @@ export default function PaginaLogin() {
   async function entrar(e: FormEvent) {
     e.preventDefault();
     setErro(null);
+    if (!email.trim() || !senha) {
+      setErro("Preencha o e-mail e a senha para entrar.");
+      return;
+    }
     setEnviando(true);
     const { ok, dados } = await postarJson<{ destino?: string; verificar?: boolean }>(
       "/api/auth/entrar",
@@ -41,14 +45,15 @@ export default function PaginaLogin() {
 
   return (
     <TelaAuth
-      titulo="Que bom te ver por aqui."
-      subtitulo="Entre para continuar de onde parou. Pode perguntar: estou aqui pra isso."
+      titulo="Entrar"
+      subtitulo="Sua carteira, as simulações e as aulas que você começou continuam onde você deixou."
       rodape={
-        <p className="text-center text-sm text-suave">
-          Ainda não tem conta?{" "}
-          <Link href="/cadastro" className="font-bold text-texto underline underline-offset-4">
+        <p className="text-sm text-suave">
+          Primeira vez aqui?{" "}
+          <Link href="/cadastro" className="font-semibold text-ciano hover:underline">
             Criar conta
-          </Link>
+          </Link>{" "}
+          · leva 1 minuto, sem CPF.
         </p>
       }
     >
@@ -56,6 +61,7 @@ export default function PaginaLogin() {
         {erro ? <Alerta>{erro}</Alerta> : null}
         <Campo
           rotulo="E-mail"
+          placeholder="voce@email.com"
           type="email"
           inputMode="email"
           autoComplete="email"
@@ -70,15 +76,14 @@ export default function PaginaLogin() {
           onChange={(e) => setSenha(e.target.value)}
           required
         />
-        <Botao type="submit" larguraTotal carregando={enviando} disabled={!email || !senha}>
+        <div className="-mt-2 flex justify-end">
+          <Link href="/esqueci-senha" className="inline-flex min-h-9 items-center text-sm font-medium text-ciano hover:underline">
+            Esqueci a senha
+          </Link>
+        </div>
+        <Botao type="submit" larguraTotal carregando={enviando}>
           Entrar
         </Botao>
-        <Link
-          href="/esqueci-senha"
-          className="mx-auto inline-flex min-h-11 items-center text-sm font-medium text-texto underline underline-offset-4"
-        >
-          Esqueci minha senha
-        </Link>
       </form>
     </TelaAuth>
   );

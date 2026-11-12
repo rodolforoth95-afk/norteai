@@ -9,7 +9,7 @@ type CampoProps = InputHTMLAttributes<HTMLInputElement> & {
 };
 
 export const ESTILO_INPUT =
-  "min-h-12 w-full rounded-2xl border bg-superficie/80 px-4 text-base text-texto placeholder:text-suave/70 focus:border-violeta focus:outline-none focus:ring-2 focus:ring-violeta/40";
+  "min-h-12 w-full rounded-xl border bg-superficie px-3.5 text-[15px] text-texto shadow-[0_1px_0_rgb(20_33_92/0.04)] placeholder:text-suave/60 focus:border-ciano focus:outline-none focus:ring-4 focus:ring-ciano/15";
 
 export function Campo({ rotulo, ajuda, erro, id, className = "", ...resto }: CampoProps) {
   const gerado = useId();
