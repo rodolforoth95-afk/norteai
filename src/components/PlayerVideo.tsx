@@ -108,7 +108,7 @@ export function PlayerVideo({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-sm" role="dialog" aria-modal="true" aria-label={video.titulo}>
       <div
         className="relative flex h-dvh w-full max-w-[440px] flex-col overflow-hidden sm:h-[min(92dvh,820px)] sm:rounded-[2rem]"
-        style={{ background: `radial-gradient(120% 70% at 20% 0%, ${c1}55, transparent 60%), radial-gradient(120% 70% at 100% 100%, ${c2}55, transparent 60%), #000000` }}
+        style={{ background: `radial-gradient(120% 70% at 20% 0%, ${c1}55, transparent 60%), radial-gradient(120% 70% at 100% 100%, ${c2}55, transparent 60%), #0A1030` }}
       >
         {/* Barras de progresso por cena */}
         <div className="flex gap-1 px-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
@@ -125,7 +125,7 @@ export function PlayerVideo({
         <div className="flex items-center gap-2 px-4 pt-3">
           <div className="flex-1">
             <p className="font-display text-sm font-semibold text-white">{video.titulo}</p>
-            <p className="text-xs text-white/70">norte.ia · aprenda em 1 minuto</p>
+            <p className="text-xs text-white/70">findomo · aprenda em 1 minuto</p>
           </div>
           <button type="button" onClick={() => setSom((s) => !s)} aria-label={som ? "Desligar narração" : "Ligar narração"} aria-pressed={som} className="flex h-11 w-11 items-center justify-center rounded-full bg-white/10 text-white hover:bg-white/20">
             {som ? <Volume2 className="h-5 w-5" aria-hidden="true" /> : <VolumeX className="h-5 w-5" aria-hidden="true" />}
@@ -242,7 +242,7 @@ function Visual({ cena, cores }: { cena: Cena; cores: [string, string] }) {
   const alerta = cena.tipo === "alerta";
   return (
     <div className="relative mx-auto flex h-44 w-44 items-center justify-center">
-      <div className="absolute inset-0 animate-brilho rounded-full blur-2xl" style={{ background: alerta ? "#FF6B00" : gradiente }} />
+      <div className="absolute inset-0 animate-brilho rounded-full blur-2xl" style={{ background: alerta ? "#FF8A3D" : gradiente }} />
       <div className="relative flex h-32 w-32 animate-subir items-center justify-center rounded-[2rem] border border-white/20 bg-white/10 backdrop-blur">
         <Icone className="h-16 w-16 text-white" strokeWidth={1.5} aria-hidden="true" />
       </div>

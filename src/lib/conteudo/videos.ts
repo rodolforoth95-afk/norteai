@@ -51,7 +51,7 @@ export const VIDEOS: Video[] = [
     titulo: "CDB em 1 minuto",
     chamada: "Você empresta pro banco e ele te paga juros",
     classe: "renda_fixa",
-    cores: ["#FF6B00", "#FFB800"],
+    cores: ["#14215C", "#2D5BFF"],
     cenas: [
       { seg: 7, tipo: "abertura", icone: "banco", titulo: "CDB em 1 minuto", texto: "Você empresta dinheiro para um banco. Ele devolve com juros." },
       { seg: 8, tipo: "numero", numero: "100% do CDI", titulo: "O jeito de medir", texto: "O CDI anda colado na Selic. Um CDB de 100% do CDI rende praticamente o mesmo que ela." },
@@ -91,7 +91,7 @@ export const VIDEOS: Video[] = [
     titulo: "Tesouro Direto sem mistério",
     chamada: "Emprestar para o governo a partir de poucos reais",
     classe: "renda_fixa",
-    cores: ["#E65100", "#FFC14D"],
+    cores: ["#2D5BFF", "#8FA8FF"],
     cenas: [
       { seg: 7, tipo: "abertura", icone: "governo", titulo: "Tesouro Direto", texto: "Você empresta para o governo federal e recebe juros por isso." },
       { seg: 8, tipo: "numero", numero: "~R$ 30", titulo: "Para começar", texto: "Dá para comprar frações de título com pouco dinheiro, direto pela sua corretora." },
@@ -119,7 +119,7 @@ export const VIDEOS: Video[] = [
     titulo: "Ações: vire sócio de empresas",
     chamada: "Como funciona a bolsa em 55 segundos",
     classe: "acoes_etfs",
-    cores: ["#FF4D00", "#FF9E2C"],
+    cores: ["#1D2F85", "#FF8A3D"],
     cenas: [
       { seg: 7, tipo: "abertura", icone: "predio", titulo: "O que é uma ação", texto: "Um pedacinho de uma empresa. Comprou, virou sócio." },
       {
@@ -153,7 +153,7 @@ export const VIDEOS: Video[] = [
     titulo: "Fundos imobiliários",
     chamada: "Renda de aluguel sem comprar um imóvel",
     classe: "fiis",
-    cores: ["#FF8F00", "#FFD54F"],
+    cores: ["#2D5BFF", "#14B8A6"],
     cenas: [
       { seg: 7, tipo: "abertura", icone: "predio", titulo: "FIIs", texto: "Você compra cotas de um fundo dono de imóveis ou de títulos imobiliários." },
       {
@@ -181,7 +181,7 @@ export const VIDEOS: Video[] = [
     titulo: "Bitcoin e cripto, sem hype",
     chamada: "O que é, de onde vem o valor e os riscos",
     classe: "cripto",
-    cores: ["#FFB300", "#FF3D00"],
+    cores: ["#14215C", "#FF8A3D"],
     cenas: [
       { seg: 7, tipo: "abertura", icone: "bitcoin", titulo: "Cripto", texto: "Moedas digitais registradas numa rede pública, a blockchain. Sem banco central." },
       { seg: 8, tipo: "numero", numero: "21 milhões", titulo: "Escassez", texto: "É o limite de bitcoins que vão existir. Parte do valor vem dessa escassez." },
@@ -215,7 +215,7 @@ export const VIDEOS: Video[] = [
     slug: "juros-compostos",
     titulo: "Juros compostos: o efeito bola de neve",
     chamada: "Por que começar cedo vale mais que começar com muito",
-    cores: ["#FF7A00", "#FFE08A"],
+    cores: ["#1D2F85", "#5B7FFF"],
     custo: 100,
     cenas: [
       { seg: 7, tipo: "abertura", icone: "raio", titulo: "Juros sobre juros", texto: "O rendimento de hoje passa a render amanhã. É a bola de neve." },
@@ -254,7 +254,7 @@ export const VIDEOS: Video[] = [
     slug: "diversificacao",
     titulo: "Diversificação na prática",
     chamada: "Não colocar todos os ovos na mesma cesta",
-    cores: ["#D84315", "#FFAB40"],
+    cores: ["#FF8A3D", "#D9631A"],
     custo: 150,
     cenas: [
       { seg: 7, tipo: "abertura", icone: "camadas", titulo: "Diversificar", texto: "Espalhar o dinheiro para que um tropeço não derrube tudo." },
@@ -281,7 +281,7 @@ export const VIDEOS: Video[] = [
     slug: "reserva",
     titulo: "Reserva de emergência em 4 passos",
     chamada: "O colchão que protege todos os seus planos",
-    cores: ["#FF9100", "#FFCF66"],
+    cores: ["#2D5BFF", "#14215C"],
     custo: 100,
     cenas: [
       { seg: 7, tipo: "abertura", icone: "escudo", titulo: "Reserva de emergência", texto: "Dinheiro guardado para imprevistos: demissão, saúde, carro quebrado." },

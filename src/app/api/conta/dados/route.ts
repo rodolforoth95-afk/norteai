@@ -32,7 +32,7 @@ export async function GET() {
   return new NextResponse(JSON.stringify(corpo, null, 2), {
     headers: {
       "Content-Type": "application/json; charset=utf-8",
-      "Content-Disposition": 'attachment; filename="norteia-meus-dados.json"',
+      "Content-Disposition": 'attachment; filename="findomo-meus-dados.json"',
       "Cache-Control": "no-store",
     },
   });

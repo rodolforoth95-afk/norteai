@@ -37,17 +37,17 @@ const variacao = (v: number | null) => (v === null ? "—" : `${v > 0 ? "+" : v 
 
 // Cor de cada investimento na tela (tons da classe, para diferenciar dentro da renda fixa).
 const COR_PRODUTO: Record<string, string> = {
-  tesouro_selic: "#22C55E",
-  cdb: "#16A34A",
-  lci_lca: "#4ADE80",
-  tesouro_prefixado: "#86EFAC",
-  tesouro_ipca: "#14B8A6",
+  tesouro_selic: "#2D5BFF",
+  cdb: "#4A73FF",
+  lci_lca: "#7A97FF",
+  tesouro_prefixado: "#A9BDFF",
+  tesouro_ipca: "#1D2F85",
   credito_privado: "#0EA5E9",
-  multimercado: "#B794F6",
-  fiis: "#FFB020",
-  acoes_br: "#FF6B00",
-  exterior: "#F472B6",
-  bitcoin: "#FFE08A",
+  multimercado: "#8B5CF6",
+  fiis: "#14B8A6",
+  acoes_br: "#FF8A3D",
+  exterior: "#EC4899",
+  bitcoin: "#F5B70A",
 };
 
 const VALORES_RAPIDOS = [1000, 5000, 10000, 50000];
@@ -91,7 +91,7 @@ export function Simulador({ estilo, carteiras, ind }: { estilo: Estilo; carteira
       <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr]">
         <Cartao className="flex flex-col gap-5">
           <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-ciano">
-            <span className="gradiente-marca flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold text-black">1</span>
+            <span className="gradiente-marca flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold text-white">1</span>
             Seus valores
           </p>
           <CampoDinheiro
@@ -149,7 +149,7 @@ export function Simulador({ estilo, carteiras, ind }: { estilo: Estilo; carteira
         <>
           <div ref={resultados} className="scroll-mt-24">
             <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-ciano">
-              <span className="gradiente-marca flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold text-black">2</span>
+              <span className="gradiente-marca flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold text-white">2</span>
               Carteiras de exemplo
             </p>
             <TituloSecao
@@ -446,8 +446,8 @@ function GraficoProjecao({ s }: { s: Simulacao }) {
         <ComposedChart data={dados} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="faixa-simulacao" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#FF8F00" stopOpacity={0.35} />
-              <stop offset="100%" stopColor="#FF8F00" stopOpacity={0.08} />
+              <stop offset="0%" stopColor="#2D5BFF" stopOpacity={0.3} />
+              <stop offset="100%" stopColor="#2D5BFF" stopOpacity={0.06} />
             </linearGradient>
           </defs>
           <CartesianGrid stroke={tema.linha} strokeDasharray="3 6" vertical={false} />
@@ -470,7 +470,7 @@ function GraficoProjecao({ s }: { s: Simulacao }) {
           />
           <Area type="monotone" dataKey="faixa" name="Faixa de cenários" stroke="none" fill="url(#faixa-simulacao)" animationDuration={500} />
           <Line type="monotone" dataKey="investido" name="Dinheiro investido" stroke={tema.suave} strokeWidth={1.5} strokeDasharray="2 4" dot={false} animationDuration={500} />
-          <Line type="monotone" dataKey="poupanca" name="Na poupança" stroke="#60A5FA" strokeWidth={2} strokeDasharray="6 4" dot={false} animationDuration={500} />
+          <Line type="monotone" dataKey="poupanca" name="Na poupança" stroke="#FF8A3D" strokeWidth={2} strokeDasharray="6 4" dot={false} animationDuration={500} />
           <Line type="monotone" dataKey="base" name="Cenário base" stroke={tema.destaque} strokeWidth={3} dot={false} animationDuration={500} />
         </ComposedChart>
       </ResponsiveContainer>
@@ -481,8 +481,8 @@ function GraficoProjecao({ s }: { s: Simulacao }) {
 function Legenda() {
   const itens = [
     { cor: "var(--destaque)", rotulo: "Cenário base", tipo: "linha" },
-    { cor: "#FF8F00", rotulo: "Faixa (período ruim a bom)", tipo: "area" },
-    { cor: "#60A5FA", rotulo: "Poupança", tipo: "tracejado" },
+    { cor: "#2D5BFF", rotulo: "Faixa (período ruim a bom)", tipo: "area" },
+    { cor: "#FF8A3D", rotulo: "Poupança", tipo: "tracejado" },
     { cor: "var(--suave)", rotulo: "Só o que você guardou", tipo: "tracejado" },
   ];
   return (
@@ -727,7 +727,7 @@ function Analise({ carteira, entrada }: { carteira: string; entrada: { valor: nu
     <div className="borda-gradiente rounded-3xl p-5 lg:p-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
         <div className="flex items-center gap-3 lg:w-72 lg:shrink-0 lg:flex-col lg:items-start">
-          <span className="gradiente-marca flex h-11 w-11 items-center justify-center rounded-2xl text-black">
+          <span className="gradiente-marca flex h-11 w-11 items-center justify-center rounded-2xl text-white">
             <Sparkles className="h-6 w-6" aria-hidden="true" />
           </span>
           <div>
@@ -740,7 +740,7 @@ function Analise({ carteira, entrada }: { carteira: string; entrada: { valor: nu
             <div className="flex flex-col gap-3">
               <p className="leading-relaxed text-texto">{resultado.texto}</p>
               <div className="flex flex-wrap items-center gap-2 text-xs text-suave">
-                <span className="rounded-full border border-linha px-2.5 py-1">{resultado.fonte === "ia" ? "Explicado pela IA (Claude)" : "Explicado pelo Norte.ia"}</span>
+                <span className="rounded-full border border-linha px-2.5 py-1">{resultado.fonte === "ia" ? "Explicado pela IA (Claude)" : "Explicado pelo Findomo"}</span>
                 {resultado.moedas ? (
                   <span className="inline-flex items-center gap-1 rounded-full border border-ambar/40 bg-ambar/10 px-2.5 py-1 font-semibold text-ambar">
                     <Coins className="h-3.5 w-3.5" aria-hidden="true" />+{resultado.moedas} coins pela primeira simulação

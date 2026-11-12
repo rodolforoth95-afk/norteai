@@ -8,7 +8,7 @@ import { Cartao, TituloSecao } from "@/components/ui";
 import { useCoresTema } from "@/components/useCoresTema";
 import { base100, estatisticas, porMes, type Candle } from "@/lib/dominio/tecnica";
 
-const CORES = ["#FF8F00", "#60A5FA", "#22C55E", "#F472B6", "#A78BFA"];
+const CORES = ["#2D5BFF", "#FF8A3D", "#14B8A6", "#EC4899", "#8B5CF6"];
 const MAXIMO = 5;
 const PERIODOS = [
   { id: "1m", rotulo: "1M", pregoes: 22 },

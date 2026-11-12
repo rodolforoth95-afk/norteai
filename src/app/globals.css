@@ -1,7 +1,8 @@
 @import "tailwindcss";
 
-/* Identidade visual v3: preto (ou branco) com detalhes em laranja amarelado.
-   As cores vêm de variáveis que mudam com o tema (data-tema="escuro" | "claro" no <html>). */
+/* Identidade visual Findomo (conceito "mordomo-IA"): azul-assistente, laranja-gravata e
+   azul-noite, com Nunito na marca e nos títulos e DM Sans nos textos.
+   As cores vêm de variáveis que mudam com o tema (data-tema="claro" | "escuro" no <html>). */
 @theme inline {
   --color-fundo: var(--fundo);
   --color-superficie: var(--superficie);
@@ -9,19 +10,22 @@
   --color-linha: var(--linha);
   --color-texto: var(--texto);
   --color-suave: var(--suave);
-  --color-indigo: var(--laranja-forte); /* laranja profundo */
-  --color-violeta: var(--laranja); /* laranja */
-  --color-ciano: var(--destaque); /* laranja amarelado: destaques e links */
+  --color-indigo: var(--azul-forte); /* azul-assistente puro: brilhos e fundos de marca */
+  --color-violeta: var(--azul-claro); /* bordas ao passar o mouse e item ativo do menu */
+  --color-ciano: var(--destaque); /* destaques e links */
+  --color-gravata: var(--gravata); /* laranja-gravata */
+  --color-noite: #14215c;
   --color-menta: var(--alta); /* alta */
   --color-ambar: var(--coins); /* coins */
   --color-rosa: var(--rosa);
   --color-erro: var(--baixa); /* baixa e erros */
 
---font-sans: var(--font-texto), system-ui, sans-serif;
+  --font-sans: var(--font-texto), system-ui, sans-serif;
   --font-display: var(--font-titulo), system-ui, sans-serif;
 
   --animate-subir: subir 0.5s ease-out both;
   --animate-brilho: brilho 3s ease-in-out infinite;
+  --animate-piscar: piscar 5s ease-in-out infinite;
 }
 
 @keyframes subir {
@@ -47,19 +51,35 @@
   }
 }
 
+/* O mascote pisca de vez em quando. */
+@keyframes piscar {
+  0%,
+  92%,
+  100% {
+    transform: scaleY(1);
+  }
+  95% {
+    transform: scaleY(0.1);
+  }
+}
+
 @utility gradiente-marca {
-  background-image: linear-gradient(120deg, #ff6b00 0%, #ff9500 55%, #ffb800 100%);
+  background-image: linear-gradient(120deg, #2d5bff 0%, #4a73ff 100%);
+}
+
+@utility gradiente-noite {
+  background-image: linear-gradient(140deg, #14215c 0%, #1d2f85 60%, #2d5bff 100%);
 }
 
 @utility texto-gradiente {
-  background-image: linear-gradient(120deg, #ff7a1a 0%, #ffa21f 50%, #ffc94a 100%);
+  background-image: linear-gradient(120deg, var(--destaque) 0%, var(--azul-claro) 100%);
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
 }
 
 @utility vidro {
-  background-color: color-mix(in srgb, var(--fundo) 84%, transparent);
+  background-color: color-mix(in srgb, var(--fundo) 86%, transparent);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
 }
@@ -68,46 +88,57 @@
   border: 1px solid transparent;
   background:
     linear-gradient(var(--superficie), var(--superficie)) padding-box,
-    linear-gradient(120deg, #ff6b00, #ff9500, #ffb800) border-box;
+    linear-gradient(120deg, #2d5bff, #8fa8ff 60%, #ff8a3d) border-box;
 }
 
+/* Modo claro (padrão da marca): branco com azul-noite no texto. */
 :root,
-[data-tema="escuro"] {
-  --fundo: #000000;
-  --superficie: #111111;
-  --superficie-2: #1b1b1b;
-  --linha: #2b2b2b;
-  --texto: #ffffff;
-  --suave: #a6a6a6;
-  --laranja-forte: #ff6b00;
-  --laranja: #ff8f00;
-  --destaque: #ffb020;
-  --alta: #22c55e;
-  --coins: #ffc940;
-  --rosa: #f472b6;
-  --baixa: #ef4444;
-  --brilho: rgb(255 107 0 / 0.16);
-  color-scheme: dark;
-}
-
-/* Modo claro: tons de laranja mais escuros para manter contraste sobre o branco.
-   Um bloco com data-tema="escuro" (ex.: cartões de destaque) continua escuro dentro do modo claro. */
 [data-tema="claro"] {
-  --fundo: #f5f5f2;
+  --fundo: #f7f9ff;
   --superficie: #ffffff;
-  --superficie-2: #f0efeb;
-  --linha: #e0dfd9;
-  --texto: #121212;
-  --suave: #5c5c5c;
-  --laranja-forte: #ff6b00;
-  --laranja: #e07800;
-  --destaque: #b35500;
+  --superficie-2: #f2f5ff;
+  --linha: #dde4ff;
+  --texto: #14215c;
+  --suave: #525b85;
+  --azul-forte: #2d5bff;
+  --azul-claro: #5b7fff;
+  --destaque: #2d5bff;
+  --gravata: #ff8a3d;
   --alta: #15803d;
-  --coins: #9a5b00;
+  --coins: #c2560f;
   --rosa: #be185d;
   --baixa: #dc2626;
-  --brilho: rgb(255 140 0 / 0.1);
+  --brilho: rgb(45 91 255 / 0.08);
+  --brilho-2: rgb(255 138 61 / 0.05);
+  --mascote-balao: #2d5bff;
+  --mascote-rosto: #ffffff;
+  --mascote-no: #d9631a;
   color-scheme: light;
+}
+
+/* Modo noite: azul-noite com o balão do mascote em branco.
+   Um bloco com data-tema="escuro" (ex.: cartões de destaque) continua escuro dentro do modo claro. */
+[data-tema="escuro"] {
+  --fundo: #0a1030;
+  --superficie: #121c4d;
+  --superficie-2: #1a2760;
+  --linha: #26357a;
+  --texto: #ffffff;
+  --suave: #a9b4e0;
+  --azul-forte: #2d5bff;
+  --azul-claro: #6f8cff;
+  --destaque: #8fa8ff;
+  --gravata: #ff8a3d;
+  --alta: #22c55e;
+  --coins: #ffb27a;
+  --rosa: #f472b6;
+  --baixa: #f87171;
+  --brilho: rgb(45 91 255 / 0.22);
+  --brilho-2: rgb(255 138 61 / 0.06);
+  --mascote-balao: #ffffff;
+  --mascote-rosto: #14215c;
+  --mascote-no: #ffb27a;
+  color-scheme: dark;
 }
 
 html {
@@ -118,7 +149,7 @@ body {
   font-feature-settings: "tnum" 1; /* números com largura fixa, bons para cotações */
   background:
     radial-gradient(60rem 30rem at 85% -10%, var(--brilho), transparent 60%),
-    radial-gradient(50rem 28rem at -10% 10%, rgb(255 176 32 / 0.07), transparent 60%),
+    radial-gradient(50rem 28rem at -10% 10%, var(--brilho-2), transparent 60%),
     var(--fundo);
   background-attachment: fixed;
   color: var(--texto);

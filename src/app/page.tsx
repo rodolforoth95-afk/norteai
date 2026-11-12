@@ -41,8 +41,8 @@ export default function PaginaLogin() {
 
   return (
     <TelaAuth
-      titulo="Seu dinheiro com direção."
-      subtitulo="Um guia com IA que explica, compara e simula. Sem vender nenhum produto."
+      titulo="Que bom te ver por aqui."
+      subtitulo="Entre para continuar de onde parou. Pode perguntar: estou aqui pra isso."
       rodape={
         <p className="text-center text-sm text-suave">
           Ainda não tem conta?{" "}

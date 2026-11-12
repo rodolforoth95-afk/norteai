@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState, useTransition, type FormEvent } from "react";
 import { ArrowLeft, Coins, SendHorizontal, Sparkles } from "lucide-react";
-import { Estrela } from "@/components/Logo";
+import { Mascote } from "@/components/Logo";
 import { AvisoEducacional } from "@/components/AvisoEducacional";
 import { Botao } from "@/components/Botao";
 import {
@@ -272,7 +272,7 @@ export function ChatEntrevista({
             type="submit"
             aria-label="Enviar resposta"
             disabled={!texto.trim() || pendente || Boolean(pensando)}
-            className="gradiente-marca flex h-12 w-12 items-center justify-center rounded-2xl text-black disabled:opacity-50"
+            className="gradiente-marca flex h-12 w-12 items-center justify-center rounded-2xl text-white disabled:opacity-50"
           >
             <SendHorizontal className="h-5 w-5" aria-hidden="true" />
           </button>
@@ -333,8 +333,8 @@ function NotaChat({ nota }: { nota: Nota }) {
 function BalaoIA({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex animate-subir items-end gap-2">
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-linha bg-superficie">
-        <Estrela className="h-4 w-4" />
+      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-superficie-2">
+        <Mascote className="h-7 w-7" />
       </span>
       <div className="max-w-[85%] rounded-3xl rounded-bl-md border border-linha bg-superficie/90 px-4 py-3 text-sm leading-relaxed text-texto">
         {children}
@@ -346,7 +346,7 @@ function BalaoIA({ children }: { children: React.ReactNode }) {
 function BalaoUsuario({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex animate-subir justify-end">
-      <div className="gradiente-marca max-w-[85%] rounded-3xl rounded-br-md px-4 py-3 text-sm font-medium text-black">
+      <div className="gradiente-marca max-w-[85%] rounded-3xl rounded-br-md px-4 py-3 text-sm font-medium text-white">
         {children}
       </div>
     </div>

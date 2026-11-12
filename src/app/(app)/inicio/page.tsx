@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, BookOpen, CandlestickChart, Clapperboard, Coins, FlaskConical, PieChart, Sparkles, Upload, UserRound } from "lucide-react";
 import type { ReactNode } from "react";
 import { AvisoEducacional } from "@/components/AvisoEducacional";
+import { Mascote } from "@/components/Logo";
 import { SeloVariacao } from "@/components/mercado";
 import { MODULOS, progressoModulo } from "@/lib/conteudo/modulos";
 import { aulaPorSlug } from "@/lib/conteudo/aulas";
@@ -62,15 +63,19 @@ export default async function PaginaInicio() {
 
   return (
     <section className="flex flex-col gap-6">
-      <div className="animate-subir">
-        <p className="text-sm text-suave">{hoje}</p>
-        <h1 className="font-display text-3xl font-bold text-texto lg:text-4xl">Olá{primeiroNome ? `, ${primeiroNome}` : ""}</h1>
+      <div className="flex animate-subir items-center gap-4">
+        <Mascote className="h-16 w-16 shrink-0 lg:h-20 lg:w-20" piscando />
+        <div>
+          <p className="text-sm text-suave">{hoje}</p>
+          <h1 className="font-display text-3xl font-black text-texto lg:text-4xl">Olá{primeiroNome ? `, ${primeiroNome}` : ""}!</h1>
+          <p className="text-sm font-medium text-ciano">Pode perguntar. Estou aqui pra isso.</p>
+        </div>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.3fr_1fr]">
       {/* Patrimônio */}
       {carteira ? (
-        <Link data-tema="escuro" href="/carteira" className="relative block h-full animate-subir overflow-hidden rounded-3xl border border-linha p-5 lg:p-7" style={{ background: "linear-gradient(140deg, #121212 0%, #1E1104 60%, #4A2000 100%)" }}>
+        <Link data-tema="escuro" href="/carteira" className="gradiente-noite relative block h-full animate-subir overflow-hidden rounded-3xl border border-linha p-5 lg:p-7">
           <div className="pointer-events-none absolute -right-14 -top-14 h-44 w-44 rounded-full bg-indigo/30 blur-3xl" aria-hidden="true" />
           <div className="relative flex items-start justify-between">
             <p className="text-xs font-semibold uppercase tracking-wider text-ciano">Patrimônio investido</p>
@@ -171,8 +176,8 @@ function Anel({ valor }: { valor: number }) {
       <svg viewBox="0 0 64 64" className="h-full w-full -rotate-90">
         <defs>
           <linearGradient id="anel-jornada" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#FF6B00" />
-            <stop offset="100%" stopColor="#FFB800" />
+            <stop offset="0%" stopColor="#2D5BFF" />
+            <stop offset="100%" stopColor="#8FA8FF" />
           </linearGradient>
         </defs>
         <circle cx="32" cy="32" r={r} fill="none" className="stroke-superficie-2" strokeWidth="7" />

@@ -38,7 +38,7 @@ async function prepararConta() {
     email: EMAIL_INTERNO,
     password: senhaInterna(),
     email_confirm: true,
-    user_metadata: { nome_completo: "Admin Norte.ia" },
+    user_metadata: { nome_completo: "Admin Findomo" },
   });
 
   if (criada.data.user) {

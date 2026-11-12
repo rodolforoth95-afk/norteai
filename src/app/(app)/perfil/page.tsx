@@ -58,7 +58,7 @@ export default async function PaginaPerfil() {
       <h1 className="animate-subir font-display text-2xl font-bold text-texto">Meu perfil</h1>
 
       {/* Cartão do estilo */}
-      <div data-tema="escuro" className="relative animate-subir overflow-hidden rounded-3xl p-6 text-white" style={{ background: "linear-gradient(135deg, #141414 0%, #2A1606 50%, #7A3300 100%)" }}>
+      <div data-tema="escuro" className="gradiente-noite relative animate-subir overflow-hidden rounded-3xl p-6 text-white">
         <div className="pointer-events-none absolute -right-16 -top-16 h-48 w-48 animate-brilho rounded-full bg-indigo/45 blur-3xl" aria-hidden="true" />
         <p className="relative text-sm text-white/80">Seu estilo de investidor (educacional)</p>
         <p className="relative mt-1 font-display text-4xl font-bold">{perfil.estilo}</p>

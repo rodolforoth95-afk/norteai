@@ -78,7 +78,7 @@ export default async function PaginaAula({ params }: { params: Promise<{ slug: s
             <ol className="mt-1 flex flex-col gap-3">
               {s.passos.map((p, i) => (
                 <li key={p} className="flex gap-3">
-                  <span className="gradiente-marca flex h-7 w-7 shrink-0 items-center justify-center rounded-full font-display text-sm font-bold text-black">{i + 1}</span>
+                  <span className="gradiente-marca flex h-7 w-7 shrink-0 items-center justify-center rounded-full font-display text-sm font-bold text-white">{i + 1}</span>
                   <span className="leading-relaxed text-suave">{p}</span>
                 </li>
               ))}

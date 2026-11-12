@@ -1,4 +1,4 @@
-# Norte.ia
+# Findomo
 
 Guia educacional de investimentos com IA (PWA). Next.js + Supabase + Claude.
 
@@ -29,6 +29,7 @@ Guia educacional de investimentos com IA (PWA). Next.js + Supabase + Claude.
 - [x] Simulador de carteiras (/simulador): 3 carteiras de exemplo por estilo, projeção com faixa de cenários, IR, inflação, teste de crise e últimos 3 meses reais; indicadores do Banco Central, brapi e CoinGecko; explicação pela IA (ou pelo app, sem chave). Conferência: `npm run testar:simulador`
 - [x] Carteira v2: extrato por investimento (aplicação, resgate, atualização de saldo), datas só até hoje, importação com conferência (PDF, planilha, imagem pela IA, digitação), cadastro em 3 passos, edição e exclusão; painel com linha histórica, comparativo com CDI, poupança e IPCA (Banco Central), rendimento separado dos aportes e rentabilidade mês a mês. Conferência: `npm run testar:carteira`
 - [x] Mercado v2: mapa de calor do dia; página do ativo com candles, médias móveis, volume, suportes e resistências (topos e fundos + pivôs mensais) selecionáveis no gráfico e em tabela, leituras educativas e desempenho mês a mês; comparador de até 5 ativos (base 100, mês a mês, risco). Histórico: 3 meses no plano gratuito da brapi (`BRAPI_PERIODO_ANALISE=1y` com plano pago)
+- [x] Identidade visual Findomo (conceito "mordomo-IA"): mascote balão com gravata-borboleta, azul-assistente #2D5BFF, laranja-gravata #FF8A3D, azul-noite #14215C, Nunito (marca e títulos) e DM Sans (textos); modo claro como padrão e modo noite
 - [ ] Revisão de segurança e critérios de aceite
 
 ## Configurar o Supabase (uma vez)
@@ -43,7 +44,7 @@ Guia educacional de investimentos com IA (PWA). Next.js + Supabase + Claude.
 4. Em **Authentication > Emails > Templates > Confirm signup**, troque o corpo para usar o código em vez do link:
    ```html
    <h2>Confirme seu e-mail</h2>
-   <p>Seu código do Norte.ia é:</p>
+   <p>Seu código do Findomo é:</p>
    <p style="font-size:28px;font-weight:700;letter-spacing:6px">{{ .Token }}</p>
    <p>Ele vale por 10 minutos. Se você não criou uma conta, ignore este e-mail.</p>
    ```

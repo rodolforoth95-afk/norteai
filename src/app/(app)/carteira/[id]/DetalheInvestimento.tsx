@@ -272,8 +272,8 @@ function GraficoInvestimento({ serie }: { serie: Props["serie"] }) {
         <ComposedChart data={serie} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="area-inv" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#FF8F00" stopOpacity={0.4} />
-              <stop offset="100%" stopColor="#FF8F00" stopOpacity={0.03} />
+              <stop offset="0%" stopColor="#2D5BFF" stopOpacity={0.3} />
+              <stop offset="100%" stopColor="#2D5BFF" stopOpacity={0.03} />
             </linearGradient>
           </defs>
           <CartesianGrid stroke={tema.linha} strokeDasharray="3 6" vertical={false} />

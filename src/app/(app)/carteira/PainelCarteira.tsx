@@ -72,9 +72,9 @@ const PERIODOS = [
 ] as const;
 
 const INDICADORES = [
-  { id: "cdi", rotulo: "CDI", cor: "#60A5FA" },
-  { id: "poupanca", rotulo: "Poupança", cor: "#A78BFA" },
-  { id: "ipca", rotulo: "Inflação", cor: "#F472B6" },
+  { id: "cdi", rotulo: "CDI", cor: "#FF8A3D" },
+  { id: "poupanca", rotulo: "Poupança", cor: "#8B5CF6" },
+  { id: "ipca", rotulo: "Inflação", cor: "#EC4899" },
 ] as const;
 type IdIndicador = (typeof INDICADORES)[number]["id"];
 
@@ -196,7 +196,7 @@ export function PainelCarteira({
           </p>
         </div>
         <div className="grid grid-cols-3 gap-2 lg:flex">
-          <Link href="/carteira/adicionar" className="gradiente-marca flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold text-black">
+          <Link href="/carteira/adicionar" className="gradiente-marca flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold text-white">
             <Plus className="h-4 w-4" aria-hidden="true" />
             Adicionar
           </Link>
@@ -234,7 +234,7 @@ export function PainelCarteira({
 
       {/* Indicadores principais */}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-[1.3fr_1fr_1fr_1fr]">
-        <div data-tema="escuro" className="relative col-span-2 overflow-hidden rounded-3xl p-5 lg:col-span-1" style={{ background: "linear-gradient(135deg, #141414 0%, #2A1606 55%, #6B2E00 100%)" }}>
+        <div data-tema="escuro" className="gradiente-noite relative col-span-2 overflow-hidden rounded-3xl p-5 lg:col-span-1">
           <p className="text-xs font-semibold uppercase tracking-wider text-ciano">Patrimônio</p>
           <p className="mt-1 font-display text-3xl font-bold tabular-nums text-texto lg:text-4xl">{brl(atual.saldo)}</p>
           <p className="mt-2 text-xs text-suave">
@@ -572,8 +572,8 @@ function GraficoHistorico({ dados, visao, ativos }: { dados: DadoGrafico[]; visa
         <ComposedChart data={dados} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
           <defs>
             <linearGradient id="area-patrimonio" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#FF8F00" stopOpacity={0.35} />
-              <stop offset="100%" stopColor="#FF8F00" stopOpacity={0.02} />
+              <stop offset="0%" stopColor="#2D5BFF" stopOpacity={0.3} />
+              <stop offset="100%" stopColor="#2D5BFF" stopOpacity={0.02} />
             </linearGradient>
           </defs>
           <CartesianGrid stroke={tema.linha} strokeDasharray="3 6" vertical={false} />
@@ -629,7 +629,7 @@ function GraficoBarras({ dados }: { dados: DadoGrafico[] }) {
             contentStyle={{ background: tema.superficie, border: `1px solid ${tema.linha}`, borderRadius: 12, color: tema.texto }}
             cursor={{ fill: tema.superficie2 }}
           />
-          <Bar dataKey="fluxo" name="Dinheiro novo" fill="#60A5FA" radius={[4, 4, 0, 0]} maxBarSize={22} />
+          <Bar dataKey="fluxo" name="Dinheiro novo" fill="#8FA8FF" radius={[4, 4, 0, 0]} maxBarSize={22} />
           <Bar dataKey="rendimento" name="Rendimento" radius={[4, 4, 0, 0]} maxBarSize={22}>
             {dados.map((d) => (
               <Cell key={d.mes} fill={d.rendimento >= 0 ? "#22C55E" : "#EF4444"} />
@@ -639,7 +639,7 @@ function GraficoBarras({ dados }: { dados: DadoGrafico[] }) {
       </ResponsiveContainer>
       <ul className="mt-1 flex gap-4 text-[11px] text-suave">
         <li className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-sm bg-[#60A5FA]" aria-hidden="true" /> Dinheiro novo (aplicações − resgates)
+          <span className="h-2.5 w-2.5 rounded-sm bg-[#8FA8FF]" aria-hidden="true" /> Dinheiro novo (aplicações − resgates)
         </li>
         <li className="flex items-center gap-1.5">
           <span className="h-2.5 w-2.5 rounded-sm bg-[#22C55E]" aria-hidden="true" /> Rendimento
@@ -674,8 +674,8 @@ function Anel({ valor }: { valor: number }) {
       <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
         <defs>
           <linearGradient id="anel-aderencia" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="#FF6B00" />
-            <stop offset="100%" stopColor="#FFB800" />
+            <stop offset="0%" stopColor="#2D5BFF" />
+            <stop offset="100%" stopColor="#8FA8FF" />
           </linearGradient>
         </defs>
         <circle cx="50" cy="50" r={r} fill="none" className="stroke-superficie-2" strokeWidth="10" />

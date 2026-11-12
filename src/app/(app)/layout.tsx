@@ -22,7 +22,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
       <header className="vidro sticky top-0 z-20 border-b border-linha/60 lg:hidden">
         <div className="mx-auto flex max-w-md items-center justify-between gap-2 px-5 py-3">
           <Link href="/inicio" aria-label="Início">
-            <Logo />
+            <Logo tamanho="sm" />
           </Link>
           <div className="flex items-center gap-2">
             <Link
@@ -32,7 +32,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
             >
               <Coins className="h-4 w-4 text-ambar" aria-hidden="true" />
               <span className="font-bold text-ambar">{saldo}</span>
-              <span className="text-xs text-suave">{nivel}</span>
+              <span className="hidden text-xs text-suave min-[400px]:inline">{nivel}</span>
             </Link>
             <Link
               href="/conta"

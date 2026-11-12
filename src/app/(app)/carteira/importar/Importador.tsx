@@ -276,7 +276,7 @@ export function Importador({ existentes, iaLigada }: { existentes: Existente[]; 
                   fonte?.id === f.id ? "border-ciano bg-ciano/10" : "border-linha bg-superficie hover:border-ciano"
                 } disabled:cursor-not-allowed disabled:opacity-50`}
               >
-                <span className="gradiente-marca flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-black">
+                <span className="gradiente-marca flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white">
                   <f.Icone className="h-5 w-5" aria-hidden="true" />
                 </span>
                 <span>

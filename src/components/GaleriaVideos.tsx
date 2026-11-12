@@ -112,7 +112,7 @@ export function GaleriaVideos({
                 type="button"
                 onClick={confirmarCompra}
                 disabled={pendente || saldo < (comprar.custo ?? 0)}
-                className="gradiente-marca min-h-12 rounded-2xl font-medium text-black disabled:opacity-50"
+                className="gradiente-marca min-h-12 rounded-2xl font-medium text-white disabled:opacity-50"
               >
                 {saldo < (comprar.custo ?? 0) ? `Faltam ${(comprar.custo ?? 0) - saldo} coins` : pendente ? "Aguarde…" : "Desbloquear"}
               </button>

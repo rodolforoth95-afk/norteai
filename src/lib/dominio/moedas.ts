@@ -1,6 +1,6 @@
 import type { LancamentoMoedas } from "./tipos";
 
-// Gamificação: "Norte Coins". O servidor é quem lança as moedas.
+// Gamificação: "Findomo Coins". O servidor é quem lança as moedas.
 export const RECOMPENSAS = {
   entrevista: { valor: 50, rotulo: "Entrevista concluída" },
   video: { valor: 20, rotulo: "Vídeo assistido" },

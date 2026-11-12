@@ -17,42 +17,42 @@ export const CLASSES: Record<Classe, InfoClasse> = {
     grupo: "Renda fixa",
     risco: "Baixo",
     descricao: "Você empresta para governo, bancos ou empresas e recebe juros. É a base da reserva e das metas curtas.",
-    cor: "#22C55E",
+    cor: "#2D5BFF",
   },
   acoes_etfs: {
     nome: "Ações e ETFs",
     grupo: "Renda variável",
     risco: "Alto",
     descricao: "Pedaços de empresas, ou cestas delas (ETFs). Oscilam mais e pedem prazo longo.",
-    cor: "#FF6B00",
+    cor: "#FF8A3D",
   },
   fiis: {
     nome: "Fundos imobiliários",
     grupo: "Renda variável",
     risco: "Médio",
     descricao: "Cotas de imóveis e títulos imobiliários que costumam pagar rendimentos todo mês.",
-    cor: "#FFB020",
+    cor: "#14B8A6",
   },
   multimercado: {
     nome: "Fundos multimercado",
     grupo: "Renda variável",
     risco: "Médio",
     descricao: "Fundos que misturam juros, ações e câmbio. Um gestor decide onde investir.",
-    cor: "#B794F6",
+    cor: "#8B5CF6",
   },
   cripto: {
     nome: "Criptomoedas",
     grupo: "Reserva de valor",
     risco: "Muito alto",
     descricao: "Moedas digitais sem banco central por trás. Podem subir e cair muito em pouco tempo.",
-    cor: "#FFE08A",
+    cor: "#F5B70A",
   },
   exterior: {
     nome: "Investimentos no exterior",
     grupo: "Exterior",
     risco: "Alto",
     descricao: "Empresas e títulos de outros países, que expõem o dinheiro ao dólar ou a outras moedas.",
-    cor: "#F472B6",
+    cor: "#EC4899",
   },
 };
 
@@ -93,17 +93,17 @@ export const INFO_ESTILO: Record<Estilo, { risco: string; frase: string; cor: st
   Cauteloso: {
     risco: "Risco baixo",
     frase: "Você prioriza segurança e previsibilidade. Faz sentido conhecer primeiro a renda fixa.",
-    cor: "#22C55E",
+    cor: "#14B8A6",
   },
   Equilibrado: {
     risco: "Risco médio",
     frase: "Você aceita algumas oscilações em troca de mais potencial no longo prazo.",
-    cor: "#FFB020",
+    cor: "#2D5BFF",
   },
   Ousado: {
     risco: "Risco alto",
     frase: "Você tolera quedas fortes no caminho e pensa no longo prazo.",
-    cor: "#F472B6",
+    cor: "#EC4899",
   },
 };
 

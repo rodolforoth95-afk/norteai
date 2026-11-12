@@ -54,7 +54,7 @@ export function AbasDestaques({ abas }: { abas: { id: string; rotulo: string; de
                 aria-selected={a.id === ativa}
                 onClick={(e) => escolher(a.id, e.currentTarget)}
                 className={`min-h-10 shrink-0 snap-center whitespace-nowrap rounded-xl px-4 text-sm font-semibold transition ${
-                  a.id === ativa ? "gradiente-marca text-black shadow" : "text-suave hover:text-texto"
+                  a.id === ativa ? "gradiente-marca text-white shadow" : "text-suave hover:text-texto"
                 }`}
               >
                 {a.rotulo}

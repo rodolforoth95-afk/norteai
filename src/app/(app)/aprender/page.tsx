@@ -78,7 +78,7 @@ export default async function PaginaAprender() {
       <Cartao className="flex flex-col gap-5">
         <div className="flex items-center gap-4">
           <span className="gradiente-marca flex h-14 w-14 items-center justify-center rounded-2xl">
-            <Trophy className="h-7 w-7 text-black" aria-hidden="true" />
+            <Trophy className="h-7 w-7 text-white" aria-hidden="true" />
           </span>
           <div className="flex-1">
             <p className="text-xs text-suave">Seu nível</p>

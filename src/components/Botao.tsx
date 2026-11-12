@@ -5,7 +5,7 @@ type Variante = "primario" | "secundario" | "perigo" | "texto";
 
 const ESTILOS: Record<Variante, string> = {
   primario:
-    "gradiente-marca font-semibold text-black shadow-[0_8px_30px_-10px_rgb(255_120_0/0.6)] hover:brightness-110 disabled:bg-none disabled:bg-superficie-2 disabled:text-suave disabled:shadow-none",
+    "gradiente-marca font-semibold text-white shadow-[0_8px_24px_-10px_rgb(45_91_255/0.55)] hover:brightness-110 disabled:bg-none disabled:bg-superficie-2 disabled:text-suave disabled:shadow-none",
   secundario:
     "border border-linha bg-superficie/60 text-texto hover:border-violeta hover:bg-superficie-2 disabled:text-suave",
   perigo: "bg-erro text-fundo hover:brightness-110 disabled:bg-superficie-2 disabled:text-suave",

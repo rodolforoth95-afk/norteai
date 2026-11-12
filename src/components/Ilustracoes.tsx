@@ -4,7 +4,7 @@ import type { Ilustracao } from "@/lib/conteudo/aulas";
 
 const VERDE = "#22C55E";
 const VERMELHO = "#EF4444";
-const LARANJA = "#FFB020";
+const LARANJA = "#2D5BFF";
 const TEXTO = "var(--suave)";
 
 function Moldura({ titulo, children }: { titulo: string; children: React.ReactNode }) {

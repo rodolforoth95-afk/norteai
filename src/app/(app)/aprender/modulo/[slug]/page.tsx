@@ -25,7 +25,7 @@ export default async function PaginaModulo({ params }: { params: Promise<{ slug:
       </Link>
 
       <header className="flex items-start gap-4">
-        <span className="gradiente-marca flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl text-black">
+        <span className="gradiente-marca flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl text-white">
           <IconeModulo icone={modulo.icone} className="h-8 w-8" />
         </span>
         <div>

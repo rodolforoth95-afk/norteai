@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { BookOpen, CandlestickChart, ShieldCheck } from "lucide-react";
-import { Estrela, Logo } from "./Logo";
+import { Logo, Mascote } from "./Logo";
 import { AvisoEducacional } from "./AvisoEducacional";
 import { AlternarTema } from "./AlternarTema";
 
@@ -27,15 +27,19 @@ export function TelaAuth({
     <div className="min-h-dvh lg:grid lg:grid-cols-[1.1fr_1fr]">
       <aside
         data-tema="escuro"
-        className="relative hidden overflow-hidden bg-fundo p-12 text-texto lg:flex lg:flex-col lg:justify-between"
-        style={{ background: "linear-gradient(150deg, #0A0A0A 0%, #1A0E03 55%, #5A2600 100%)" }}
+        className="gradiente-noite relative hidden overflow-hidden p-12 text-texto lg:flex lg:flex-col lg:justify-between"
       >
-        <Estrela className="pointer-events-none absolute -bottom-24 -right-24 h-[28rem] w-[28rem] opacity-10" />
+        <Mascote className="pointer-events-none absolute -bottom-16 -right-16 h-[26rem] w-[26rem] opacity-[0.08]" />
         <Logo tamanho="lg" />
         <div className="relative max-w-md">
-          <h2 className="font-display text-4xl font-bold leading-tight">
-            Seu dinheiro com <span className="texto-gradiente">direção.</span>
+          <div className="mb-6 flex items-end gap-4">
+            <Mascote className="h-24 w-24 drop-shadow-xl" piscando />
+            <p className="mb-3 rounded-3xl rounded-bl-md bg-white px-4 py-2 font-display text-lg font-extrabold text-noite">Oi! Eu sou o Findomo.</p>
+          </div>
+          <h2 className="font-display text-4xl font-black leading-tight">
+            Pode perguntar. <span className="text-[#8FA8FF]">Estou aqui pra isso.</span>
           </h2>
+          <p className="mt-3 text-suave">Seu mordomo das finanças: explico, comparo e simulo, no seu ritmo e sem vender nenhum produto.</p>
           <ul className="mt-10 flex flex-col gap-6">
             {DESTAQUES.map(({ Icone, titulo: t, texto }) => (
               <li key={t} className="flex gap-4">

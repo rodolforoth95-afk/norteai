@@ -25,7 +25,7 @@ export default async function PaginaCarteira() {
         <h1 className="font-display text-2xl font-bold text-texto lg:text-3xl">Carteira</h1>
         <div className="borda-gradiente flex flex-col gap-6 rounded-3xl p-6 lg:p-10">
           <div className="flex flex-col items-center gap-3 text-center">
-            <span className="gradiente-marca flex h-16 w-16 items-center justify-center rounded-2xl text-black">
+            <span className="gradiente-marca flex h-16 w-16 items-center justify-center rounded-2xl text-white">
               <PieChart className="h-8 w-8" aria-hidden="true" />
             </span>
             <p className="font-display text-2xl font-semibold text-texto">Monte o mapa dos seus investimentos</p>

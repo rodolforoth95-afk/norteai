@@ -7,32 +7,32 @@ import { useEffect, useState } from "react";
 
 export type CoresTema = { fundo: string; superficie: string; superficie2: string; linha: string; texto: string; suave: string; destaque: string };
 
-const ESCURO: CoresTema = {
-  fundo: "#000000",
-  superficie: "#111111",
-  superficie2: "#1b1b1b",
-  linha: "#2b2b2b",
-  texto: "#ffffff",
-  suave: "#a6a6a6",
-  destaque: "#ffb020",
+const PADRAO: CoresTema = {
+  fundo: "#f7f9ff",
+  superficie: "#ffffff",
+  superficie2: "#f2f5ff",
+  linha: "#dde4ff",
+  texto: "#14215c",
+  suave: "#525b85",
+  destaque: "#2d5bff",
 };
 
 function ler(): CoresTema {
   const s = getComputedStyle(document.documentElement);
   const v = (nome: string, padrao: string) => s.getPropertyValue(nome).trim() || padrao;
   return {
-    fundo: v("--fundo", ESCURO.fundo),
-    superficie: v("--superficie", ESCURO.superficie),
-    superficie2: v("--superficie-2", ESCURO.superficie2),
-    linha: v("--linha", ESCURO.linha),
-    texto: v("--texto", ESCURO.texto),
-    suave: v("--suave", ESCURO.suave),
-    destaque: v("--destaque", ESCURO.destaque),
+    fundo: v("--fundo", PADRAO.fundo),
+    superficie: v("--superficie", PADRAO.superficie),
+    superficie2: v("--superficie-2", PADRAO.superficie2),
+    linha: v("--linha", PADRAO.linha),
+    texto: v("--texto", PADRAO.texto),
+    suave: v("--suave", PADRAO.suave),
+    destaque: v("--destaque", PADRAO.destaque),
   };
 }
 
 export function useCoresTema() {
-  const [cores, setCores] = useState<CoresTema>(ESCURO);
+  const [cores, setCores] = useState<CoresTema>(PADRAO);
   useEffect(() => {
     setCores(ler());
     const observador = new MutationObserver(() => setCores(ler()));

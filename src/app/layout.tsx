@@ -1,40 +1,40 @@
 import type { Metadata, Viewport } from "next";
-import { Barlow, IBM_Plex_Sans } from "next/font/google";
+import { DM_Sans, Nunito } from "next/font/google";
 import { cookies } from "next/headers";
 import "./globals.css";
 
-// Títulos em Barlow (formas retas e quadradas) e texto em IBM Plex Sans (sóbria, feita para dados).
-const titulo = Barlow({
+// Marca e títulos em Nunito (arredondada e próxima); textos em DM Sans.
+const titulo = Nunito({
   variable: "--font-titulo",
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  weight: ["600", "700", "800", "900"],
 });
 
-const texto = IBM_Plex_Sans({
+const texto = DM_Sans({
   variable: "--font-texto",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
-  title: { default: "Norte.ia — seu dinheiro com direção", template: "%s · Norte.ia" },
+  title: { default: "Findomo — seu mordomo das finanças", template: "%s · Findomo" },
   description:
-    "Um guia com IA que explica, compara e simula. Sem vender nenhum produto.",
+    "Pode perguntar. Estou aqui pra isso. Um mordomo com IA que explica, compara e simula, sem vender nenhum produto.",
   openGraph: {
     type: "website",
     locale: "pt_BR",
-    siteName: "Norte.ia",
-    title: "Norte.ia — seu dinheiro com direção",
-    description: "Aprenda a investir, acompanhe o mercado e sua carteira. Conteúdo educacional, sem vender produtos.",
+    siteName: "Findomo",
+    title: "Findomo — seu mordomo das finanças",
+    description: "Pode perguntar. Estou aqui pra isso. Aprenda a investir, acompanhe o mercado e sua carteira, sem vender produtos.",
   },
-  applicationName: "Norte.ia",
-  appleWebApp: { capable: true, title: "Norte.ia", statusBarStyle: "default" },
+  applicationName: "Findomo",
+  appleWebApp: { capable: true, title: "Findomo", statusBarStyle: "default" },
 };
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#000000" },
-    { media: "(prefers-color-scheme: light)", color: "#f5f5f2" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a1030" },
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -43,8 +43,8 @@ export const viewport: Viewport = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  // Tema salvo pelo alternador (padrão: escuro, a identidade principal da marca).
-  const tema = (await cookies()).get("tema")?.value === "claro" ? "claro" : "escuro";
+  // Tema salvo pelo alternador (padrão: claro, a identidade principal da marca).
+  const tema = (await cookies()).get("tema")?.value === "escuro" ? "escuro" : "claro";
   return (
     <html lang="pt-BR" data-tema={tema}>
       <body className={`${titulo.variable} ${texto.variable} antialiased`}>

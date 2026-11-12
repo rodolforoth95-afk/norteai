@@ -8,10 +8,10 @@ export type Tema = "escuro" | "claro";
 // Alterna entre modo escuro e claro. A escolha fica num cookie para a página já
 // abrir na cor certa da próxima vez (sem piscar).
 export function AlternarTema({ comRotulo = false }: { comRotulo?: boolean }) {
-  const [tema, setTema] = useState<Tema>("escuro");
+  const [tema, setTema] = useState<Tema>("claro");
 
   useEffect(() => {
-    setTema((document.documentElement.dataset.tema as Tema) ?? "escuro");
+    setTema((document.documentElement.dataset.tema as Tema) ?? "claro");
   }, []);
 
   function alternar() {
@@ -22,7 +22,7 @@ export function AlternarTema({ comRotulo = false }: { comRotulo?: boolean }) {
   }
 
   const Icone = tema === "escuro" ? Sun : Moon;
-  const rotulo = tema === "escuro" ? "Modo claro" : "Modo escuro";
+  const rotulo = tema === "escuro" ? "Modo claro" : "Modo noite";
 
   return (
     <button
