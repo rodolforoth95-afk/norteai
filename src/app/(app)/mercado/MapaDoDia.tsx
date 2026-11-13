@@ -6,7 +6,7 @@ import { CandlestickChart } from "lucide-react";
 import { Cartao, TituloSecao } from "@/components/ui";
 import { LogoAtivo } from "@/components/mercado";
 
-export type ItemMapa = { simbolo: string; nome: string; logo: string | null; variacaoPct: number; preco: number };
+export type ItemMapa = { simbolo: string; nome: string; logo: string | null; variacaoPct: number; preco: number; href?: string };
 export type GrupoMapa = { id: string; rotulo: string; descricao: string; total: number; itens: ItemMapa[] };
 
 const ORDENS = [
@@ -48,7 +48,7 @@ export function MapaDoDia({ grupos }: { grupos: GrupoMapa[] }) {
       <TituloSecao titulo="Mapa do dia" subtitulo="Escolha o tipo de ativo e compare como cada um se saiu hoje" />
 
       {/* Seletor + comparativo entre tipos */}
-      <div className="grid grid-cols-2 gap-2 lg:grid-cols-4" role="radiogroup" aria-label="Tipo de ativo">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5" role="radiogroup" aria-label="Tipo de ativo">
         {grupos.map((g) => {
           const rg = resumo(g.itens);
           const ativo = g.id === grupo.id;
@@ -70,7 +70,7 @@ export function MapaDoDia({ grupos }: { grupos: GrupoMapa[] }) {
                 <span className="bg-menta" style={{ width: `${pctAlta}%` }} />
               </span>
               <span className="text-[11px] text-suave">
-                {rg.altas} em alta · {rg.quedas} em queda · {g.total.toLocaleString("pt-BR")} na B3
+                {rg.altas} em alta · {rg.quedas} em queda · {g.id === "cripto" ? "30 maiores" : `${g.total.toLocaleString("pt-BR")} na B3`}
               </span>
             </button>
           );
@@ -116,7 +116,7 @@ export function MapaDoDia({ grupos }: { grupos: GrupoMapa[] }) {
         {visiveis.map((a) => (
           <li key={a.simbolo}>
             <Link
-              href={`/mercado/${a.simbolo}`}
+              href={a.href ?? `/mercado/${a.simbolo}`}
               title={a.nome}
               className="flex min-h-24 flex-col items-center justify-center rounded-xl px-1 py-2 text-center transition hover:ring-2 hover:ring-texto/40"
               style={{ background: cor(a.variacaoPct) }}

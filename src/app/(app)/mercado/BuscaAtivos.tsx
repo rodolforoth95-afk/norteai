@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { Search } from "lucide-react";
 import { LinhaAtivo } from "@/components/mercado";
 
-type Resultado = { simbolo: string; nome: string; logo: string | null; preco: number | null; variacaoPct: number | null };
+type Resultado = { simbolo: string; nome: string; logo: string | null; preco: number | null; variacaoPct: number | null; href?: string };
 
 export function BuscaAtivos() {
   const [termo, setTermo] = useState("");
@@ -39,7 +39,7 @@ export function BuscaAtivos() {
   return (
     <div className="relative">
       <label htmlFor="busca-ativos" className="sr-only">
-        Buscar ação, FII, ETF ou BDR
+        Buscar ação, FII, ETF, BDR ou cripto
       </label>
       <Search className="pointer-events-none absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-suave" aria-hidden="true" />
       <input
@@ -47,7 +47,7 @@ export function BuscaAtivos() {
         type="search"
         value={termo}
         onChange={(e) => setTermo(e.target.value)}
-        placeholder="Buscar ação, FII, ETF ou BDR"
+        placeholder="Buscar ação, FII, ETF, BDR ou cripto"
         autoComplete="off"
         className="min-h-12 w-full rounded-2xl border border-linha bg-superficie pl-12 pr-4 text-base text-texto placeholder:text-suave/70 focus:border-violeta focus:outline-none focus:ring-2 focus:ring-violeta/40"
       />
@@ -57,7 +57,7 @@ export function BuscaAtivos() {
           {resultados?.length === 0 ? <p className="px-3 py-2 text-sm text-suave">Nenhum ativo encontrado.</p> : null}
           <ul className="flex flex-col">
             {resultados?.map((r) => (
-              <LinhaAtivo key={r.simbolo} {...r} />
+              <LinhaAtivo key={r.href ?? r.simbolo} {...r} />
             ))}
           </ul>
         </div>

@@ -51,9 +51,11 @@ export function PainelTecnico({
   pivos,
   leituras,
   periodoAnalise,
+  comparavel = true,
 }: {
   simbolo: string;
   indice: boolean;
+  comparavel?: boolean;
   candles: Candle[];
   niveis: Nivel[];
   pivos: Nivel[];
@@ -62,7 +64,11 @@ export function PainelTecnico({
 }) {
   const tema = useCoresTema();
   const preco = (v: number | null | undefined) =>
-    v === null || v === undefined ? "—" : indice ? `${v.toLocaleString("pt-BR", { maximumFractionDigits: 0 })} pts` : v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+    v === null || v === undefined
+      ? "—"
+      : indice
+        ? `${v.toLocaleString("pt-BR", { maximumFractionDigits: 0 })} pts`
+        : v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", maximumFractionDigits: v < 10 ? 4 : 2 });
 
   const [periodo, setPeriodo] = useState<(typeof PERIODOS)[number]["id"]>("3m");
   const [tipo, setTipo] = useState<"candles" | "linha">("candles");
@@ -431,9 +437,11 @@ export function PainelTecnico({
         </div>
         <p className="text-[11px] text-suave">
           * Mês em andamento ou incompleto no histórico disponível. A variação compara o fechamento com o do mês anterior.{" "}
-          <Link href={`/mercado/comparar?s=${encodeURIComponent(simbolo)}`} className="font-semibold text-ciano">
-            Comparar {simbolo} com outros ativos
-          </Link>
+          {comparavel ? (
+            <Link href={`/mercado/comparar?s=${encodeURIComponent(simbolo)}`} className="font-semibold text-ciano">
+              Comparar {simbolo} com outros ativos
+            </Link>
+          ) : null}
         </p>
       </Cartao>
     </div>

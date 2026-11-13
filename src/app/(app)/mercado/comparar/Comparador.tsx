@@ -289,7 +289,7 @@ function Adicionar({ onAdicionar, temIbov }: { onAdicionar: (s: string) => void;
     const t = setTimeout(async () => {
       try {
         const r = await fetch(`/api/mercado/busca?q=${encodeURIComponent(termo)}`, { signal: controle.signal });
-        if (r.ok) setResultados((await r.json()).resultados ?? []);
+        if (r.ok) setResultados(((await r.json()).resultados ?? []).filter((x: { href?: string }) => !x.href));
       } catch {
         // busca opcional
       }

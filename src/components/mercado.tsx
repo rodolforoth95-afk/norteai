@@ -8,7 +8,7 @@ export const AVISO_MERCADO =
 
 export function formatarPreco(v: number | null | undefined, moeda = true) {
   if (v === null || v === undefined) return "—";
-  return v.toLocaleString("pt-BR", moeda ? { style: "currency", currency: "BRL" } : { maximumFractionDigits: 2 });
+  return v.toLocaleString("pt-BR", moeda ? { style: "currency", currency: "BRL", maximumFractionDigits: Math.abs(v) < 10 && v !== 0 ? 4 : 2 } : { maximumFractionDigits: 2 });
 }
 
 export function formatarCompacto(v: number | null | undefined) {
@@ -57,6 +57,7 @@ export function LinhaAtivo({
   preco,
   variacaoPct,
   posicao,
+  href,
 }: {
   simbolo: string;
   nome: string;
@@ -64,10 +65,11 @@ export function LinhaAtivo({
   preco: number | null;
   variacaoPct: number | null;
   posicao?: number;
+  href?: string;
 }) {
   return (
     <li>
-      <Link href={`/mercado/${encodeURIComponent(simbolo)}`} className="flex min-h-16 items-center gap-3 rounded-2xl px-2 py-2 transition hover:bg-superficie-2">
+      <Link href={href ?? `/mercado/${encodeURIComponent(simbolo)}`} className="flex min-h-16 items-center gap-3 rounded-2xl px-2 py-2 transition hover:bg-superficie-2">
         {posicao ? <span className="w-4 text-center font-display text-xs font-bold text-suave">{posicao}</span> : null}
         <LogoAtivo simbolo={simbolo} logo={logo} />
         <span className="min-w-0 flex-1">

@@ -6,6 +6,7 @@ import { Cartao, TituloSecao } from "@/components/ui";
 import { AVISO_MERCADO, EsqueletoLista, LinhaAtivo, SeloVariacao, formatarPreco } from "@/components/mercado";
 import { altasDaSemana, brapiDisponivel, cotacao, destaquesDoDia, futuros, historico, listarAtivosComTotal, tesouro } from "@/lib/servidor/brapi";
 import { MapaDoDia as MapaInterativo, type GrupoMapa } from "./MapaDoDia";
+import { listarCriptos } from "@/lib/servidor/cripto";
 import { exigirUsuario } from "@/lib/servidor/sessao";
 import { AbasDestaques } from "./AbasDestaques";
 import { BuscaAtivos } from "./BuscaAtivos";
@@ -88,6 +89,10 @@ export default async function PaginaMercado() {
         <Semana />
       </Suspense>
 
+      <Suspense fallback={<Cartao><EsqueletoLista /></Cartao>}>
+        <Criptomoedas />
+      </Suspense>
+
       <Suspense fallback={<div className="h-40 animate-pulse rounded-2xl bg-superficie" />}>
         <RendaFixaEFuturos />
       </Suspense>
@@ -119,6 +124,16 @@ async function MapaDoDia() {
     } catch {
       // Um tipo com falha não derruba o mapa.
     }
+  }
+  const criptos = (await listarCriptos(30)).filter((c) => c.variacao24h !== null);
+  if (criptos.length) {
+    grupos.push({
+      id: "cripto",
+      rotulo: "Cripto",
+      descricao: "Entre as 30 maiores criptomoedas por valor de mercado, variação em 24 horas (CoinGecko).",
+      total: criptos.length,
+      itens: criptos.map((c) => ({ simbolo: c.simbolo, nome: c.nome, logo: c.logo, variacaoPct: c.variacao24h!, preco: c.preco, href: `/mercado/cripto/${c.id}` })),
+    });
   }
   if (!grupos.length) return null;
   return <MapaInterativo grupos={grupos} />;
@@ -200,6 +215,23 @@ async function Semana() {
       <p className="text-xs text-suave">
         Ativos com salto de mais de 30% em um único dia ficam de fora: costumam ser desdobramentos ou outros eventos que distorcem a comparação.
       </p>
+    </Cartao>
+  );
+}
+
+// As maiores criptomoedas (CoinGecko, em reais): a brapi não cobre cripto no plano atual.
+async function Criptomoedas() {
+  const lista = (await listarCriptos(30)).filter((c) => !/^(USDT|USDC|DAI|FDUSD|TUSD|USDE|USDS|BUSD|PYUSD|WBTC|STETH|WSTETH|WETH|WEETH|CBBTC)$/.test(c.simbolo)).slice(0, 8);
+  if (!lista.length) return null;
+  return (
+    <Cartao className="flex flex-col gap-3">
+      <TituloSecao titulo="Criptomoedas" subtitulo="As maiores por valor de mercado, em reais · variação em 24 horas" />
+      <ul className="-mx-2 flex flex-col">
+        {lista.map((c, i) => (
+          <LinhaAtivo key={c.id} posicao={i + 1} simbolo={c.simbolo} nome={c.nome} logo={c.logo} preco={c.preco} variacaoPct={c.variacao24h} href={`/mercado/cripto/${c.id}`} />
+        ))}
+      </ul>
+      <p className="text-xs text-suave">Dados da CoinGecko, atualizados a cada 5 minutos. Stablecoins e versões “embrulhadas” ficam de fora da lista.</p>
     </Cartao>
   );
 }
