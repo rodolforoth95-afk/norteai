@@ -1,5 +1,5 @@
 // Confere a leitura de frases, o aprendizado e o plano de economia. Rodar: npm run testar:financas
-import { aprender, diagnosticar, exemploFinancas, financasVazias, interpretarFrase, planejar, resumoDoMes, sugerirCategoria } from "../src/lib/dominio/financas";
+import { aprender, diagnosticar, dreDosMeses, exemploFinancas, financasVazias, interpretarFrase, lerTextoComprovante, planejar, resumoDoMes, sugerirCategoria } from "../src/lib/dominio/financas";
 
 let falhas = 0;
 const ok = (nome: string, cond: boolean, info: unknown = "") => {
@@ -36,4 +36,46 @@ ok("plano corta só variáveis", plano.cortes.every((x) => !["moradia", "saude",
 ok("plano atinge meta possível", plano.atingivel, plano);
 console.log(`\nsobra média ${diag.sobraMedia} · ralos ${diag.ralos.map((x) => x.categoriaId).join(", ")} · cortes ${plano.cortes.map((x) => `${x.categoriaId} -${x.percentual}%`).join(", ")}`);
 if (falhas) process.exit(1);
+// Comprovantes lidos por OCR
+const cupom = lerTextoComprovante(`SUPERMERCADO BOM PRECO LTDA
+CNPJ 12.345.678/0001-90
+RUA DAS FLORES, 100
+CUPOM FISCAL ELETRONICO - SAT
+ARROZ 5KG            27,90
+FEIJAO 1KG            8,49
+SUBTOTAL             36,39
+DESCONTO              1,39
+TOTAL R$             35,00
+CARTAO DEBITO        35,00
+10/11/2026 14:32`, hoje);
+ok("cupom: total 35, débito, data, nome", cupom.valor === 35 && cupom.meio === "debito" && cupom.data === "2026-11-10" && cupom.estabelecimento === "Supermercado Bom Preco", cupom);
+const pix = lerTextoComprovante(`Comprovante de transferência
+Pix enviado
+Valor
+R$ 1.250,00
+Para
+Joana Imóveis
+Data 12/11/2026`, hoje);
+ok("pix: 1250, pix, destinatário", pix.valor === 1250 && pix.meio === "pix" && pix.estabelecimento === "Joana Imóveis" && pix.data === "2026-11-12", pix);
+const futuro = lerTextoComprovante("LOJA X\nTOTAL 10,00\nVencimento 20/12/2026", hoje);
+ok("data futura ignorada", futuro.data === hoje && futuro.valor === 10, futuro);
+
+// DRE
+{
+  const dados = { ...financasVazias(), lancamentos: exemploFinancas(hoje, () => Math.random().toString(36).slice(2)) };
+  const meses = ["2026-09", "2026-10"];
+  const dre = dreDosMeses(dados, meses, { "2026-10": 500 });
+  const linha = (id: string) => dre.find((l) => l.id === id)!;
+  const r = resumoDoMes(dados, "2026-10");
+  ok("DRE receitas = resumo", Math.abs(linha("receitas").valores[1] - r.receitas) < 0.01, linha("receitas"));
+  ok("DRE resultado = saldo", Math.abs(linha("resultado").valores[1] - r.saldo) < 0.01, [linha("resultado").valores, r.saldo]);
+  ok("DRE essenciais + variáveis = despesas", Math.abs(linha("essenciais").valores[1] + linha("variaveis").valores[1] - r.despesas) < 0.01);
+  ok("DRE caixa = resultado − aportes", Math.abs(linha("caixa").valores[1] - (r.saldo - 500)) < 0.01);
+  ok("DRE itens de receita", dre.some((l) => l.categoriaId === "salario"));
+}
+
+if (falhas) {
+  console.log(`${falhas} falha(s)`);
+  process.exit(1);
+}
 console.log("Finanças OK");

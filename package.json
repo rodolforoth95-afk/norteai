@@ -22,6 +22,7 @@
     "react-dom": "^19.1.10",
     "recharts": "^3.10.1",
     "server-only": "^0.0.1",
+    "tesseract.js": "6.0.1",
     "unpdf": "^2.1.0",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
     "zod": "^4.6.7"

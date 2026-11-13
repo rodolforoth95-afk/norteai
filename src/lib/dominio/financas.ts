@@ -603,3 +603,140 @@ export function exemploFinancas(hoje: string, novoId: () => string): Lancamento[
   for (let p = 0; p < 6; p++) add("despesa", somarMeses(primeiro, 1 + p), 10, 250, "Notebook Magalu", "compras", "credito", { parcela: { atual: p + 1, total: 6, grupo } });
   return lista;
 }
+
+// --- Leitura local do texto de um comprovante (OCR feito no aparelho) ---------------------
+
+const NUM_BR = /(?:r\$\s*)?(\d{1,3}(?:\.\d{3})*,\d{2}|\d+,\d{2})/gi;
+const numeroBR = (t: string) => Number(t.replace(/r\$\s*/i, "").replace(/\./g, "").replace(",", "."));
+
+// Recebe o texto extraído da foto (nota, cupom, Pix, fatura) e acha total, data,
+// estabelecimento e meio de pagamento. Linhas com "total", "pagar" ou "valor" têm prioridade.
+export function lerTextoComprovante(texto: string, hoje: string): Interpretacao & { confianca: number } {
+  const linhas = texto.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+  const semAcento = (s: string) => s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+
+  let valor: number | null = null;
+  let confianca = 0.3;
+  const prioridade = [/valor\s+total|total\s+a\s+pagar|valor\s+a\s+pagar|valor\s+pago|total\s+pago/, /\btotal\b|\bpagar\b/, /\bvalor\b/];
+  for (const regra of prioridade) {
+    for (let i = 0; i < linhas.length && valor === null; i++) {
+      const l = semAcento(linhas[i]);
+      if (!regra.test(l) || /subtotal|troco|desconto|tributos|imposto|lei 12/.test(l)) continue;
+      const aqui = [...linhas[i].matchAll(NUM_BR)].map((m) => numeroBR(m[1]));
+      const proxima = linhas[i + 1] ? [...linhas[i + 1].matchAll(NUM_BR)].map((m) => numeroBR(m[1])) : [];
+      const candidatos = aqui.length ? aqui : proxima;
+      if (candidatos.length) {
+        valor = Math.max(...candidatos);
+        confianca = regra === prioridade[0] ? 0.8 : 0.65;
+      }
+    }
+    if (valor !== null) break;
+  }
+  if (valor === null) {
+    const todos = linhas.filter((l) => !/troco|cnpj|cpf/i.test(l)).flatMap((l) => [...l.matchAll(NUM_BR)].map((m) => numeroBR(m[1])));
+    if (todos.length) {
+      valor = Math.max(...todos);
+      confianca = 0.4;
+    }
+  }
+
+  let data = hoje;
+  for (const m of texto.matchAll(/\b(\d{2})[/.-](\d{2})[/.-](\d{2,4})\b/g)) {
+    const ano = m[3].length === 2 ? `20${m[3]}` : m[3];
+    const iso = `${ano}-${m[2]}-${m[1]}`;
+    if (!Number.isNaN(Date.parse(`${iso}T12:00:00`)) && iso <= hoje && iso >= "2000-01-01") {
+      data = iso;
+      break;
+    }
+  }
+
+  const ignorar = /cnpj|cpf|ie:|i\.e\.|inscri|cupom|nota fiscal|nfc-?e|documento auxiliar|extrato|comprovante|danfe|sat\b|rua|av\.|avenida|cep|tel|fone|www|http|^\d|data|hora|transfer|pix|pagamento|valor|banco|ag[eê]ncia/i;
+  const lugar = linhas.slice(0, 8).find((l) => l.replace(/[^A-Za-zÀ-ú]/g, "").length >= 4 && !ignorar.test(l));
+  const iDest = linhas.findIndex((l) => /^(para|destino|recebedor|favorecido|nome)\b/i.test(semAcento(l)));
+  const restoDest = iDest >= 0 ? linhas[iDest].replace(/^(para|destino|recebedor|favorecido|nome)\s*:?\s*/i, "").trim() : "";
+  const nomePix = iDest < 0 ? null : restoDest.length >= 3 ? restoDest : (linhas[iDest + 1] ?? null);
+  const bruto = (nomePix && nomePix.length >= 3 ? nomePix : lugar) ?? null;
+  const estabelecimento = bruto
+    ? bruto
+        .replace(/\b(ltda|me|eireli|s\.?a\.?|epp|comercio de|com\.?)\b\.?/gi, "")
+        .replace(/[^A-Za-zÀ-ú0-9 &'-]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim()
+        .toLowerCase()
+        .replace(/(^|\s)\S/g, (x) => x.toUpperCase())
+        .slice(0, 40)
+    : null;
+
+  const t = semAcento(texto);
+  const meio: Meio | null = /\bpix\b/.test(t) ? "pix" : /credito/.test(t) ? "credito" : /debito/.test(t) ? "debito" : /dinheiro/.test(t) ? "dinheiro" : /boleto/.test(t) ? "boleto" : null;
+  const parc = t.match(/\b(\d{1,2})\s*x\s*(?:de|sem juros)/);
+  const tipo: TipoLancamento = /pix recebido|voce recebeu|recebimento|credito em conta/.test(t) ? "receita" : "despesa";
+  return {
+    tipo,
+    valor: valor && valor > 0 && valor < 10_000_000 ? Math.round(valor * 100) / 100 : null,
+    data,
+    descricao: estabelecimento || (tipo === "receita" ? "Pix recebido" : "Compra"),
+    estabelecimento,
+    meio,
+    parcelas: parc ? Math.min(48, Math.max(1, Number(parc[1]))) : 1,
+    confianca: estabelecimento ? confianca : confianca - 0.1,
+  };
+}
+
+// --- DRE pessoal (demonstrativo de resultado do mês) -------------------------------------
+
+export type LinhaDRE = {
+  id: string;
+  rotulo: string;
+  tipo: "grupo" | "item" | "resultado" | "destaque";
+  sinal: 1 | -1;
+  valores: number[]; // um por mês, sempre positivos nos grupos e itens
+  categoriaId?: string;
+};
+
+// Receitas, despesas essenciais e variáveis por categoria principal, o resultado do mês
+// (o "lucro" da pessoa), os aportes na carteira e o caixa que sobra depois deles.
+export function dreDosMeses(dados: Pick<FinancasDados, "lancamentos" | "categorias">, meses: string[], aportes: Record<string, number>): LinhaDRE[] {
+  const principal = (id: string) => {
+    const c = dados.categorias.find((x) => x.id === id);
+    return c?.paiId ? (dados.categorias.find((x) => x.id === c.paiId) ?? c) : c;
+  };
+  const somas = new Map<string, number[]>();
+  for (let i = 0; i < meses.length; i++) {
+    for (const o of ocorrenciasDoMes(dados.lancamentos, meses[i])) {
+      const c = principal(o.categoriaId);
+      const id = c?.id ?? (o.tipo === "receita" ? "outras-receitas" : "outros");
+      const v = somas.get(id) ?? meses.map(() => 0);
+      v[i] += o.valor;
+      somas.set(id, v);
+    }
+  }
+  const itens = (filtro: (c: Categoria | undefined, id: string) => boolean): LinhaDRE[] =>
+    [...somas.entries()]
+      .filter(([id]) => filtro(dados.categorias.find((x) => x.id === id), id))
+      .map(([id, valores]) => ({ id: `item-${id}`, rotulo: dados.categorias.find((x) => x.id === id)?.nome ?? "Outros", tipo: "item" as const, sinal: 1 as const, valores: valores.map(arred), categoriaId: id }))
+      .sort((a, b) => b.valores.reduce((s, x) => s + x, 0) - a.valores.reduce((s, x) => s + x, 0));
+  const soma = (ls: LinhaDRE[]) => meses.map((_, i) => arred(ls.reduce((s, l) => s + l.valores[i], 0)));
+
+  const receitas = itens((c, id) => (c ? c.tipo === "receita" : id === "outras-receitas"));
+  const essenciais = itens((c) => Boolean(c && c.tipo === "despesa" && c.essencial));
+  const variaveis = itens((c, id) => (c ? c.tipo === "despesa" && !c.essencial : id === "outros"));
+  const rec = soma(receitas);
+  const ess = soma(essenciais);
+  const vari = soma(variaveis);
+  const sobraEssencial = meses.map((_, i) => arred(rec[i] - ess[i]));
+  const resultado = meses.map((_, i) => arred(sobraEssencial[i] - vari[i]));
+  const aplicado = meses.map((m) => arred(aportes[m] ?? 0));
+  return [
+    { id: "receitas", rotulo: "Receitas", tipo: "grupo", sinal: 1, valores: rec },
+    ...receitas,
+    { id: "essenciais", rotulo: "(−) Despesas essenciais", tipo: "grupo", sinal: -1, valores: ess },
+    ...essenciais,
+    { id: "sobra-essencial", rotulo: "= Sobra após o essencial", tipo: "resultado", sinal: 1, valores: sobraEssencial },
+    { id: "variaveis", rotulo: "(−) Despesas variáveis", tipo: "grupo", sinal: -1, valores: vari },
+    ...variaveis,
+    { id: "resultado", rotulo: "= Resultado do mês (lucro)", tipo: "destaque", sinal: 1, valores: resultado },
+    { id: "aportes", rotulo: "(−) Aportes na carteira", tipo: "grupo", sinal: -1, valores: aplicado },
+    { id: "caixa", rotulo: "= Caixa livre após aportes", tipo: "resultado", sinal: 1, valores: meses.map((_, i) => arred(resultado[i] - aplicado[i])) },
+  ];
+}

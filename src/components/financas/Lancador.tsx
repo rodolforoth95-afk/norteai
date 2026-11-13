@@ -1,14 +1,43 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
 import { useRouter } from "next/navigation";
-import { Camera, CheckCircle2, ImageUp, Keyboard, Loader2, Mic, Plus, Square, X } from "lucide-react";
-import { FormLancamento, type ContextoLancamento, type ValoresLancamento } from "./FormLancamento";
+import {
+  Camera,
+  CheckCircle2,
+  ImageUp,
+  Keyboard,
+  Loader2,
+  Mic,
+  Plus,
+  Square,
+  X,
+} from "lucide-react";
+import { lerTextoComprovante, sugerirCategoria } from "@/lib/dominio/financas";
+import {
+  FormLancamento,
+  type ContextoLancamento,
+  type ValoresLancamento,
+} from "./FormLancamento";
 
 type Modo = "texto" | "camera" | "voz";
-type Previa = Omit<ValoresLancamento, "recorrente" | "origem"> & { categoriaAprendida: boolean; confianca: number; viaIA: boolean };
+type Previa = Omit<ValoresLancamento, "recorrente" | "origem"> & {
+  categoriaAprendida: boolean;
+  confianca: number;
+  viaIA: boolean;
+};
 
-type Lancador = { abrir: (modo: Modo, inicial?: Partial<ValoresLancamento>) => void };
+type Lancador = {
+  abrir: (modo: Modo, inicial?: Partial<ValoresLancamento>) => void;
+};
 const ContextoLancador = createContext<Lancador>({ abrir: () => {} });
 export const useLancador = () => useContext(ContextoLancador);
 
@@ -18,32 +47,63 @@ type Reconhecimento = {
   continuous: boolean;
   start: () => void;
   stop: () => void;
-  onresult: ((e: { results: ArrayLike<ArrayLike<{ transcript: string }> & { isFinal: boolean }> }) => void) | null;
+  onresult:
+    | ((e: {
+        results: ArrayLike<
+          ArrayLike<{ transcript: string }> & { isFinal: boolean }
+        >;
+      }) => void)
+    | null;
   onend: (() => void) | null;
   onerror: ((e: { error: string }) => void) | null;
 };
 
 function criarReconhecimento(): Reconhecimento | null {
   if (typeof window === "undefined") return null;
-  const w = window as unknown as { SpeechRecognition?: new () => Reconhecimento; webkitSpeechRecognition?: new () => Reconhecimento };
+  const w = window as unknown as {
+    SpeechRecognition?: new () => Reconhecimento;
+    webkitSpeechRecognition?: new () => Reconhecimento;
+  };
   const Classe = w.SpeechRecognition ?? w.webkitSpeechRecognition;
   return Classe ? new Classe() : null;
 }
 
 // Lançador global: o botão flutuante (em qualquer tela do app) abre Texto, Câmera ou
 // Microfone. Foto e voz viram uma prévia que a pessoa confere e salva em um clique.
-export function ProvedorLancador({ contexto, ia, children }: { contexto: ContextoLancamento; ia: boolean; children: ReactNode }) {
+export function ProvedorLancador({
+  contexto,
+  ia,
+  children,
+}: {
+  contexto: ContextoLancamento;
+  ia: boolean;
+  children: ReactNode;
+}) {
   const router = useRouter();
   const [aberto, setAberto] = useState(false);
   const [menu, setMenu] = useState(false);
   const [modo, setModo] = useState<Modo>("texto");
   const [inicial, setInicial] = useState<ValoresLancamento | null>(null);
-  const [destaque, setDestaque] = useState<{ titulo: string; texto: string } | null>(null);
+  const [destaque, setDestaque] = useState<{
+    titulo: string;
+    texto: string;
+  } | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
   const [chave, setChave] = useState(0);
 
   const vazio = useCallback(
-    (origem: ValoresLancamento["origem"] = "manual"): ValoresLancamento => ({ tipo: "despesa", valor: null, data: contexto.hoje, descricao: "", estabelecimento: null, categoriaId: null, meio: null, parcelas: 1, recorrente: false, origem }),
+    (origem: ValoresLancamento["origem"] = "manual"): ValoresLancamento => ({
+      tipo: "despesa",
+      valor: null,
+      data: contexto.hoje,
+      descricao: "",
+      estabelecimento: null,
+      categoriaId: null,
+      meio: null,
+      parcelas: 1,
+      recorrente: false,
+      origem,
+    }),
     [contexto.hoje],
   );
 
@@ -85,8 +145,22 @@ export function ProvedorLancador({ contexto, ia, children }: { contexto: Context
 
   function receberPrevia(p: Previa, origem: "foto" | "audio") {
     setInicial({ ...p, recorrente: false, origem });
-    const confere = p.confianca < 0.6 ? "Confira o valor antes de salvar." : p.categoriaAprendida ? "Categoria escolhida pelo que você costuma usar." : "Confira e salve.";
-    setDestaque({ titulo: origem === "foto" ? "Lido da foto" : p.viaIA ? "Entendi assim" : "Entendi assim (leitura local)", texto: confere });
+    const confere = !p.valor
+      ? "Não achei o total: digite o valor e confira o resto."
+      : p.confianca < 0.6
+        ? "Confira o valor antes de salvar."
+        : p.categoriaAprendida
+          ? "Categoria escolhida pelo que você costuma usar."
+          : "Confira e salve.";
+    setDestaque({
+      titulo:
+        origem === "foto"
+          ? "Lido da foto"
+          : p.viaIA
+            ? "Entendi assim"
+            : "Entendi assim (leitura local)",
+      texto: confere,
+    });
     setChave((k) => k + 1);
   }
 
@@ -96,21 +170,49 @@ export function ProvedorLancador({ contexto, ia, children }: { contexto: Context
     router.refresh();
   }
 
-  const titulo = inicial?.id ? "Editar lançamento" : modo === "camera" && !inicial ? "Ler comprovante" : modo === "voz" && !inicial ? "Falar o lançamento" : "Novo lançamento";
+  const titulo = inicial?.id
+    ? "Editar lançamento"
+    : modo === "camera" && !inicial
+      ? "Ler comprovante"
+      : modo === "voz" && !inicial
+        ? "Falar o lançamento"
+        : "Novo lançamento";
 
   return (
     <ContextoLancador.Provider value={{ abrir }}>
       {children}
 
       {/* Botão flutuante e suas três opções */}
-      {menu ? <button type="button" className="fixed inset-0 z-30 cursor-default bg-[rgb(3_6_20/0.35)] backdrop-blur-[2px]" aria-label="Fechar opções" onClick={() => setMenu(false)} /> : null}
+      {menu ? (
+        <button
+          type="button"
+          className="fixed inset-0 z-30 cursor-default bg-[rgb(3_6_20/0.35)] backdrop-blur-[2px]"
+          aria-label="Fechar opções"
+          onClick={() => setMenu(false)}
+        />
+      ) : null}
       <div className="fixed bottom-[calc(6.25rem+env(safe-area-inset-bottom))] right-4 z-40 flex flex-col items-end gap-2.5 lg:bottom-8 lg:right-8">
         {menu ? (
           <>
             {[
-              { m: "voz" as const, rotulo: "Falar", sub: "“Gastei 85 no almoço”", Icone: Mic },
-              { m: "camera" as const, rotulo: "Foto do comprovante", sub: "Nota, cupom ou Pix", Icone: Camera },
-              { m: "texto" as const, rotulo: "Digitar", sub: "Formulário rápido", Icone: Keyboard },
+              {
+                m: "voz" as const,
+                rotulo: "Falar",
+                sub: "“Gastei 85 no almoço”",
+                Icone: Mic,
+              },
+              {
+                m: "camera" as const,
+                rotulo: "Foto do comprovante",
+                sub: "Nota, cupom ou Pix",
+                Icone: Camera,
+              },
+              {
+                m: "texto" as const,
+                rotulo: "Digitar",
+                sub: "Formulário rápido",
+                Icone: Keyboard,
+              },
             ].map(({ m, rotulo, sub, Icone }, i) => (
               <button
                 key={m}
@@ -120,7 +222,9 @@ export function ProvedorLancador({ contexto, ia, children }: { contexto: Context
                 style={{ animationDelay: `${(2 - i) * 40}ms` }}
               >
                 <span className="flex flex-col">
-                  <span className="text-sm font-semibold text-texto">{rotulo}</span>
+                  <span className="text-sm font-semibold text-texto">
+                    {rotulo}
+                  </span>
                   <span className="text-xs text-suave">{sub}</span>
                 </span>
                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-superficie-2 text-ciano">
@@ -137,32 +241,59 @@ export function ProvedorLancador({ contexto, ia, children }: { contexto: Context
           aria-label={menu ? "Fechar opções de lançamento" : "Novo lançamento"}
           className="gradiente-marca flex h-14 w-14 items-center justify-center rounded-2xl text-white shadow-[0_14px_34px_-10px_rgb(45_91_255/0.75)] transition hover:brightness-110 active:scale-95"
         >
-          <Plus className={`h-7 w-7 transition-transform ${menu ? "rotate-45" : ""}`} strokeWidth={2.4} aria-hidden="true" />
+          <Plus
+            className={`h-7 w-7 transition-transform ${menu ? "rotate-45" : ""}`}
+            strokeWidth={2.4}
+            aria-hidden="true"
+          />
         </button>
       </div>
 
       {/* Aviso de lançamento salvo */}
       {aviso ? (
-        <div role="status" className="animate-subir fixed inset-x-4 bottom-[calc(10.5rem+env(safe-area-inset-bottom))] z-40 mx-auto flex max-w-md items-center gap-3 rounded-2xl border border-linha bg-superficie px-4 py-3 text-sm shadow-[0_18px_44px_-14px_rgb(0_0_0/0.5)] lg:bottom-28">
-          <CheckCircle2 className="h-5 w-5 shrink-0 text-menta" aria-hidden="true" />
+        <div
+          role="status"
+          className="animate-subir fixed inset-x-4 bottom-[calc(10.5rem+env(safe-area-inset-bottom))] z-40 mx-auto flex max-w-md items-center gap-3 rounded-2xl border border-linha bg-superficie px-4 py-3 text-sm shadow-[0_18px_44px_-14px_rgb(0_0_0/0.5)] lg:bottom-28"
+        >
+          <CheckCircle2
+            className="h-5 w-5 shrink-0 text-menta"
+            aria-hidden="true"
+          />
           <span className="min-w-0 flex-1 truncate text-texto">{aviso}</span>
         </div>
       ) : null}
 
       {/* Janela */}
       {aberto ? (
-        <div className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-6" role="dialog" aria-modal="true" aria-labelledby="titulo-lancador">
-          <button type="button" className="absolute inset-0 cursor-default bg-[rgb(3_6_20/0.55)] backdrop-blur-sm" aria-label="Fechar" onClick={fechar} />
+        <div
+          className="fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-6"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="titulo-lancador"
+        >
+          <button
+            type="button"
+            className="absolute inset-0 cursor-default bg-[rgb(3_6_20/0.55)] backdrop-blur-sm"
+            aria-label="Fechar"
+            onClick={fechar}
+          />
           <div className="animate-subir relative flex max-h-[92dvh] w-full flex-col overflow-hidden rounded-t-[1.75rem] border border-linha bg-superficie shadow-[0_30px_80px_-20px_rgb(0_0_0/0.6)] sm:max-w-lg sm:rounded-[1.75rem]">
             <div className="flex items-center justify-between gap-3 border-b border-linha px-5 py-3.5">
-              <h2 id="titulo-lancador" className="font-display text-lg font-bold text-texto">
+              <h2
+                id="titulo-lancador"
+                className="font-display text-lg font-bold text-texto"
+              >
                 {titulo}
               </h2>
               <div className="flex items-center gap-1">
                 {!inicial?.id
                   ? (
                       [
-                        { m: "texto" as const, Icone: Keyboard, rotulo: "Digitar" },
+                        {
+                          m: "texto" as const,
+                          Icone: Keyboard,
+                          rotulo: "Digitar",
+                        },
                         { m: "camera" as const, Icone: Camera, rotulo: "Foto" },
                         { m: "voz" as const, Icone: Mic, rotulo: "Falar" },
                       ] as const
@@ -175,20 +306,38 @@ export function ProvedorLancador({ contexto, ia, children }: { contexto: Context
                         aria-pressed={modo === m}
                         className={`flex h-9 w-9 items-center justify-center rounded-lg ${modo === m ? "bg-superficie-2 text-ciano" : "text-suave hover:text-texto"}`}
                       >
-                        <Icone className="h-[18px] w-[18px]" aria-hidden="true" />
+                        <Icone
+                          className="h-[18px] w-[18px]"
+                          aria-hidden="true"
+                        />
                       </button>
                     ))
                   : null}
-                <button type="button" onClick={fechar} className="ml-1 flex h-9 w-9 items-center justify-center rounded-lg text-suave hover:bg-superficie-2 hover:text-texto" aria-label="Fechar">
+                <button
+                  type="button"
+                  onClick={fechar}
+                  className="ml-1 flex h-9 w-9 items-center justify-center rounded-lg text-suave hover:bg-superficie-2 hover:text-texto"
+                  aria-label="Fechar"
+                >
                   <X className="h-5 w-5" aria-hidden="true" />
                 </button>
               </div>
             </div>
             <div className="overflow-y-auto px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-5">
               {inicial ? (
-                <FormLancamento key={chave} contexto={contexto} inicial={inicial} destaque={destaque} aoSalvar={salvo} />
+                <FormLancamento
+                  key={chave}
+                  contexto={contexto}
+                  inicial={inicial}
+                  destaque={destaque}
+                  aoSalvar={salvo}
+                />
               ) : modo === "camera" ? (
-                <LerFoto ia={ia} aoLer={(p) => receberPrevia(p, "foto")} aoDigitar={() => abrir("texto")} />
+                <LerFoto
+                  ia={ia}
+                  contexto={contexto}
+                  aoLer={(p) => receberPrevia(p, "foto")}
+                />
               ) : (
                 <Falar aoLer={(p) => receberPrevia(p, "audio")} />
               )}
@@ -200,102 +349,231 @@ export function ProvedorLancador({ contexto, ia, children }: { contexto: Context
   );
 }
 
-function LerFoto({ ia, aoLer, aoDigitar }: { ia: boolean; aoLer: (p: Previa) => void; aoDigitar: () => void }) {
+// Lê o texto da imagem no próprio aparelho (sem enviar a foto) e interpreta o comprovante.
+async function lerNoAparelho(
+  arquivo: File,
+  contexto: ContextoLancamento,
+  progresso: (p: number) => void,
+): Promise<Previa> {
+  const { createWorker } = await import("tesseract.js");
+  const worker = await createWorker("por", 1, {
+    logger: (m: { status: string; progress: number }) => {
+      if (m.status === "recognizing text") progresso(m.progress);
+    },
+  });
+  try {
+    const { data } = await worker.recognize(arquivo);
+    const lido = lerTextoComprovante(data.text, contexto.hoje);
+    const sugestao = sugerirCategoria(
+      `${lido.estabelecimento ?? ""} ${data.text.slice(0, 240)}`,
+      lido.tipo,
+      contexto,
+    );
+    return {
+      ...lido,
+      categoriaId: sugestao.categoriaId,
+      categoriaAprendida: sugestao.aprendida,
+      viaIA: false,
+    };
+  } finally {
+    await worker.terminate();
+  }
+}
+
+function LerFoto({
+  ia,
+  contexto,
+  aoLer,
+}: {
+  ia: boolean;
+  contexto: ContextoLancamento;
+  aoLer: (p: Previa) => void;
+}) {
   const [lendo, setLendo] = useState(false);
+  const [progresso, setProgresso] = useState<number | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [miniatura, setMiniatura] = useState<string | null>(null);
   const camera = useRef<HTMLInputElement>(null);
   const galeria = useRef<HTMLInputElement>(null);
 
-  useEffect(() => () => void (miniatura && URL.revokeObjectURL(miniatura)), [miniatura]);
+  useEffect(
+    () => () => void (miniatura && URL.revokeObjectURL(miniatura)),
+    [miniatura],
+  );
 
   async function enviar(arquivo: File | undefined) {
     if (!arquivo) return;
     setErro(null);
-    setMiniatura(arquivo.type.startsWith("image/") ? URL.createObjectURL(arquivo) : null);
-    setLendo(true);
-    const form = new FormData();
-    form.append("arquivo", await reduzir(arquivo));
-    const r = await fetch("/api/financas/ler", { method: "POST", body: form }).catch(() => null);
-    setLendo(false);
-    const corpo = await r?.json().catch(() => null);
-    if (!r?.ok) return setErro(corpo?.erro ?? "Não conseguimos ler essa foto. Tente de novo.");
-    aoLer(corpo as Previa);
-  }
-
-  if (!ia) {
-    return (
-      <div className="flex flex-col items-center gap-4 py-4 text-center">
-        <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-superficie-2 text-suave">
-          <Camera className="h-7 w-7" aria-hidden="true" />
-        </span>
-        <div>
-          <p className="font-semibold text-texto">Leitura de fotos ainda desligada</p>
-          <p className="mx-auto mt-1 max-w-xs text-sm text-suave">A leitura de comprovantes usa a IA, que será ligada em breve. Enquanto isso, fale ou digite o lançamento.</p>
-        </div>
-        <button type="button" onClick={aoDigitar} className="h-11 rounded-xl border border-linha px-5 text-sm font-semibold text-texto hover:bg-superficie-2">
-          Digitar o lançamento
-        </button>
-      </div>
+    setMiniatura(
+      arquivo.type.startsWith("image/") ? URL.createObjectURL(arquivo) : null,
     );
+    setLendo(true);
+    setProgresso(null);
+    const reduzido = await reduzir(arquivo);
+    if (ia) {
+      const form = new FormData();
+      form.append("arquivo", reduzido);
+      const r = await fetch("/api/financas/ler", {
+        method: "POST",
+        body: form,
+      }).catch(() => null);
+      const corpo = await r?.json().catch(() => null);
+      if (r?.ok) {
+        setLendo(false);
+        return aoLer(corpo as Previa);
+      }
+      if (!arquivo.type.startsWith("image/")) {
+        setLendo(false);
+        return setErro(
+          corpo?.erro ?? "Não conseguimos ler esse arquivo. Tente uma foto.",
+        );
+      }
+    }
+    if (!arquivo.type.startsWith("image/")) {
+      setLendo(false);
+      return setErro(
+        "Sem a IA, só fotos (JPG, PNG) podem ser lidas. Tire uma foto do comprovante.",
+      );
+    }
+    try {
+      const previa = await lerNoAparelho(reduzido, contexto, setProgresso);
+      setLendo(false);
+      aoLer(previa);
+    } catch {
+      setLendo(false);
+      setErro(
+        "Não conseguimos ler essa foto. Verifique a conexão e tente de novo, com o comprovante reto e bem iluminado.",
+      );
+    }
   }
 
   return (
     <div className="flex flex-col gap-4">
-      <input ref={camera} type="file" accept="image/*" capture="environment" className="hidden" onChange={(e) => enviar(e.target.files?.[0])} />
-      <input ref={galeria} type="file" accept="image/png,image/jpeg,image/webp,application/pdf" className="hidden" onChange={(e) => enviar(e.target.files?.[0])} />
+      <input
+        ref={camera}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        className="hidden"
+        onChange={(e) => {
+          void enviar(e.target.files?.[0]);
+          e.target.value = "";
+        }}
+      />
+      <input
+        ref={galeria}
+        type="file"
+        accept={
+          ia ? "image/png,image/jpeg,image/webp,application/pdf" : "image/*"
+        }
+        className="hidden"
+        onChange={(e) => {
+          void enviar(e.target.files?.[0]);
+          e.target.value = "";
+        }}
+      />
       <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-2xl border border-dashed border-linha bg-superficie-2/60">
-        {miniatura ? <img src={miniatura} alt="Comprovante enviado" className="h-full w-full object-contain" /> : (
+        {miniatura ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={miniatura}
+            alt="Comprovante enviado"
+            className="h-full w-full object-contain"
+          />
+        ) : (
           <div className="flex flex-col items-center gap-2 px-6 text-center text-sm text-suave">
             <Camera className="h-8 w-8" aria-hidden="true" />
-            Fotografe a nota, o cupom, o comprovante de Pix ou a fatura. Valor, data e local são lidos sozinhos.
+            Fotografe a nota, o cupom, o comprovante de Pix ou a fatura. Valor,
+            data e local são lidos sozinhos.
           </div>
         )}
         {lendo ? (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-superficie/80 text-sm font-medium text-texto backdrop-blur-sm">
-            <Loader2 className="h-6 w-6 animate-spin text-ciano" aria-hidden="true" />
-            Lendo o comprovante…
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-superficie/85 px-6 text-center text-sm font-medium text-texto backdrop-blur-sm">
+            <Loader2
+              className="h-6 w-6 animate-spin text-ciano"
+              aria-hidden="true"
+            />
+            {progresso === null
+              ? "Preparando a leitura…"
+              : `Lendo o comprovante… ${Math.round(progresso * 100)}%`}
+            {progresso !== null ? (
+              <span className="h-1.5 w-40 overflow-hidden rounded-full bg-superficie-2">
+                <span
+                  className="block h-full rounded-full bg-ciano transition-all"
+                  style={{ width: `${Math.round(progresso * 100)}%` }}
+                />
+              </span>
+            ) : null}
           </div>
         ) : null}
       </div>
       {erro ? (
-        <p role="alert" className="rounded-xl bg-erro/10 px-3 py-2 text-sm text-erro">
+        <p
+          role="alert"
+          className="rounded-xl bg-erro/10 px-3 py-2 text-sm text-erro"
+        >
           {erro}
         </p>
       ) : null}
       <div className="grid grid-cols-2 gap-2">
-        <button type="button" disabled={lendo} onClick={() => camera.current?.click()} className="gradiente-marca flex h-12 items-center justify-center gap-2 rounded-xl text-sm font-bold text-white disabled:opacity-60">
+        <button
+          type="button"
+          disabled={lendo}
+          onClick={() => camera.current?.click()}
+          className="gradiente-marca flex h-12 items-center justify-center gap-2 rounded-xl text-sm font-bold text-white disabled:opacity-60"
+        >
           <Camera className="h-5 w-5" aria-hidden="true" />
           Tirar foto
         </button>
-        <button type="button" disabled={lendo} onClick={() => galeria.current?.click()} className="flex h-12 items-center justify-center gap-2 rounded-xl border border-linha text-sm font-semibold text-texto hover:bg-superficie-2 disabled:opacity-60">
+        <button
+          type="button"
+          disabled={lendo}
+          onClick={() => galeria.current?.click()}
+          className="flex h-12 items-center justify-center gap-2 rounded-xl border border-linha text-sm font-semibold text-texto hover:bg-superficie-2 disabled:opacity-60"
+        >
           <ImageUp className="h-5 w-5" aria-hidden="true" />
           Da galeria
         </button>
       </div>
-      <p className="text-center text-xs text-suave">A foto é lida e descartada; não guardamos a imagem.</p>
+      <p className="text-center text-xs text-suave">
+        {ia
+          ? "A foto é lida e descartada; não guardamos a imagem."
+          : "A leitura acontece no seu aparelho: a foto não sai dele. Na primeira vez leva alguns segundos a mais."}
+      </p>
     </div>
   );
 }
 
 // Reduz fotos grandes no navegador antes do envio (lado maior até 1600 px, JPEG).
 async function reduzir(arquivo: File): Promise<File> {
-  if (!arquivo.type.startsWith("image/") || arquivo.size < 900_000) return arquivo;
+  if (!arquivo.type.startsWith("image/") || arquivo.size < 900_000)
+    return arquivo;
   try {
     const bitmap = await createImageBitmap(arquivo);
     const escala = Math.min(1, 1600 / Math.max(bitmap.width, bitmap.height));
     const canvas = document.createElement("canvas");
     canvas.width = Math.round(bitmap.width * escala);
     canvas.height = Math.round(bitmap.height * escala);
-    canvas.getContext("2d")?.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-    const blob = await new Promise<Blob | null>((ok) => canvas.toBlob(ok, "image/jpeg", 0.85));
-    return blob ? new File([blob], "comprovante.jpg", { type: "image/jpeg" }) : arquivo;
+    canvas
+      .getContext("2d")
+      ?.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise<Blob | null>((ok) =>
+      canvas.toBlob(ok, "image/jpeg", 0.85),
+    );
+    return blob
+      ? new File([blob], "comprovante.jpg", { type: "image/jpeg" })
+      : arquivo;
   } catch {
     return arquivo;
   }
 }
 
-const EXEMPLOS = ["Gastei 85 reais no almoço hoje no débito", "Recebi 5 mil de salário", "Paguei 2.100 de aluguel no pix", "Comprei um tênis de 600 em 3x no crédito"];
+const EXEMPLOS = [
+  "Gastei 85 reais no almoço hoje no débito",
+  "Recebi 5 mil de salário",
+  "Paguei 2.100 de aluguel no pix",
+  "Comprei um tênis de 600 em 3x no crédito",
+];
 
 function Falar({ aoLer }: { aoLer: (p: Previa) => void }) {
   const [suportado, setSuportado] = useState(true);
@@ -311,11 +589,19 @@ function Falar({ aoLer }: { aoLer: (p: Previa) => void }) {
       if (texto.trim().length < 2) return;
       setErro(null);
       setLendo(true);
-      const r = await fetch("/api/financas/interpretar", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ frase: texto }) }).catch(() => null);
+      const r = await fetch("/api/financas/interpretar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ frase: texto }),
+      }).catch(() => null);
       setLendo(false);
       const corpo = await r?.json().catch(() => null);
-      if (!r?.ok) return setErro(corpo?.erro ?? "Não entendi. Tente de novo ou digite.");
-      if (!corpo.valor) return setErro("Não encontrei o valor. Diga, por exemplo: “gastei 40 reais no Uber”.");
+      if (!r?.ok)
+        return setErro(corpo?.erro ?? "Não entendi. Tente de novo ou digite.");
+      if (!corpo.valor)
+        return setErro(
+          "Não encontrei o valor. Diga, por exemplo: “gastei 40 reais no Uber”.",
+        );
       aoLer(corpo as Previa);
     },
     [aoLer],
@@ -329,14 +615,20 @@ function Falar({ aoLer }: { aoLer: (p: Previa) => void }) {
     rec.continuous = false;
     fraseAtual.current = "";
     rec.onresult = (e) => {
-      const texto = Array.from(e.results).map((r) => r[0]?.transcript ?? "").join(" ");
+      const texto = Array.from(e.results)
+        .map((r) => r[0]?.transcript ?? "")
+        .join(" ");
       fraseAtual.current = texto;
       setFrase(texto);
     };
     rec.onerror = (e) => {
       setOuvindo(false);
-      if (e.error === "not-allowed" || e.error === "service-not-allowed") setErro("Permita o uso do microfone no navegador, ou digite a frase abaixo.");
-      else if (e.error !== "no-speech" && e.error !== "aborted") setErro("Não consegui ouvir. Tente de novo ou digite.");
+      if (e.error === "not-allowed" || e.error === "service-not-allowed")
+        setErro(
+          "Permita o uso do microfone no navegador, ou digite a frase abaixo.",
+        );
+      else if (e.error !== "no-speech" && e.error !== "aborted")
+        setErro("Não consegui ouvir. Tente de novo ou digite.");
     };
     rec.onend = () => {
       setOuvindo(false);
@@ -368,10 +660,33 @@ function Falar({ aoLer }: { aoLer: (p: Previa) => void }) {
           aria-label={ouvindo ? "Parar de ouvir" : "Começar a falar"}
           className={`relative flex h-24 w-24 items-center justify-center rounded-full text-white transition disabled:opacity-40 ${ouvindo ? "bg-erro" : "gradiente-marca"}`}
         >
-          {ouvindo ? <span className="absolute inset-0 animate-ping rounded-full bg-erro/40" aria-hidden="true" /> : null}
-          {lendo ? <Loader2 className="h-9 w-9 animate-spin" aria-hidden="true" /> : ouvindo ? <Square className="relative h-8 w-8" fill="currentColor" aria-hidden="true" /> : <Mic className="h-10 w-10" aria-hidden="true" />}
+          {ouvindo ? (
+            <span
+              className="absolute inset-0 animate-ping rounded-full bg-erro/40"
+              aria-hidden="true"
+            />
+          ) : null}
+          {lendo ? (
+            <Loader2 className="h-9 w-9 animate-spin" aria-hidden="true" />
+          ) : ouvindo ? (
+            <Square
+              className="relative h-8 w-8"
+              fill="currentColor"
+              aria-hidden="true"
+            />
+          ) : (
+            <Mic className="h-10 w-10" aria-hidden="true" />
+          )}
         </button>
-        <p className="text-sm text-suave">{!suportado ? "Este navegador não oferece ditado. Digite a frase abaixo." : lendo ? "Entendendo…" : ouvindo ? "Ouvindo… fale valor, o que foi e como pagou." : "Toque e fale como falaria com alguém."}</p>
+        <p className="text-sm text-suave">
+          {!suportado
+            ? "Este navegador não oferece ditado. Digite a frase abaixo."
+            : lendo
+              ? "Entendendo…"
+              : ouvindo
+                ? "Ouvindo… fale valor, o que foi e como pagou."
+                : "Toque e fale como falaria com alguém."}
+        </p>
       </div>
 
       <form
@@ -393,24 +708,37 @@ function Falar({ aoLer }: { aoLer: (p: Previa) => void }) {
             placeholder="Gastei 85 reais no almoço hoje no débito"
             className="h-12 min-w-0 flex-1 rounded-xl border border-linha bg-superficie-2 px-3.5 text-[15px] text-texto outline-none placeholder:text-suave/70 focus:border-ciano"
           />
-          <button type="submit" disabled={lendo || frase.trim().length < 2} className="h-12 shrink-0 rounded-xl bg-superficie-2 px-4 text-sm font-semibold text-texto disabled:opacity-50">
+          <button
+            type="submit"
+            disabled={lendo || frase.trim().length < 2}
+            className="h-12 shrink-0 rounded-xl bg-superficie-2 px-4 text-sm font-semibold text-texto disabled:opacity-50"
+          >
             Ler
           </button>
         </div>
       </form>
 
       {erro ? (
-        <p role="alert" className="rounded-xl bg-erro/10 px-3 py-2 text-sm text-erro">
+        <p
+          role="alert"
+          className="rounded-xl bg-erro/10 px-3 py-2 text-sm text-erro"
+        >
           {erro}
         </p>
       ) : null}
 
       <div>
-        <p className="mb-2 text-xs font-semibold text-suave">Experimente dizer</p>
+        <p className="mb-2 text-xs font-semibold text-suave">
+          Experimente dizer
+        </p>
         <ul className="flex flex-col gap-1.5">
           {EXEMPLOS.map((e) => (
             <li key={e}>
-              <button type="button" onClick={() => void interpretar(e)} className="w-full rounded-xl border border-linha px-3.5 py-2.5 text-left text-sm text-texto hover:bg-superficie-2">
+              <button
+                type="button"
+                onClick={() => void interpretar(e)}
+                className="w-full rounded-xl border border-linha px-3.5 py-2.5 text-left text-sm text-texto hover:bg-superficie-2"
+              >
                 “{e}”
               </button>
             </li>
