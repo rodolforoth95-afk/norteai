@@ -1,7 +1,8 @@
 @import "tailwindcss";
 
 /* Identidade visual Findomo (conceito "mordomo-IA"): azul-assistente, laranja-gravata e
-   azul-noite. Geist em títulos e textos, Geist Mono em números técnicos, Nunito só no logotipo.
+   azul-noite. Space Grotesk em títulos e números, IBM Plex Sans nos textos, Geist Mono em números técnicos,
+   Nunito só no logotipo.
    As cores vêm de variáveis que mudam com o tema (data-tema="claro" | "escuro" no <html>). */
 @theme inline {
   --color-fundo: var(--fundo);
@@ -21,7 +22,7 @@
   --color-erro: var(--baixa); /* baixa e erros */
 
   --font-sans: var(--font-texto), system-ui, sans-serif;
-  --font-display: var(--font-texto), system-ui, sans-serif;
+  --font-display: var(--font-titulo), system-ui, sans-serif;
   --font-marca: var(--font-nunito), var(--font-texto), system-ui, sans-serif;
   --font-mono: var(--font-mono-app), ui-monospace, monospace;
 
@@ -208,8 +209,7 @@ html {
 }
 
 body {
-  font-feature-settings: "tnum" 1, "ss01" 1;
-  letter-spacing: -0.005em; /* números com largura fixa, bons para cotações */
+  font-feature-settings: "tnum" 1; /* números com largura fixa, bons para cotações */
   background:
     radial-gradient(50rem 26rem at 85% -8rem, var(--brilho), transparent 70%),
     radial-gradient(40rem 22rem at 0% -6rem, var(--brilho-2), transparent 70%),

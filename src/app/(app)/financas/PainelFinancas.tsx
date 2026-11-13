@@ -745,65 +745,39 @@ export function PainelFinancas(p: Props) {
           <ul>
             {[...porDia.entries()].map(([dia, itens]) => (
               <li key={dia}>
-                <p className="flex items-center justify-between bg-superficie-2/40 px-5 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-suave">
+                <p className="flex items-center justify-between px-5 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wider text-suave">
                   <span>{dataCurta(dia, p.hoje)}</span>
                   <span className="tabular-nums normal-case tracking-normal">
                     {(() => {
-                      const t = itens.reduce(
-                        (s, o) =>
-                          s + (o.tipo === "receita" ? o.valor : -o.valor),
-                        0,
-                      );
+                      const t = itens.reduce((s, o) => s + (o.tipo === "receita" ? o.valor : -o.valor), 0);
                       return `${t >= 0 ? "+" : "−"}${brl(Math.abs(t))}`;
                     })()}
                   </span>
                 </p>
-                <ul>
+                <ul className="px-2">
                   {itens.map((o) => {
                     const c = cat(o.categoriaId);
+                    const previsto = o.data > p.hoje;
                     return (
                       <li key={`${o.id}-${o.data}`}>
                         <button
                           type="button"
                           onClick={() => editar(o)}
-                          className="flex w-full items-center gap-3 px-5 py-3 text-left transition hover:bg-superficie-2/50"
+                          className={`flex h-11 w-full items-center gap-2.5 rounded-lg px-3 text-left transition hover:bg-superficie-2/70 ${previsto ? "opacity-60" : ""}`}
+                          title={`${o.descricao} · ${c?.nome ?? "Outros"}${previsto ? " · previsto" : ""}${o.origem === "exemplo" ? " · exemplo" : ""}`}
                         >
-                          <IconeCategoria
-                            icone={c?.icone ?? "Tag"}
-                            cor={c?.cor ?? "#94A3B8"}
-                          />
-                          <span className="min-w-0 flex-1">
-                            <span className="block truncate text-sm font-medium text-texto">
-                              {o.descricao}
-                            </span>
-                            <span className="flex items-center gap-1.5 truncate text-xs text-suave">
-                              {c?.nome ?? "Outros"}
-                              {o.parcela ? (
-                                <span className="rounded bg-superficie-2 px-1.5 py-px text-[10px] font-semibold">
-                                  {o.parcela.atual}/{o.parcela.total}
-                                </span>
-                              ) : null}
-                              {o.recorrente ? (
-                                <Repeat
-                                  className="h-3 w-3"
-                                  aria-label="Recorrente"
-                                />
-                              ) : null}
-                              {o.origem === "exemplo" ? (
-                                <span className="rounded bg-superficie-2 px-1.5 py-px text-[10px]">
-                                  exemplo
-                                </span>
-                              ) : null}
-                              {o.data > p.hoje ? (
-                                <span className="rounded bg-ciano/10 px-1.5 py-px text-[10px] font-semibold text-ciano">
-                                  previsto
-                                </span>
-                              ) : null}
-                            </span>
+                          <IconeCategoria icone={c?.icone ?? "Tag"} cor={c?.cor ?? "#94A3B8"} tamanho={24} />
+                          <span className="flex min-w-0 flex-1 items-baseline gap-2">
+                            <span className="truncate text-[13px] font-medium text-texto">{o.descricao}</span>
+                            <span className="hidden shrink-0 truncate text-xs text-suave sm:inline">{c?.nome ?? "Outros"}</span>
+                            {o.parcela ? (
+                              <span className="shrink-0 font-mono text-[10px] text-suave">
+                                {o.parcela.atual}/{o.parcela.total}
+                              </span>
+                            ) : null}
+                            {o.recorrente ? <Repeat className="h-3 w-3 shrink-0 self-center text-suave" aria-label="Recorrente" /> : null}
                           </span>
-                          <span
-                            className={`shrink-0 text-sm font-semibold tabular-nums ${o.tipo === "receita" ? "text-menta" : "text-texto"}`}
-                          >
+                          <span className={`shrink-0 text-[13px] font-semibold tabular-nums ${o.tipo === "receita" ? "text-menta" : "text-texto"}`}>
                             {o.tipo === "receita" ? "+" : "−"}
                             {brl(o.valor)}
                           </span>

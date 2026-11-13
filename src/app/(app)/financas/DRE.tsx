@@ -1,9 +1,30 @@
 "use client";
 
 import { useState } from "react";
-import { ChevronDown } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, Banknote, ChevronDown, Equal, PiggyBank, ShieldCheck, ShoppingBag, Trophy, type LucideIcon } from "lucide-react";
+import { IconeCategoria } from "@/components/financas/IconeCategoria";
 import { nomeMes, type Categoria, type LinhaDRE } from "@/lib/dominio/financas";
 import { brl } from "@/components/financas/formato";
+
+// Ícone e cor de cada conta-resumo da DRE.
+const CONTAS: Record<string, { Icone: LucideIcon; cor: string }> = {
+  receitas: { Icone: ArrowUpRight, cor: "#10B981" },
+  essenciais: { Icone: ShieldCheck, cor: "#5B7FFF" },
+  "sobra-essencial": { Icone: Equal, cor: "#64748B" },
+  variaveis: { Icone: ShoppingBag, cor: "#FF8A3D" },
+  resultado: { Icone: Trophy, cor: "#2D5BFF" },
+  aportes: { Icone: PiggyBank, cor: "#F59E0B" },
+  caixa: { Icone: Banknote, cor: "#14B8A6" },
+};
+
+function IconeConta({ id }: { id: string }) {
+  const conta = CONTAS[id] ?? { Icone: ArrowDownRight, cor: "#94A3B8" };
+  return (
+    <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg" style={{ background: `${conta.cor}1f`, color: conta.cor }} aria-hidden="true">
+      <conta.Icone className="h-4 w-4" strokeWidth={2.2} />
+    </span>
+  );
+}
 
 const pct = (v: number | null) => (v === null || !Number.isFinite(v) ? "—" : `${v.toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%`);
 
@@ -31,7 +52,7 @@ export function DRE({ linhas, meses, categorias, aoEscolherCategoria }: { linhas
       <table className="w-full min-w-[20rem] border-collapse text-sm">
         <thead>
           <tr className="border-b border-linha text-[11px] uppercase tracking-wider text-suave">
-            <th className="px-5 py-2.5 text-left font-semibold">Conta</th>
+            <th className="px-4 py-2.5 text-left font-semibold">Conta</th>
             {meses.map((m, i) => (
               <th key={m} className={`px-3 py-2.5 text-right font-semibold ${i < atual ? "hidden md:table-cell" : "text-texto"}`}>
                 {nomeMes(m, true)}
@@ -65,19 +86,23 @@ export function DRE({ linhas, meses, categorias, aoEscolherCategoria }: { linhas
             const temItens = l.tipo === "grupo" && visiveis.some((x) => x.tipo === "item" && x.grupo === l.id);
             return (
               <tr key={l.id} className={`border-b border-linha/70 ${estilo}`}>
-                <td className={`py-2.5 pr-3 ${l.tipo === "item" ? "pl-9" : "pl-5"}`}>
+                <td className={`py-2 pr-3 ${l.tipo === "item" ? "pl-12" : "pl-4"}`}>
                   {temItens ? (
-                    <button type="button" onClick={() => setFechados((f) => ({ ...f, [l.id]: !f[l.id] }))} className="flex items-center gap-1.5 text-left text-texto" aria-expanded={!fechados[l.id]}>
+                    <button type="button" onClick={() => setFechados((f) => ({ ...f, [l.id]: !f[l.id] }))} className="flex items-center gap-2.5 text-left text-texto" aria-expanded={!fechados[l.id]}>
+                      <IconeConta id={l.id} />
+                      <span>{l.rotulo.replace(/^\(−\)\s*/, "")}</span>
                       <ChevronDown className={`h-3.5 w-3.5 shrink-0 text-suave transition-transform ${fechados[l.id] ? "-rotate-90" : ""}`} aria-hidden="true" />
-                      {l.rotulo}
                     </button>
                   ) : l.tipo === "item" && l.categoriaId ? (
                     <button type="button" onClick={() => aoEscolherCategoria(l.categoriaId!)} className="flex items-center gap-2 text-left text-texto hover:text-ciano" title="Ver os lançamentos desta categoria">
-                      <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: cor(l.categoriaId) }} aria-hidden="true" />
+                      <IconeCategoria icone={categorias.find((c) => c.id === l.categoriaId)?.icone ?? "Tag"} cor={cor(l.categoriaId)} tamanho={22} />
                       {l.rotulo}
                     </button>
                   ) : (
-                    <span className={l.tipo === "destaque" ? "text-texto" : "text-texto"}>{l.rotulo}</span>
+                    <span className="flex items-center gap-2.5 text-texto">
+                      <IconeConta id={l.id} />
+                      {l.rotulo.replace(/^(=|\(−\))\s*/, "")}
+                    </span>
                   )}
                 </td>
                 {l.valores.map((valor, i) => (
@@ -101,7 +126,7 @@ export function DRE({ linhas, meses, categorias, aoEscolherCategoria }: { linhas
             );
           })}
           <tr className="text-[13px]">
-            <td className="py-2.5 pl-5 pr-3 font-semibold text-texto">Margem (lucro ÷ receitas)</td>
+            <td className="py-2.5 pl-4 pr-3 font-semibold text-texto"><span className="flex items-center gap-2.5"><span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-ciano/12 text-[11px] font-bold text-ciano" aria-hidden="true">%</span>Margem (lucro ÷ receitas)</span></td>
             {margens.map((m, i) => (
               <td key={i} className={`whitespace-nowrap px-3 py-2.5 text-right font-semibold tabular-nums ${i < atual ? "hidden text-suave md:table-cell" : m !== null && m < 0 ? "text-erro" : "text-texto"}`}>
                 {pct(m)}

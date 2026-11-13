@@ -1,11 +1,17 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono, Nunito } from "next/font/google";
+import { Geist_Mono, IBM_Plex_Sans, Nunito, Space_Grotesk } from "next/font/google";
 import { cookies } from "next/headers";
 import "./globals.css";
 
-// Geist em títulos e textos (grotesca limpa, pesos intermediários); Geist Mono em números
-// técnicos; Nunito só no logotipo, para manter o desenho da marca.
-const texto = Geist({
+// Space Grotesk (geométrica e reta) em títulos e números de destaque; IBM Plex Sans
+// (traços retos) nos textos; Geist Mono em números técnicos; Nunito só no logotipo.
+const titulo = Space_Grotesk({
+  variable: "--font-titulo",
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+});
+
+const texto = IBM_Plex_Sans({
   variable: "--font-texto",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
@@ -54,7 +60,7 @@ export default async function RootLayout({
   const tema = (await cookies()).get("tema")?.value === "claro" ? "claro" : "escuro";
   return (
     <html lang="pt-BR" data-tema={tema}>
-      <body className={`${texto.variable} ${mono.variable} ${marca.variable} antialiased`}>
+      <body className={`${titulo.variable} ${texto.variable} ${mono.variable} ${marca.variable} antialiased`}>
         {children}
       </body>
     </html>
