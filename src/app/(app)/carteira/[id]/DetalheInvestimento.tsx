@@ -94,7 +94,7 @@ export function DetalheInvestimento({ investimento, estado, pctCarteira, serie, 
           ["Rendimento", sinalReais(rendimento), tom(rendimento)],
           ["Rentabilidade", pct(rentab), tom(rentab)],
         ].map(([r, v, c]) => (
-          <div key={r} className="rounded-2xl border border-linha bg-superficie p-4">
+          <div key={r} className="painel p-4">
             <dt className="text-xs text-suave">{r}</dt>
             <dd className={`mt-1 font-display text-xl font-bold tabular-nums ${c}`}>{v}</dd>
           </div>

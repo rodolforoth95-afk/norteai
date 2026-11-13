@@ -802,7 +802,7 @@ function ComoLer({ ind }: { ind: Indicadores }) {
       <TituloSecao titulo="Como ler esta simulação" />
       <div className="mt-3 grid gap-3 md:grid-cols-2">
         {topicos.map((t) => (
-          <details key={t.titulo} className="group rounded-2xl border border-linha bg-superficie p-4">
+          <details key={t.titulo} className="group painel p-4">
             <summary className="flex cursor-pointer list-none items-center gap-3 font-semibold text-texto">
               <t.icone className="h-5 w-5 shrink-0 text-ciano" aria-hidden="true" />
               <span className="flex-1">{t.titulo}</span>

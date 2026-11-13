@@ -185,12 +185,12 @@ export default async function PaginaInicio() {
                   </p>
                 </div>
                 {carteira.serie.length > 1 ? (
-                  <div className="w-full sm:w-56">
+                  <div className="hidden w-56 sm:block">
                     <MiniGrafico pontos={carteira.serie.map((p) => ({ data: p.mes, fechamento: p.saldo }))} />
                   </div>
                 ) : null}
               </div>
-              <dl className="mt-5 grid grid-cols-3 divide-x divide-linha border-t border-linha pt-4">
+              <dl className="mt-5 grid grid-cols-1 divide-y divide-linha border-t border-linha sm:grid-cols-3 sm:divide-x sm:divide-y-0 sm:pt-4">
                 <Numero rotulo={`Rendimento em ${nomeMes}`} valor={brl(carteira.mes?.rendimento ?? 0)} classe={tom(carteira.mes?.rendimento ?? null)} extra={pct(carteira.mes?.rentabilidade ?? null, 2)} />
                 <Numero rotulo="Acumulado" valor={pct(carteira.rentabilidadeAcumulada)} classe={tom(carteira.rentabilidadeAcumulada)} extra={brl(carteira.rendimento)} />
                 <Numero rotulo="Aplicado" valor={brl(carteira.aplicado)} classe="text-texto" extra="sem rendimento" />
@@ -390,7 +390,7 @@ export default async function PaginaInicio() {
 }
 
 function Painel({ children, semPadding = false }: { children: ReactNode; semPadding?: boolean }) {
-  return <div className={`rounded-2xl border border-linha bg-superficie shadow-[0_1px_2px_rgb(20_33_92/0.04)] ${semPadding ? "overflow-hidden" : "p-5"}`}>{children}</div>;
+  return <div className={`painel ${semPadding ? "overflow-hidden" : "p-5"}`}>{children}</div>;
 }
 
 function BotaoSecundario({ href, children }: { href: string; children: ReactNode }) {
@@ -401,12 +401,15 @@ function BotaoSecundario({ href, children }: { href: string; children: ReactNode
   );
 }
 
+// No celular vira uma linha (rótulo à esquerda, valor à direita); a partir do tablet, uma coluna.
 function Numero({ rotulo, valor, classe, extra }: { rotulo: string; valor: string; classe: string; extra: string }) {
   return (
-    <div className="px-3 first:pl-0 last:pr-0">
-      <dt className="truncate text-xs text-suave">{rotulo}</dt>
-      <dd className={`mt-0.5 font-display text-lg font-extrabold tabular-nums ${classe}`}>{valor}</dd>
-      <dd className="text-xs tabular-nums text-suave">{extra}</dd>
+    <div className="flex items-baseline justify-between gap-3 py-3 sm:block sm:px-4 sm:py-0 sm:first:pl-0 sm:last:pr-0">
+      <dt className="text-sm text-suave sm:truncate sm:text-xs">{rotulo}</dt>
+      <dd className="text-right sm:text-left">
+        <span className={`block font-display text-base font-extrabold tabular-nums sm:mt-0.5 sm:text-lg ${classe}`}>{valor}</span>
+        <span className="block text-xs tabular-nums text-suave">{extra}</span>
+      </dd>
     </div>
   );
 }

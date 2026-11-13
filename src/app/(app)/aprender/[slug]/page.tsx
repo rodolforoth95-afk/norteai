@@ -120,7 +120,7 @@ export default async function PaginaAula({ params }: { params: Promise<{ slug: s
 
       <BotaoLido slug={aula.slug} lido={concluidos.includes(`leitura:${aula.slug}`)} />
       {proxima ? (
-        <Link href={`/aprender/${proxima.slug}`} className="flex items-center gap-3 rounded-2xl border border-linha bg-superficie p-4 transition hover:border-violeta">
+        <Link href={`/aprender/${proxima.slug}`} className="flex items-center gap-3 painel p-4 transition hover:border-violeta">
           <span className="flex-1">
             <span className="block text-xs text-suave">Próxima aula</span>
             <span className="block font-display font-semibold text-texto">{proxima.titulo}</span>
@@ -128,7 +128,7 @@ export default async function PaginaAula({ params }: { params: Promise<{ slug: s
           <ArrowRight className="h-5 w-5 text-ciano" aria-hidden="true" />
         </Link>
       ) : modulo ? (
-        <Link href={`/aprender/modulo/${modulo.slug}`} className="flex items-center gap-3 rounded-2xl border border-linha bg-superficie p-4 transition hover:border-violeta">
+        <Link href={`/aprender/modulo/${modulo.slug}`} className="flex items-center gap-3 painel p-4 transition hover:border-violeta">
           <span className="flex-1">
             <span className="block text-xs text-suave">Fim do módulo</span>
             <span className="block font-display font-semibold text-texto">Fazer o quiz de {modulo.titulo}</span>

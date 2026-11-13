@@ -1,10 +1,9 @@
 import type { ReactNode } from "react";
-import { Check } from "lucide-react";
-import { Logo, Mascote } from "./Logo";
-import { AlternarTema } from "./AlternarTema";
+import { Lock, ShieldCheck } from "lucide-react";
+import { Logo } from "./Logo";
 
-// Moldura das telas de acesso (login, cadastro, verificação, senha).
-// No computador, à esquerda aparece um recorte do produto em uso; à direita, o formulário.
+// Moldura das telas de acesso (login, cadastro, verificação, senha): tela inteira escura
+// com a faixa de luz da marca, título embaixo à esquerda e o formulário num cartão de vidro.
 export function TelaAuth({
   titulo,
   subtitulo,
@@ -17,94 +16,76 @@ export function TelaAuth({
   rodape?: ReactNode;
 }) {
   return (
-    <div className="min-h-dvh bg-superficie lg:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(0,1fr)]">
-      <aside data-tema="escuro" className="relative hidden overflow-hidden bg-noite lg:flex lg:flex-col">
-        <div
-          className="pointer-events-none absolute inset-0 opacity-[0.07]"
-          style={{ backgroundImage: "radial-gradient(#fff 1px, transparent 1px)", backgroundSize: "22px 22px" }}
-          aria-hidden="true"
-        />
-        <div className="relative flex flex-1 flex-col px-14 py-12 xl:px-20">
+    <div data-tema="escuro" className="relative isolate min-h-dvh overflow-hidden bg-[#050817] text-texto">
+      <FaixaDeLuz />
+
+      <div className="relative mx-auto flex min-h-dvh w-full max-w-[90rem] flex-col px-5 pb-6 pt-5 sm:px-8 lg:px-12 lg:pb-12 lg:pt-8">
+        {/* Topo: logo, selo central e selo de segurança */}
+        <header className="relative flex h-11 items-center justify-between">
           <Logo />
-          <div className="mt-auto max-w-[30rem]">
-            <h2 className="font-display text-[2.6rem] font-black leading-[1.05] tracking-[-0.02em] text-white">
-              Suas finanças em ordem em 10 minutos por mês.
+          <p className="absolute left-1/2 top-[-1.25rem] hidden -translate-x-1/2 items-center gap-2.5 rounded-b-2xl bg-black/45 px-6 pb-3 pt-4 text-sm text-white/85 backdrop-blur-md lg:flex lg:top-[-2rem] lg:pt-5">
+            <span className="h-1.5 w-1.5 rounded-full bg-[#7C9BFF] shadow-[0_0_10px_#7C9BFF]" aria-hidden="true" />
+            Mordomo financeiro com IA
+          </p>
+          <span className="inline-flex h-9 items-center gap-2 rounded-full border border-white/15 bg-white/[0.07] px-3.5 text-[13px] text-white/80 backdrop-blur-md">
+            <Lock className="h-3.5 w-3.5" aria-hidden="true" />
+            Conexão segura
+          </span>
+        </header>
+
+        {/* Base: título à esquerda e formulário à direita, na mesma linha de base */}
+        <div className="mt-auto grid items-end gap-8 pt-16 lg:grid-cols-[minmax(0,1fr)_27rem] lg:gap-16 lg:pt-0">
+          <div className="max-w-[52rem] pb-1">
+            <h2 className="font-display text-[2.25rem] font-extrabold leading-[1.05] tracking-[-0.035em] text-white sm:text-[3rem] lg:text-[3.4rem] xl:text-[3.9rem]">
+              Seu dinheiro em ordem,
+              <span className="block text-[#8FA8FF]">explicado e acompanhado.</span>
             </h2>
-            <p className="mt-4 max-w-md text-[15px] leading-relaxed text-[#A9B4E0]">
-              Registre os saldos, compare o rendimento com o CDI e estude só o que faz diferença para a sua carteira. Sem planilha e sem vendedor.
+            <p className="mt-5 max-w-[34rem] text-[15px] leading-relaxed text-white/70 lg:text-[17px]">
+              Carteira, mercado e simulações no mesmo lugar. O Findomo registra seus saldos, compara com o CDI e explica cada número, sem vender nenhum produto.
             </p>
           </div>
-          <ProdutoEmUso />
-          <p className="mt-10 text-xs text-[#7F8BC0]">Conteúdo educacional. O Findomo não recomenda nem vende investimentos.</p>
-        </div>
-      </aside>
 
-      <main className="mx-auto flex min-h-dvh w-full max-w-[26rem] flex-col px-6 pb-8 pt-8 lg:py-10">
-        <div className="flex items-center justify-between">
-          <span className="lg:invisible">
-            <Logo tamanho="sm" />
-          </span>
-          <AlternarTema />
+          <main className="w-full rounded-[1.75rem] border border-white/[0.12] bg-[#0B1233]/70 p-6 shadow-[0_30px_80px_-20px_rgb(0_0_0/0.6)] backdrop-blur-2xl sm:p-8">
+            <h1 className="font-display text-[1.75rem] font-bold tracking-[-0.02em] text-white">{titulo}</h1>
+            {subtitulo ? <p className="mt-1.5 text-[15px] leading-relaxed text-white/65">{subtitulo}</p> : null}
+            <div className="mt-7">{children}</div>
+            {rodape ? <div className="mt-6">{rodape}</div> : null}
+            <p className="mt-6 flex items-start gap-2.5 border-t border-white/10 pt-5 text-[13px] leading-relaxed text-white/60">
+              <ShieldCheck className="mt-px h-4 w-4 shrink-0 text-[#7C9BFF]" aria-hidden="true" />
+              Não pedimos CPF nem senha de banco. Conteúdo educacional, sem recomendação de investimento.
+            </p>
+          </main>
         </div>
-        <div className="my-auto pt-12 lg:pt-0">
-          <h1 className="font-display text-[1.9rem] font-black leading-tight tracking-[-0.01em] text-texto">{titulo}</h1>
-          {subtitulo ? <p className="mt-2 text-[15px] leading-relaxed text-suave">{subtitulo}</p> : null}
-          <div className="mt-8">{children}</div>
-          {rodape ? <div className="mt-8 border-t border-linha pt-6">{rodape}</div> : null}
-        </div>
-        <p className="pt-10 text-xs leading-relaxed text-suave lg:hidden">Conteúdo educacional. O Findomo não recomenda nem vende investimentos.</p>
-      </main>
+      </div>
     </div>
   );
 }
 
-// Recorte ilustrativo das telas do app (dados de exemplo).
-function ProdutoEmUso() {
+// Faixa de luz fluida (azul-assistente → azul claro → laranja-gravata), desfocada como na marca.
+function FaixaDeLuz() {
   return (
-    <div className="relative mt-10 grid max-w-[30rem] gap-3" aria-label="Exemplo do app: patrimônio, tarefas do dia e um aviso do Findomo">
-      <div className="rounded-xl border border-white/10 bg-white/[0.06] p-4 backdrop-blur">
-        <div className="flex items-baseline justify-between">
-          <span className="text-xs text-[#A9B4E0]">Patrimônio · novembro</span>
-          <span className="rounded bg-[#22C55E]/15 px-1.5 py-0.5 text-[11px] font-semibold text-[#4ADE80]">104% do CDI</span>
-        </div>
-        <div className="mt-1 flex items-end justify-between gap-4">
-          <p className="font-display text-2xl font-black tabular-nums text-white">R$ 48.210,34</p>
-          <svg viewBox="0 0 120 32" className="h-8 w-28" aria-hidden="true">
-            <path d="M0 26 L15 24 L30 25 L45 19 L60 20 L75 14 L90 15 L105 8 L120 6" fill="none" stroke="#8FA8FF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </div>
-        <p className="mt-1 text-xs text-[#A9B4E0]">
-          <span className="font-semibold text-[#4ADE80]">+R$ 412,80</span> de rendimento no mês, sem contar os aportes
-        </p>
-      </div>
-
-      <div className="rounded-xl border border-white/10 bg-white/[0.06] p-4">
-        <p className="text-xs text-[#A9B4E0]">Para hoje · 2 de 3</p>
-        <ul className="mt-2 flex flex-col gap-2 text-[13px]">
-          {[
-            { feito: true, texto: "Atualizar o saldo do Tesouro Selic 2029" },
-            { feito: true, texto: "Registrar o aporte de R$ 500 no CDB" },
-            { feito: false, texto: "Ler “Suporte e resistência” (4 min)" },
-          ].map((t) => (
-            <li key={t.texto} className="flex items-center gap-2.5">
-              <span
-                className={`flex h-4 w-4 shrink-0 items-center justify-center rounded-[5px] border ${t.feito ? "border-[#2D5BFF] bg-[#2D5BFF]" : "border-white/30"}`}
-                aria-hidden="true"
-              >
-                {t.feito ? <Check className="h-3 w-3 text-white" strokeWidth={3} /> : null}
-              </span>
-              <span className={t.feito ? "text-[#7F8BC0] line-through decoration-white/20" : "text-white"}>{t.texto}</span>
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="flex items-start gap-3 rounded-xl border border-white/10 bg-white/[0.06] p-4">
-        <Mascote className="h-9 w-9 shrink-0" />
-        <p className="text-[13px] leading-relaxed text-[#C7D2FF]">
-          Sua LCI tem carência até <strong className="font-semibold text-white">14/01</strong>. Até lá, esse dinheiro não pode ser resgatado: vale contar com isso no planejamento.
-        </p>
-      </div>
+    <div className="pointer-events-none absolute inset-0 -z-10" aria-hidden="true">
+      <div className="absolute inset-0 bg-[radial-gradient(70%_60%_at_85%_20%,rgb(143_168_255/0.28),transparent_70%)]" />
+      <svg className="faixa-luz absolute -top-[8%] left-[-10%] h-[118%] w-[125%] min-w-[48rem]" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <linearGradient id="faixa" x1="0" y1="0" x2="0.4" y2="1">
+            <stop offset="0%" stopColor="#2D5BFF" />
+            <stop offset="45%" stopColor="#8FA8FF" />
+            <stop offset="70%" stopColor="#FFB27A" />
+            <stop offset="100%" stopColor="#FF8A3D" />
+          </linearGradient>
+          <filter id="desfoque-largo" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="55" />
+          </filter>
+          <filter id="desfoque-curto" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="14" />
+          </filter>
+        </defs>
+        <path d="M1020 -80 C 880 220, 1130 360, 860 560 S 360 820, 140 1080" fill="none" stroke="url(#faixa)" strokeWidth="260" strokeLinecap="round" opacity="0.5" filter="url(#desfoque-largo)" />
+        <path d="M1020 -80 C 880 220, 1130 360, 860 560 S 360 820, 140 1080" fill="none" stroke="url(#faixa)" strokeWidth="70" strokeLinecap="round" opacity="0.9" filter="url(#desfoque-curto)" />
+      </svg>
+      <div className="absolute inset-0 bg-[radial-gradient(55%_70%_at_0%_100%,rgb(5_8_23/0.92),transparent_70%)]" />
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgb(5_8_23/0.75)_0%,transparent_45%)]" />
     </div>
   );
 }

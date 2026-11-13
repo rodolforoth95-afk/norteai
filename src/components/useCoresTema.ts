@@ -8,13 +8,13 @@ import { useEffect, useState } from "react";
 export type CoresTema = { fundo: string; superficie: string; superficie2: string; linha: string; texto: string; suave: string; destaque: string };
 
 const PADRAO: CoresTema = {
-  fundo: "#f7f9ff",
-  superficie: "#ffffff",
-  superficie2: "#f2f5ff",
-  linha: "#dde4ff",
-  texto: "#14215c",
-  suave: "#525b85",
-  destaque: "#2d5bff",
+  fundo: "#060a1c",
+  superficie: "#0c132e",
+  superficie2: "#131b3c",
+  linha: "#1d2750",
+  texto: "#eef1ff",
+  suave: "#8c97c4",
+  destaque: "#7c9bff",
 };
 
 function ler(): CoresTema {

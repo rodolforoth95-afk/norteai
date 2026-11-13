@@ -91,7 +91,7 @@ export function GaleriaVideos({
 
       {comprar ? (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-4 sm:items-center" role="dialog" aria-modal="true" aria-label={`Desbloquear ${comprar.titulo}`}>
-          <div className="w-full max-w-md rounded-2xl border border-linha bg-superficie p-6">
+          <div className="w-full max-w-md painel p-6">
             <p className="text-sm text-suave">Treinamento exclusivo</p>
             <p className="mt-1 font-display text-xl font-bold text-texto">{comprar.titulo}</p>
             <p className="mt-2 text-sm text-suave">{comprar.chamada}</p>

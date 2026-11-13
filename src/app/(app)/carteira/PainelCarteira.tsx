@@ -449,7 +449,7 @@ export function PainelCarteira({
       <TabelaInvestimentos linhas={ativas} onAtualizar={setAtualizando} />
 
       {encerradas.length ? (
-        <details className="rounded-2xl border border-linha bg-superficie px-4 py-3">
+        <details className="painel px-4 py-3">
           <summary className="cursor-pointer text-sm font-medium text-suave">{encerradas.length} investimentos zerados (resgatados)</summary>
           <ul className="mt-2 flex flex-col divide-y divide-linha">
             {encerradas.map((l) => (
@@ -502,7 +502,7 @@ export function PainelCarteira({
 
 function Kpi({ rotulo, valor, detalhe, classe, Icone, largo = false }: { rotulo: string; valor: string; detalhe: string; classe: string; Icone: typeof TrendingUp; largo?: boolean }) {
   return (
-    <div className={`rounded-2xl border border-linha bg-superficie p-4 lg:col-span-1 lg:p-5 ${largo ? "col-span-2" : ""}`}>
+    <div className={`painel p-4 lg:col-span-1 lg:p-5 ${largo ? "col-span-2" : ""}`}>
       <p className="flex items-center justify-between text-xs text-suave">
         {rotulo}
         <Icone className={`h-4 w-4 ${classe}`} aria-hidden="true" />

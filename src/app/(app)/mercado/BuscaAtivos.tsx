@@ -49,10 +49,10 @@ export function BuscaAtivos() {
         onChange={(e) => setTermo(e.target.value)}
         placeholder="Buscar ação, FII, ETF, BDR ou cripto"
         autoComplete="off"
-        className="min-h-12 w-full rounded-2xl border border-linha bg-superficie pl-12 pr-4 text-base text-texto placeholder:text-suave/70 focus:border-violeta focus:outline-none focus:ring-2 focus:ring-violeta/40"
+        className="min-h-12 w-full painel pl-12 pr-4 text-base text-texto placeholder:text-suave/70 focus:border-violeta focus:outline-none focus:ring-2 focus:ring-violeta/40"
       />
       {resultados !== null || buscando ? (
-        <div className="absolute inset-x-0 top-14 z-30 rounded-2xl border border-linha bg-superficie p-2 shadow-2xl" aria-live="polite">
+        <div className="absolute inset-x-0 top-14 z-30 painel p-2 shadow-2xl" aria-live="polite">
           {buscando && !resultados ? <p className="px-3 py-2 text-sm text-suave">Buscando…</p> : null}
           {resultados?.length === 0 ? <p className="px-3 py-2 text-sm text-suave">Nenhum ativo encontrado.</p> : null}
           <ul className="flex flex-col">

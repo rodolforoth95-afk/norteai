@@ -84,57 +84,81 @@
 @utility borda-gradiente {
   border: 1px solid var(--linha);
   background: var(--superficie);
-  box-shadow: 0 1px 2px rgb(20 33 92 / 0.04);
+  box-shadow: inset 0 1px 0 var(--realce), 0 1px 2px rgb(0 0 0 / 0.06);
 }
 
-/* Modo claro (padrão da marca): branco com azul-noite no texto. */
-:root,
+@utility painel {
+  border: 1px solid var(--linha);
+  background: var(--superficie);
+  border-radius: 1rem;
+  box-shadow: inset 0 1px 0 var(--realce), 0 1px 2px rgb(0 0 0 / 0.06);
+}
+
+/* Modo claro: branco com azul-noite no texto. */
 [data-tema="claro"] {
-  --fundo: #f7f9ff;
+  --fundo: #f5f7fc;
   --superficie: #ffffff;
-  --superficie-2: #f2f5ff;
-  --linha: #dde4ff;
-  --texto: #14215c;
-  --suave: #525b85;
+  --superficie-2: #f1f4fb;
+  --linha: #e1e6f2;
+  --texto: #0e1638;
+  --suave: #5a6488;
   --azul-forte: #2d5bff;
   --azul-claro: #5b7fff;
   --destaque: #2d5bff;
   --gravata: #ff8a3d;
-  --alta: #15803d;
+  --alta: #059669;
   --coins: #c2560f;
   --rosa: #be185d;
   --baixa: #dc2626;
-  --brilho: rgb(45 91 255 / 0.08);
-  --brilho-2: rgb(255 138 61 / 0.05);
+  --brilho: rgb(45 91 255 / 0.06);
+  --brilho-2: rgb(255 138 61 / 0.04);
+  --realce: rgb(255 255 255 / 0);
   --mascote-balao: #2d5bff;
   --mascote-rosto: #ffffff;
   --mascote-no: #d9631a;
   color-scheme: light;
 }
 
-/* Modo noite: azul-noite com o balão do mascote em branco.
-   Um bloco com data-tema="escuro" (ex.: cartões de destaque) continua escuro dentro do modo claro. */
+/* Modo noite (padrão): azul quase preto, superfícies em camadas e acentos luminosos.
+   Um bloco com data-tema="escuro" continua escuro mesmo dentro do modo claro. */
+:root,
 [data-tema="escuro"] {
-  --fundo: #0a1030;
-  --superficie: #121c4d;
-  --superficie-2: #1a2760;
-  --linha: #26357a;
-  --texto: #ffffff;
-  --suave: #a9b4e0;
+  --fundo: #060a1c;
+  --superficie: #0c132e;
+  --superficie-2: #131b3c;
+  --linha: #1d2750;
+  --texto: #eef1ff;
+  --suave: #8c97c4;
   --azul-forte: #2d5bff;
-  --azul-claro: #6f8cff;
-  --destaque: #8fa8ff;
+  --azul-claro: #5b7fff;
+  --destaque: #7c9bff;
   --gravata: #ff8a3d;
-  --alta: #22c55e;
+  --alta: #34d399;
   --coins: #ffb27a;
   --rosa: #f472b6;
   --baixa: #f87171;
-  --brilho: rgb(45 91 255 / 0.22);
-  --brilho-2: rgb(255 138 61 / 0.06);
+  --brilho: rgb(45 91 255 / 0.16);
+  --brilho-2: rgb(255 138 61 / 0.05);
+  --realce: rgb(255 255 255 / 0.04);
   --mascote-balao: #ffffff;
   --mascote-rosto: #14215c;
   --mascote-no: #ffb27a;
   color-scheme: dark;
+}
+
+/* Faixa de luz da tela de entrada: deriva bem devagar. */
+.faixa-luz {
+  animation: derivar 18s ease-in-out infinite alternate;
+  transform-origin: 60% 40%;
+}
+
+@keyframes derivar {
+  from {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  to {
+    transform: translate3d(-2%, 3%, 0) rotate(-3deg);
+  }
 }
 
 html {
@@ -143,7 +167,10 @@ html {
 
 body {
   font-feature-settings: "tnum" 1; /* números com largura fixa, bons para cotações */
-  background: var(--fundo);
+  background:
+    radial-gradient(48rem 22rem at 100% -6rem, var(--brilho), transparent 70%),
+    var(--fundo);
+  background-attachment: fixed;
   color: var(--texto);
   font-family: var(--font-sans);
   min-height: 100dvh;

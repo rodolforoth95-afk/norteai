@@ -336,7 +336,7 @@ export function PainelTecnico({
         <div className="flex flex-col gap-3">
           <TituloSecao titulo="Pontos para estudar" subtitulo="O que o gráfico mostra hoje e o que analistas costumam observar" />
           {leituras.map((l) => (
-            <div key={l.id} className="rounded-2xl border border-linha bg-superficie p-4">
+            <div key={l.id} className="painel p-4">
               <p className="flex items-center gap-2 font-semibold text-texto">
                 <span
                   className={`h-2.5 w-2.5 shrink-0 rounded-full ${l.tom === "positivo" ? "bg-menta" : l.tom === "negativo" ? "bg-erro" : l.tom === "atencao" ? "bg-ambar" : "bg-suave"}`}
@@ -366,7 +366,7 @@ export function PainelTecnico({
             ["Maior queda (topo → fundo)", pctSinal(est.maiorQueda), "text-erro"],
             ["Pregões em alta", `${est.diasAlta.toFixed(0)}%`, "text-texto"],
           ].map(([r, v, c]) => (
-            <div key={r} className="rounded-2xl border border-linha bg-superficie p-4">
+            <div key={r} className="painel p-4">
               <dt className="text-xs text-suave">{r}</dt>
               <dd className={`mt-1 font-display text-xl font-bold tabular-nums ${c}`}>{v}</dd>
             </div>

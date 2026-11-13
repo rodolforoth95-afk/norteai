@@ -51,7 +51,7 @@ export default async function PaginaModulo({ params }: { params: Promise<{ slug:
           const lida = concluidos.includes(`leitura:${a.slug}`);
           return (
             <li key={a.slug}>
-              <Link href={`/aprender/${a.slug}`} className="flex min-h-16 items-center gap-3 rounded-2xl border border-linha bg-superficie px-4 py-3 transition hover:border-violeta">
+              <Link href={`/aprender/${a.slug}`} className="flex min-h-16 items-center gap-3 painel px-4 py-3 transition hover:border-violeta">
                 {lida ? (
                   <CheckCircle2 className="h-6 w-6 shrink-0 text-menta" aria-label="Concluída" />
                 ) : (

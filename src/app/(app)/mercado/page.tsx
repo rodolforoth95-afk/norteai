@@ -44,7 +44,7 @@ export default async function PaginaMercado() {
         <div className="lg:col-span-1">
           <BuscaAtivos />
         </div>
-        <Link href="/mercado/comparar" className="flex min-h-14 items-center gap-3 rounded-2xl border border-linha bg-superficie px-4 transition hover:border-ciano">
+        <Link href="/mercado/comparar" className="flex min-h-14 items-center gap-3 painel px-4 transition hover:border-ciano">
           <GitCompareArrows className="h-6 w-6 shrink-0 text-ciano" aria-hidden="true" />
           <span className="flex-1">
             <span className="block text-sm font-semibold text-texto">Comparar ativos</span>
@@ -52,7 +52,7 @@ export default async function PaginaMercado() {
           </span>
           <ArrowRight className="h-4 w-4 text-suave" aria-hidden="true" />
         </Link>
-        <Link href="/aprender/suporte-resistencia" className="flex min-h-14 items-center gap-3 rounded-2xl border border-linha bg-superficie px-4 transition hover:border-ciano">
+        <Link href="/aprender/suporte-resistencia" className="flex min-h-14 items-center gap-3 painel px-4 transition hover:border-ciano">
           <GraduationCap className="h-6 w-6 shrink-0 text-ciano" aria-hidden="true" />
           <span className="flex-1">
             <span className="block text-sm font-semibold text-texto">Suportes e resistências</span>
@@ -143,7 +143,7 @@ async function CartaoIbovespa() {
   const [ibov, pontos] = await Promise.all([cotacao("^BVSP").catch(() => null), historico("^BVSP", "1mo").catch(() => [])]);
   if (!ibov) return null;
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-linha bg-superficie p-5">
+    <div className="relative overflow-hidden painel p-5">
       <div className="relative flex items-start justify-between gap-3">
         <div>
           <p className="flex items-center gap-1.5 text-sm font-semibold text-texto">

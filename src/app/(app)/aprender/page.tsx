@@ -40,7 +40,7 @@ export default async function PaginaAprender() {
         <ul className="grid grid-cols-1 gap-3 lg:grid-cols-2">
           {progresso.map(({ m, lidas, quiz, pct }, i) => (
             <li key={m.slug} className="min-w-0">
-              <Link href={`/aprender/modulo/${m.slug}`} className="flex min-w-0 items-center gap-4 rounded-2xl border border-linha bg-superficie p-4 transition hover:border-violeta">
+              <Link href={`/aprender/modulo/${m.slug}`} className="flex min-w-0 items-center gap-4 painel p-4 transition hover:border-violeta">
                 <span className="relative flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-superficie-2 text-ciano">
                   <IconeModulo icone={m.icone} className="h-7 w-7" />
                   <span className="absolute -left-1.5 -top-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-fundo font-display text-xs font-bold text-suave ring-1 ring-linha">

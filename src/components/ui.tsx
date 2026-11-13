@@ -3,7 +3,7 @@ import { COR_RISCO } from "@/lib/dominio/catalogo";
 import type { Risco } from "@/lib/dominio/tipos";
 
 export function Cartao({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return <div className={`rounded-2xl border border-linha bg-superficie p-5 shadow-[0_1px_2px_rgb(20_33_92/0.04)] ${className}`}>{children}</div>;
+  return <div className={`painel p-5 ${className}`}>{children}</div>;
 }
 
 export function TituloSecao({ titulo, subtitulo, acao }: { titulo: string; subtitulo?: string; acao?: ReactNode }) {

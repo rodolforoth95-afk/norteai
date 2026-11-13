@@ -289,7 +289,7 @@ export function Importador({ existentes, iaLigada }: { existentes: Existente[]; 
         </div>
         <input id={idArquivo} type="file" accept={fonte?.aceita || ".pdf,.xlsx,.xls,.csv,.png,.jpg,.jpeg,.webp"} onChange={enviarArquivo} disabled={lendo} className="sr-only" />
         {lendo ? (
-          <p className="flex items-center gap-2 rounded-2xl border border-linha bg-superficie px-4 py-3 text-sm text-texto" role="status">
+          <p className="flex items-center gap-2 painel px-4 py-3 text-sm text-texto" role="status">
             <Sparkles className="h-4 w-4 animate-pulse text-ciano" aria-hidden="true" />
             Lendo o arquivo…
           </p>
@@ -332,7 +332,7 @@ export function Importador({ existentes, iaLigada }: { existentes: Existente[]; 
         Trocar arquivo
       </button>
 
-      <div className="grid gap-4 rounded-2xl border border-linha bg-superficie p-5 sm:grid-cols-[1fr_1.2fr] sm:items-end">
+      <div className="grid gap-4 painel p-5 sm:grid-cols-[1fr_1.2fr] sm:items-end">
         <CampoData
           rotulo="Data do extrato"
           valor={data}
@@ -555,7 +555,7 @@ export function Importador({ existentes, iaLigada }: { existentes: Existente[]; 
         </div>
       ) : null}
 
-      <div className="rounded-2xl border border-linha bg-superficie p-5">
+      <div className="painel p-5">
         <p className="font-display text-lg font-semibold text-texto">O que muda</p>
         <dl className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
           {[

@@ -10,7 +10,7 @@ export default async function PaginaConta() {
   return (
     <section className="mx-auto flex w-full max-w-2xl flex-col gap-6">
       <h1 className="font-display text-[1.75rem] font-black tracking-[-0.01em] text-texto">Conta</h1>
-      <dl className="rounded-2xl border border-linha bg-superficie p-5">
+      <dl className="painel p-5">
         <dt className="text-xs text-suave">Nome</dt>
         <dd className="font-medium text-texto">{usuario?.nome_completo}</dd>
         <dt className="mt-3 text-xs text-suave">E-mail</dt>

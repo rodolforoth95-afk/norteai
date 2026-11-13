@@ -10,9 +10,9 @@ export type ItemMapa = { simbolo: string; nome: string; logo: string | null; var
 export type GrupoMapa = { id: string; rotulo: string; descricao: string; total: number; itens: ItemMapa[] };
 
 const ORDENS = [
-  { id: "volume", rotulo: "Mais negociados" },
-  { id: "altas", rotulo: "Maiores altas" },
-  { id: "baixas", rotulo: "Maiores baixas" },
+  { id: "volume", rotulo: "Volume" },
+  { id: "altas", rotulo: "Altas" },
+  { id: "baixas", rotulo: "Baixas" },
 ] as const;
 const QUANTIDADES = [24, 48];
 
@@ -48,7 +48,7 @@ export function MapaDoDia({ grupos }: { grupos: GrupoMapa[] }) {
       <TituloSecao titulo="Mapa do dia" subtitulo="Escolha o tipo de ativo e compare como cada um se saiu hoje" />
 
       {/* Seletor + comparativo entre tipos */}
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5" role="radiogroup" aria-label="Tipo de ativo">
+      <div className="-mx-5 flex snap-x gap-2 overflow-x-auto px-5 pb-1 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-3 sm:overflow-visible sm:px-0 sm:pb-0 lg:grid-cols-5 [&::-webkit-scrollbar]:hidden" role="radiogroup" aria-label="Tipo de ativo">
         {grupos.map((g) => {
           const rg = resumo(g.itens);
           const ativo = g.id === grupo.id;
@@ -60,7 +60,7 @@ export function MapaDoDia({ grupos }: { grupos: GrupoMapa[] }) {
               role="radio"
               aria-checked={ativo}
               onClick={() => setGrupoId(g.id)}
-              className={`flex flex-col gap-2 rounded-2xl border p-3 text-left transition ${ativo ? "border-ciano bg-ciano/10" : "border-linha bg-superficie-2/40 hover:border-violeta"}`}
+              className={`flex w-[10.5rem] shrink-0 snap-start flex-col gap-2 rounded-2xl border p-3 text-left transition sm:w-auto ${ativo ? "border-ciano bg-ciano/10" : "border-linha bg-superficie-2/40 hover:border-violeta"}`}
             >
               <span className="flex items-center justify-between gap-2">
                 <span className="font-display text-sm font-bold text-texto">{g.rotulo}</span>
@@ -69,8 +69,11 @@ export function MapaDoDia({ grupos }: { grupos: GrupoMapa[] }) {
               <span className="flex h-1.5 overflow-hidden rounded-full bg-erro/60" aria-hidden="true">
                 <span className="bg-menta" style={{ width: `${pctAlta}%` }} />
               </span>
-              <span className="text-[11px] text-suave">
-                {rg.altas} em alta · {rg.quedas} em queda · {g.id === "cripto" ? "30 maiores" : `${g.total.toLocaleString("pt-BR")} na B3`}
+              <span className="flex flex-col text-[11px] leading-snug text-suave">
+                <span className="whitespace-nowrap tabular-nums">
+                  {rg.altas} em alta · {rg.quedas} em queda
+                </span>
+                <span>{g.id === "cripto" ? "30 maiores do mundo" : `${g.total.toLocaleString("pt-BR")} listados na B3`}</span>
               </span>
             </button>
           );

@@ -143,7 +143,7 @@ export function FormNovoInvestimento() {
                 key={t.id}
                 type="button"
                 onClick={() => escolher(t)}
-                className="flex min-h-24 flex-col items-start justify-between gap-2 rounded-2xl border border-linha bg-superficie p-3 text-left transition hover:border-ciano"
+                className="flex min-h-24 flex-col items-start justify-between gap-2 painel p-3 text-left transition hover:border-ciano"
               >
                 <t.Icone className="h-6 w-6 text-ciano" aria-hidden="true" />
                 <span>

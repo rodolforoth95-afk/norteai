@@ -266,7 +266,7 @@ export function ChatEntrevista({
             onChange={(e) => setTexto(e.target.value)}
             placeholder={iaAtiva ? "Ou converse com o guia…" : "Ou responda com suas palavras…"}
             autoComplete="off"
-            className="min-h-12 flex-1 rounded-2xl border border-linha bg-superficie px-4 text-sm text-texto placeholder:text-suave/70 focus:border-violeta focus:outline-none"
+            className="min-h-12 flex-1 painel px-4 text-sm text-texto placeholder:text-suave/70 focus:border-violeta focus:outline-none"
           />
           <button
             type="submit"

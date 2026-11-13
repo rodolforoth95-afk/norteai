@@ -33,8 +33,8 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#0a1030" },
-    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#060a1c" },
+    { media: "(prefers-color-scheme: light)", color: "#060a1c" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -43,8 +43,8 @@ export const viewport: Viewport = {
 export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
-  // Tema salvo pelo alternador (padrão: claro, a identidade principal da marca).
-  const tema = (await cookies()).get("tema")?.value === "escuro" ? "escuro" : "claro";
+  // Tema salvo pelo alternador (padrão: noite, o visual principal do app).
+  const tema = (await cookies()).get("tema")?.value === "claro" ? "claro" : "escuro";
   return (
     <html lang="pt-BR" data-tema={tema}>
       <body className={`${titulo.variable} ${texto.variable} antialiased`}>
