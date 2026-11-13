@@ -95,6 +95,7 @@
 }
 
 /* Modo claro: branco com azul-noite no texto. */
+:root[data-tema="claro"],
 [data-tema="claro"] {
   --fundo: #f5f7fc;
   --superficie: #ffffff;
@@ -116,6 +117,21 @@
   --mascote-balao: #2d5bff;
   --mascote-rosto: #ffffff;
   --mascote-no: #d9631a;
+  --auth-fundo: #f3f6fd;
+  --auth-texto: #0e1638;
+  --auth-texto-2: #2b3561;
+  --auth-texto-3: #4f5a82;
+  --auth-titulo-2: #2d5bff;
+  --auth-cartao: rgb(255 255 255 / 0.72);
+  --auth-borda: rgb(14 22 56 / 0.1);
+  --auth-pilula: rgb(255 255 255 / 0.7);
+  --auth-selo: rgb(255 255 255 / 0.75);
+  --auth-sombra: 0 30px 80px -24px rgb(20 33 92 / 0.25);
+  --auth-nevoa: rgb(143 168 255 / 0.35);
+  --auth-veu: rgb(243 246 253 / 0.92);
+  --auth-veu-2: rgb(243 246 253 / 0.8);
+  --auth-faixa-larga: 0.35;
+  --auth-faixa-curta: 0.55;
   color-scheme: light;
 }
 
@@ -143,6 +159,21 @@
   --mascote-balao: #ffffff;
   --mascote-rosto: #14215c;
   --mascote-no: #ffb27a;
+  --auth-fundo: #050817;
+  --auth-texto: #ffffff;
+  --auth-texto-2: rgb(255 255 255 / 0.82);
+  --auth-texto-3: rgb(255 255 255 / 0.66);
+  --auth-titulo-2: #8fa8ff;
+  --auth-cartao: rgb(11 18 51 / 0.7);
+  --auth-borda: rgb(255 255 255 / 0.12);
+  --auth-pilula: rgb(255 255 255 / 0.07);
+  --auth-selo: rgb(0 0 0 / 0.45);
+  --auth-sombra: 0 30px 80px -20px rgb(0 0 0 / 0.6);
+  --auth-nevoa: rgb(143 168 255 / 0.28);
+  --auth-veu: rgb(5 8 23 / 0.92);
+  --auth-veu-2: rgb(5 8 23 / 0.75);
+  --auth-faixa-larga: 0.5;
+  --auth-faixa-curta: 0.9;
   color-scheme: dark;
 }
 

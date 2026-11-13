@@ -2,6 +2,7 @@ import "server-only";
 import { criarClienteAdmin } from "@/lib/supabase/servidor";
 import type { Perfil, Posicao } from "@/lib/dominio/tipos";
 import { deVersaoAnterior, type CarteiraDados } from "@/lib/dominio/carteira";
+import type { FinancasDados } from "@/lib/dominio/financas";
 import { ErroCarteira } from "../carteira";
 import type { Repositorio } from "./tipo";
 
@@ -91,6 +92,22 @@ export const repositorioSupabase: Repositorio = {
       throw new ErroCarteira("O banco de dados precisa ser atualizado (migração 0004) antes de salvar a carteira.");
     }
     falhar("salvar carteira", error);
+  },
+
+  async obterFinancas(uid) {
+    const { data, error } = await criarClienteAdmin().from("financas").select("dados").eq("usuario_id", uid).maybeSingle();
+    if (error?.code === TABELA_INEXISTENTE) return null;
+    falhar("ler finanças", error);
+    return (data?.dados as FinancasDados) ?? null;
+  },
+  async salvarFinancas(uid, dados) {
+    const { error } = await criarClienteAdmin()
+      .from("financas")
+      .upsert({ usuario_id: uid, dados, atualizada_em: new Date().toISOString() }, { onConflict: "usuario_id" });
+    if (error?.code === TABELA_INEXISTENTE) {
+      throw new ErroCarteira("O banco de dados precisa ser atualizado (migração 0005) antes de salvar receitas e despesas.");
+    }
+    falhar("salvar finanças", error);
   },
 
   async listarMoedas(uid) {

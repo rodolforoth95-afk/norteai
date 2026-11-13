@@ -28,14 +28,16 @@ Guia educacional de investimentos com IA (PWA). Next.js + Supabase + Claude.
 - [x] Telas de carregamento, erro e página não encontrada; cabeçalhos de segurança; imagem para compartilhar o link
 - [x] Simulador de carteiras (/simulador): 3 carteiras de exemplo por estilo, projeção com faixa de cenários, IR, inflação, teste de crise e últimos 3 meses reais; indicadores do Banco Central, brapi e CoinGecko; explicação pela IA (ou pelo app, sem chave). Conferência: `npm run testar:simulador`
 - [x] Carteira v2: extrato por investimento (aplicação, resgate, atualização de saldo), datas só até hoje, importação com conferência (PDF, planilha, imagem pela IA, digitação), cadastro em 3 passos, edição e exclusão; painel com linha histórica, comparativo com CDI, poupança e IPCA (Banco Central), rendimento separado dos aportes e rentabilidade mês a mês. Conferência: `npm run testar:carteira`
+- [x] Finanças (receitas e despesas): lançamento por texto, foto (IA) ou voz pelo botão `+` em qualquer tela, parcelas e recorrência, categorias e subcategorias com aprendizado por pessoa, painel com fluxo de caixa e o que foi reinvestido na carteira, rosca que filtra a lista, termômetros de orçamento, insights do Mordomo, diagnóstico de 30/60/90 dias e plano de aporte. Arquitetura e prompts em `docs/fluxo-de-caixa.md`. Conferência: `npm run testar:financas`
+- [x] Modo claro e modo noite (padrão), com troca no menu
 - [x] Mercado v2: mapa de calor do dia; página do ativo com candles, médias móveis, volume, suportes e resistências (topos e fundos + pivôs mensais) selecionáveis no gráfico e em tabela, leituras educativas e desempenho mês a mês; comparador de até 5 ativos (base 100, mês a mês, risco). Histórico: 3 meses no plano gratuito da brapi (`BRAPI_PERIODO_ANALISE=1y` com plano pago)
-- [x] Identidade visual Findomo (conceito "mordomo-IA"): mascote balão com gravata-borboleta, azul-assistente #2D5BFF, laranja-gravata #FF8A3D, azul-noite #14215C, Nunito (marca e títulos) e DM Sans (textos); modo claro como padrão e modo noite
+- [x] Identidade visual Findomo (conceito "mordomo-IA"): mascote balão com gravata-borboleta, azul-assistente #2D5BFF, laranja-gravata #FF8A3D, azul-noite #14215C, Nunito (marca e títulos) e DM Sans (textos); modo noite como padrão e modo claro
 - [ ] Revisão de segurança e critérios de aceite
 
 ## Configurar o Supabase (uma vez)
 
 1. Crie um projeto em [supabase.com](https://supabase.com), na região **South America (São Paulo)**.
-2. Em **SQL Editor**, rode, nesta ordem: `0001_usuario_consentimento.sql`, `0002_entrevista_carteira_moedas.sql`, `0003_auditoria_ia.sql` e `0004_carteira_movimentacoes.sql` (pasta `supabase/migrations`).
+2. Em **SQL Editor**, rode, nesta ordem: `0001_usuario_consentimento.sql`, `0002_entrevista_carteira_moedas.sql`, `0003_auditoria_ia.sql`, `0004_carteira_movimentacoes.sql` e `0005_financas.sql` (pasta `supabase/migrations`).
 3. Em **Authentication > Sign In / Providers > Email**:
    - deixe **Confirm email** ligado;
    - **Email OTP Expiration:** `600` segundos (10 minutos);

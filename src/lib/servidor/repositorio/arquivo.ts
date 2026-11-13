@@ -3,6 +3,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import type { Carteira, EstadoEntrevista, LancamentoMoedas, Perfil, Snapshot } from "@/lib/dominio/tipos";
 import { deVersaoAnterior, type CarteiraDados } from "@/lib/dominio/carteira";
+import type { FinancasDados } from "@/lib/dominio/financas";
 import type { Repositorio } from "./tipo";
 
 // Armazenamento em arquivo JSON, só para o modo de teste local.
@@ -12,6 +13,7 @@ type DadosUsuario = {
   carteira: Carteira | null; // versão anterior (só leitura, para conversão)
   snapshots: Snapshot[]; // versão anterior
   carteira2?: CarteiraDados;
+  financas?: FinancasDados;
   moedas: LancamentoMoedas[];
   concluidos: string[];
   auditoria?: { tipo: string; criado_em: string }[];
@@ -78,6 +80,13 @@ export const repositorioArquivo: Repositorio = {
   },
   async salvarCarteira(uid, dados) {
     await alterar(uid, (d) => void (d.carteira2 = dados));
+  },
+
+  async obterFinancas(uid) {
+    return (await de(uid))?.financas ?? null;
+  },
+  async salvarFinancas(uid, dados) {
+    await alterar(uid, (d) => void (d.financas = dados));
   },
 
   async listarMoedas(uid) {

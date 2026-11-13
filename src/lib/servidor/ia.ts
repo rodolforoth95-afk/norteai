@@ -287,3 +287,119 @@ export async function lerExtratoComIA(arquivo: { tipo: "imagem" | "pdf"; mediaTy
   if (!bloco) return null;
   return JSON.parse(bloco.text) as { data_referencia: string | null; itens: ItemLidoIA[] };
 }
+
+// --- Receitas e despesas -----------------------------------------------------------------
+
+// Prompt de extração: transforma foto (nota, cupom, comprovante de Pix, fatura) ou uma
+// frase falada/digitada num lançamento estruturado. A categoria vem da lista da pessoa.
+export const SISTEMA_LANCAMENTO = `Você é o assistente de lançamentos do Findomo, um "mordomo das finanças" para pessoas físicas no Brasil.
+Sua tarefa é transformar UMA entrada (foto de nota fiscal, cupom, comprovante de Pix, fatura de cartão, ou uma frase falada/digitada) em UM lançamento financeiro estruturado.
+
+Regras:
+- tipo: "receita" quando entra dinheiro (salário, dividendo, rendimento, venda, reembolso, Pix recebido); "despesa" quando sai.
+- valor: número positivo em reais, com ponto decimal (ex.: 1200.5). Em notas e cupons, use o TOTAL PAGO (com descontos), nunca subtotais nem troco. Em faturas, o valor total da fatura.
+- data: AAAA-MM-DD. Use a data do documento; em frases, interprete "hoje", "ontem", "anteontem" e "dia 5" a partir da data de hoje informada. Nunca invente data futura.
+- estabelecimento: nome comercial curto e legível (ex.: "Posto Ipiranga", "iFood", "Carrefour"), sem CNPJ, endereço ou códigos. null se não houver.
+- descricao: até 60 caracteres, em português, dizendo o que foi (ex.: "Almoço", "Combustível", "Salário de novembro").
+- meio: "pix", "debito", "credito", "dinheiro", "boleto" ou "transferencia"; null se não der para saber.
+- parcelas: número de parcelas quando houver ("3x", "em 10 vezes"); 1 caso contrário.
+- categoriaId: escolha EXATAMENTE um dos ids da lista de categorias recebida, do mesmo tipo do lançamento. Se houver uma regra aprendida para o estabelecimento, use-a.
+- confianca: de 0 a 1, o quanto você tem certeza do valor e do tipo.
+- Ignore e nunca devolva nomes de pessoas, CPF, números de cartão, agência ou conta.
+- Se a entrada não for um gasto ou recebimento, devolva valor null e confianca 0.`;
+
+export type LancamentoIA = {
+  tipo: "despesa" | "receita";
+  valor: number | null;
+  data: string | null;
+  estabelecimento: string | null;
+  descricao: string;
+  meio: string | null;
+  parcelas: number;
+  categoriaId: string;
+  confianca: number;
+};
+
+export async function lerLancamentoComIA(entrada: { texto?: string; imagem?: { mediaType: string; base64: string; pdf?: boolean } }, contexto: { hoje: string; categorias: { id: string; nome: string; tipo: string }[]; regras: { chave: string; categoriaId: string }[] }) {
+  const lista = contexto.categorias.map((c) => `- ${c.id} (${c.tipo}): ${c.nome}`).join("\n");
+  const regras = contexto.regras.slice(-60).map((r) => `- "${r.chave}" → ${r.categoriaId}`).join("\n") || "- nenhuma";
+  const blocos: Anthropic.ContentBlockParam[] = [];
+  if (entrada.imagem) {
+    blocos.push(
+      entrada.imagem.pdf
+        ? { type: "document", source: { type: "base64", media_type: "application/pdf", data: entrada.imagem.base64 } }
+        : { type: "image", source: { type: "base64", media_type: entrada.imagem.mediaType as "image/png" | "image/jpeg" | "image/webp" | "image/gif", data: entrada.imagem.base64 } },
+    );
+  }
+  blocos.push({
+    type: "text",
+    text: `Data de hoje: ${contexto.hoje}\n\nCategorias disponíveis:\n${lista}\n\nRegras aprendidas com esta pessoa (estabelecimento → categoria):\n${regras}\n\n${entrada.texto ? `Frase: """${entrada.texto.slice(0, 500)}"""` : "Extraia o lançamento da imagem."}`,
+  });
+  const resposta = await claude().messages.create({
+    model: MODELO_ENTREVISTA,
+    max_tokens: 2000,
+    output_config: {
+      effort: "low",
+      format: {
+        type: "json_schema",
+        schema: {
+          type: "object",
+          properties: {
+            tipo: { type: "string", enum: ["despesa", "receita"] },
+            valor: { type: ["number", "null"] },
+            data: { type: ["string", "null"] },
+            estabelecimento: { type: ["string", "null"] },
+            descricao: { type: "string" },
+            meio: { type: ["string", "null"], enum: ["pix", "debito", "credito", "dinheiro", "boleto", "transferencia", null] },
+            parcelas: { type: "integer" },
+            categoriaId: { type: "string" },
+            confianca: { type: "number" },
+          },
+          required: ["tipo", "valor", "data", "estabelecimento", "descricao", "meio", "parcelas", "categoriaId", "confianca"],
+          additionalProperties: false,
+        },
+      },
+    },
+    system: [{ type: "text", text: SISTEMA_LANCAMENTO, cache_control: { type: "ephemeral" } }],
+    messages: [{ role: "user", content: blocos }],
+  });
+  if (resposta.stop_reason === "refusal") return null;
+  const bloco = resposta.content.find((b): b is Anthropic.TextBlock => b.type === "text");
+  return bloco ? (JSON.parse(bloco.text) as LancamentoIA) : null;
+}
+
+// Prompt do "Mordomo Estrategista": transforma o diagnóstico (números calculados pelo app)
+// num plano de economia com tom elegante, prático e parceiro.
+export const SISTEMA_PLANO = `Você é o Mordomo Estrategista do Findomo: um mordomo financeiro elegante, prático e parceiro, que fala com pessoas físicas no Brasil.
+Você recebe um diagnóstico já calculado pelo app (médias de receitas e despesas, "ralos" e uma proposta de cortes por categoria) e uma meta de economia para reinvestir.
+
+Escreva em português do Brasil:
+- Um parágrafo de abertura (2 frases) dizendo, com números arredondados, onde a pessoa está e se a meta é alcançável.
+- De 2 a 4 passos práticos, um por linha, começando com "• ". Cada passo cita a categoria, o corte em % e em reais por mês, e uma tática concreta e realista para cumprir (ex.: "Delivery: reduzir 40% (≈ R$ 250/mês) pedindo só no fim de semana e cozinhando em lote no domingo").
+- Uma frase final de incentivo, mencionando para onde o dinheiro vai (o destino da meta) e quando a pessoa chega ao total.
+
+Regras:
+- Use apenas os números recebidos; não invente valores.
+- Nunca sugira cortar moradia, saúde, educação, contas da casa, mercado essencial ou dívidas: esses itens são preservados.
+- Não indique ativos, fundos, bancos ou corretoras específicos; fale só do tipo de destino informado pela pessoa.
+- Não prometa rentabilidade. Tom respeitoso, sem julgamento, sem emojis, sem jargão.`;
+
+export async function planoComIA(resumo: string): Promise<string | null> {
+  const resposta = await claude().beta.messages.create({
+    model: MODELO_ENTREVISTA,
+    max_tokens: 1500,
+    output_config: { effort: "low" },
+    system: [{ type: "text", text: SISTEMA_PLANO, cache_control: { type: "ephemeral" } }],
+    messages: [{ role: "user", content: resumo }],
+    betas: ["server-side-fallback-2026-07-01"],
+    fallbacks: "default",
+  });
+  if (resposta.stop_reason === "refusal") return null;
+  const texto = resposta.content
+    .filter((b): b is Anthropic.Beta.BetaTextBlock => b.type === "text")
+    .map((b) => b.text)
+    .join("\n")
+    .trim();
+  if (!texto) return null;
+  return (await textoPermitido(texto, "simulacao")) ? texto : null;
+}

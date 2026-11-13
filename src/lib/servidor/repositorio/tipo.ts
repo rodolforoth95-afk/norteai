@@ -1,5 +1,6 @@
 import type { EstadoEntrevista, LancamentoMoedas, Perfil } from "@/lib/dominio/tipos";
 import type { CarteiraDados } from "@/lib/dominio/carteira";
+import type { FinancasDados } from "@/lib/dominio/financas";
 
 // Acesso aos dados do usuário. Duas implementações:
 // - arquivo local (.dados/teste.json), usada no modo de teste;
@@ -15,6 +16,10 @@ export interface Repositorio {
   // recebe a versão convertida até a primeira gravação.
   obterCarteira(uid: string): Promise<CarteiraDados | null>;
   salvarCarteira(uid: string, dados: CarteiraDados): Promise<void>;
+
+  // Receitas e despesas (fluxo de caixa), categorias, aprendizado e metas de economia.
+  obterFinancas(uid: string): Promise<FinancasDados | null>;
+  salvarFinancas(uid: string, dados: FinancasDados): Promise<void>;
 
   listarMoedas(uid: string): Promise<LancamentoMoedas[]>;
   // Devolve false se já houver um lançamento com o mesmo tipo e referência.

@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, CandlestickChart, FlaskConical, Home, PieChart } from "lucide-react";
+import { BookOpen, CandlestickChart, Home, PieChart, Wallet } from "lucide-react";
 
 const ABAS = [
   { href: "/inicio", rotulo: "Início", Icone: Home },
-  { href: "/mercado", rotulo: "Mercado", Icone: CandlestickChart },
+  { href: "/financas", rotulo: "Finanças", Icone: Wallet },
   { href: "/carteira", rotulo: "Carteira", Icone: PieChart },
-  { href: "/simulador", rotulo: "Simular", Icone: FlaskConical },
+  { href: "/mercado", rotulo: "Mercado", Icone: CandlestickChart },
   { href: "/aprender", rotulo: "Aprender", Icone: BookOpen },
 ];
 
