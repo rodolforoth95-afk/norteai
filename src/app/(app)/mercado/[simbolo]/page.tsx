@@ -66,7 +66,7 @@ export default async function PaginaAtivo({ params }: { params: Promise<{ simbol
         <div className="flex items-center gap-4">
           <LogoAtivo simbolo={simbolo} logo={c.logo} tamanho={56} />
           <div className="min-w-0">
-            <h1 className="font-display text-[1.75rem] font-black tracking-[-0.01em] text-texto lg:text-[2rem]">{simbolo}</h1>
+            <h1 className="font-display text-[1.75rem] font-bold tracking-[-0.025em] text-texto lg:text-[2.25rem]">{simbolo}</h1>
             <p className="truncate text-sm text-suave">{c.nome}</p>
           </div>
         </div>

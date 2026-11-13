@@ -58,7 +58,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
             <Link
               href="/conta"
               aria-label="Conta"
-              className="flex h-9 w-9 items-center justify-center rounded-full border border-linha bg-superficie font-display text-sm font-extrabold text-texto"
+              className="flex h-9 w-9 items-center justify-center rounded-full border border-linha bg-superficie font-display text-sm font-semibold text-texto"
             >
               {(primeiroNome || "?").charAt(0).toUpperCase()}
             </Link>

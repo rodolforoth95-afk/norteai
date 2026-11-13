@@ -190,13 +190,13 @@ export function PainelCarteira({
       {/* Cabeçalho e ações */}
       <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <h1 className="font-display text-[1.75rem] font-black tracking-[-0.01em] text-texto lg:text-[2rem]">Carteira</h1>
+          <h1 className="font-display text-[1.75rem] font-bold tracking-[-0.025em] text-texto lg:text-[2.25rem]">Carteira</h1>
           <p className="text-sm text-suave">
             {ativas.length} investimentos · atualizado até {nomeMesLongo(atual.mes).toLowerCase()}
           </p>
         </div>
         <div className="grid grid-cols-3 gap-2 lg:flex">
-          <Link href="/carteira/adicionar" className="gradiente-marca flex min-h-11 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold text-white">
+          <Link href="/carteira/adicionar" className="gradiente-marca flex min-h-11 items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold text-white">
             <Plus className="h-4 w-4" aria-hidden="true" />
             Adicionar
           </Link>
@@ -524,7 +524,7 @@ function Comparativo({ rotulo, valor, classe = "text-texto" }: { rotulo: string;
 
 function Segmentos({ opcoes, valor, onChange, rotulo }: { opcoes: { id: string; rotulo: string }[]; valor: string; onChange: (v: string) => void; rotulo: string }) {
   return (
-    <div className="flex rounded-xl border border-linha bg-superficie-2 p-0.5" role="radiogroup" aria-label={rotulo}>
+    <div className="flex rounded-full border border-linha bg-superficie-2 p-1" role="radiogroup" aria-label={rotulo}>
       {opcoes.map((o) => (
         <button
           key={o.id}
@@ -532,7 +532,7 @@ function Segmentos({ opcoes, valor, onChange, rotulo }: { opcoes: { id: string; 
           role="radio"
           aria-checked={valor === o.id}
           onClick={() => onChange(o.id)}
-          className={`min-h-9 min-w-11 rounded-lg px-3 text-xs font-semibold transition ${valor === o.id ? "bg-superficie text-texto shadow" : "text-suave hover:text-texto"}`}
+          className={`min-h-9 min-w-11 rounded-full px-3 text-xs font-semibold transition ${valor === o.id ? "bg-superficie text-texto shadow" : "text-suave hover:text-texto"}`}
         >
           {o.rotulo}
         </button>
@@ -773,7 +773,7 @@ function TabelaInvestimentos({ linhas, onAtualizar }: { linhas: Linha[]; onAtual
                   </td>
                   <td className={`py-2.5 text-right text-xs ${velho ? "font-semibold text-ambar" : "text-suave"}`}>{l.ultimaData ? formatarData(l.ultimaData) : "—"}</td>
                   <td className="py-2.5 pl-2 text-right">
-                    <button type="button" onClick={() => onAtualizar(l)} className="min-h-9 rounded-lg border border-linha px-2.5 text-xs font-medium text-texto hover:border-ciano">
+                    <button type="button" onClick={() => onAtualizar(l)} className="min-h-9 rounded-full border border-linha px-2.5 text-xs font-medium text-texto hover:border-ciano">
                       Atualizar
                     </button>
                   </td>
@@ -809,7 +809,7 @@ function TabelaInvestimentos({ linhas, onAtualizar }: { linhas: Linha[]; onAtual
                 <span className={`text-[11px] ${velho ? "font-semibold text-ambar" : "text-suave"}`}>
                   {l.ultimaData ? `Atualizado em ${formatarData(l.ultimaData)}` : ""}
                 </span>
-                <button type="button" onClick={() => onAtualizar(l)} className="min-h-9 rounded-lg px-2 text-xs font-semibold text-ciano">
+                <button type="button" onClick={() => onAtualizar(l)} className="min-h-9 rounded-full px-2 text-xs font-semibold text-ciano">
                   Atualizar saldo
                 </button>
               </div>

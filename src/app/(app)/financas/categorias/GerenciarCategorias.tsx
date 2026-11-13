@@ -36,9 +36,9 @@ export function GerenciarCategorias({ categorias, regras, usos }: { categorias: 
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] lg:gap-6">
       <div className="painel flex flex-col p-0">
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-linha px-5 py-4">
-          <div className="flex rounded-xl border border-linha bg-superficie-2 p-0.5" role="radiogroup" aria-label="Tipo">
+          <div className="flex rounded-full border border-linha bg-superficie-2 p-1" role="radiogroup" aria-label="Tipo">
             {(["despesa", "receita"] as const).map((t) => (
-              <button key={t} type="button" role="radio" aria-checked={tipo === t} onClick={() => setTipo(t)} className={`min-h-9 rounded-lg px-4 text-xs font-semibold ${tipo === t ? "bg-superficie text-texto shadow" : "text-suave hover:text-texto"}`}>
+              <button key={t} type="button" role="radio" aria-checked={tipo === t} onClick={() => setTipo(t)} className={`min-h-9 rounded-full px-4 text-xs font-semibold ${tipo === t ? "bg-superficie text-texto shadow" : "text-suave hover:text-texto"}`}>
                 {t === "despesa" ? "Despesas" : "Receitas"}
               </button>
             ))}
@@ -141,7 +141,7 @@ export function GerenciarCategorias({ categorias, regras, usos }: { categorias: 
                 <input type="checkbox" checked={edicao.essencial} onChange={(e) => setEdicao({ ...edicao, essencial: e.target.checked })} className="h-5 w-5 accent-[var(--destaque)]" />
               </label>
             ) : null}
-            <button type="submit" disabled={pendente} className="gradiente-marca flex h-11 items-center justify-center gap-2 rounded-xl text-sm font-bold text-white disabled:opacity-60">
+            <button type="submit" disabled={pendente} className="gradiente-marca flex h-11 items-center justify-center gap-2 rounded-full text-sm font-bold text-white disabled:opacity-60">
               {pendente ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : null}
               Salvar categoria
             </button>

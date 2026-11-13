@@ -122,7 +122,7 @@ export function PlanoMordomo({
               <p className="flex items-center gap-1.5 text-xs font-semibold text-menta">
                 <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" /> Plano ativo desde {nomeMes(meta.inicio)}
               </p>
-              <h2 className="mt-1 font-display text-xl font-extrabold text-texto">{meta.nome}</h2>
+              <h2 className="mt-1 font-display text-xl font-semibold text-texto">{meta.nome}</h2>
               <p className="text-sm text-suave">
                 {brl0(meta.valorMensal)} por mês para {meta.destino} · {meta.meses} meses
               </p>
@@ -156,7 +156,7 @@ export function PlanoMordomo({
             ].map((x) => (
               <div key={x.rotulo} className="rounded-xl bg-superficie-2/60 p-3.5">
                 <p className="text-xs text-suave">{x.rotulo}</p>
-                <p className={`font-display text-xl font-black tabular-nums ${x.cor}`}>{brl0(x.valor)}</p>
+                <p className={`font-display text-xl font-bold tabular-nums ${x.cor}`}>{brl0(x.valor)}</p>
               </div>
             ))}
           </div>
@@ -187,7 +187,7 @@ export function PlanoMordomo({
             </ul>
           ) : null}
           {progresso.livreParaAportar >= 50 ? (
-            <Link href="/carteira/adicionar" className="gradiente-marca flex h-11 items-center justify-center rounded-xl text-sm font-bold text-white hover:brightness-110 sm:w-fit sm:px-6">
+            <Link href="/carteira/adicionar" className="gradiente-marca flex h-11 items-center justify-center rounded-full text-sm font-bold text-white hover:brightness-110 sm:w-fit sm:px-6">
               Registrar aporte de {brl0(progresso.livreParaAportar)}
             </Link>
           ) : null}
@@ -201,7 +201,7 @@ export function PlanoMordomo({
             <h2 className="font-display text-lg font-bold text-texto">Diagnóstico dos seus gastos</h2>
             <p className="text-sm text-suave">{semHistorico ? "Ainda sem meses completos: uso o mês atual." : `Média de ${diag.meses.map((m) => nomeMes(m, true)).join(", ")}`}</p>
           </div>
-          <div className="flex rounded-xl border border-linha bg-superficie-2 p-0.5" role="radiogroup" aria-label="Período">
+          <div className="flex rounded-full border border-linha bg-superficie-2 p-1" role="radiogroup" aria-label="Período">
             {([30, 60, 90] as const).map((d) => (
               <button
                 key={d}
@@ -212,7 +212,7 @@ export function PlanoMordomo({
                   setDias(d);
                   setTextoIA(null);
                 }}
-                className={`min-h-9 rounded-lg px-3.5 text-xs font-semibold ${dias === d ? "bg-superficie text-texto shadow" : "text-suave hover:text-texto"}`}
+                className={`min-h-9 rounded-full px-3.5 text-xs font-semibold ${dias === d ? "bg-superficie text-texto shadow" : "text-suave hover:text-texto"}`}
               >
                 {d} dias
               </button>
@@ -229,7 +229,7 @@ export function PlanoMordomo({
           ].map((x) => (
             <div key={x.rotulo} className="rounded-xl bg-superficie-2/60 p-3.5">
               <p className="text-xs text-suave">{x.rotulo}</p>
-              <p className={`font-display text-lg font-black tabular-nums ${x.cor}`}>{brl0(x.valor)}</p>
+              <p className={`font-display text-lg font-bold tabular-nums ${x.cor}`}>{brl0(x.valor)}</p>
             </div>
           ))}
         </div>
@@ -368,7 +368,7 @@ export function PlanoMordomo({
             ) : null}
 
             <div className="flex flex-col gap-2 sm:flex-row">
-              <button type="button" onClick={ativar} disabled={pendente || valorMensal < 10} className="gradiente-marca flex h-12 flex-1 items-center justify-center gap-2 rounded-xl text-sm font-bold text-white hover:brightness-110 disabled:opacity-60">
+              <button type="button" onClick={ativar} disabled={pendente || valorMensal < 10} className="gradiente-marca flex h-12 flex-1 items-center justify-center gap-2 rounded-full text-sm font-bold text-white hover:brightness-110 disabled:opacity-60">
                 {pendente ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : <CheckCircle2 className="h-4 w-4" aria-hidden="true" />}
                 Ativar este plano
               </button>

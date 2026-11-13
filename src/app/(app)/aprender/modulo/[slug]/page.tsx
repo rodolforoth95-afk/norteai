@@ -29,11 +29,11 @@ export default async function PaginaModulo({ params }: { params: Promise<{ slug:
       </Link>
 
       <header className="flex items-start gap-4">
-        <span className="gradiente-marca flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl text-white">
+        <span className="gradiente-marca flex h-16 w-16 shrink-0 items-center justify-center rounded-full text-white">
           <IconeModulo icone={modulo.icone} className="h-8 w-8" />
         </span>
         <div>
-          <h1 className="font-display text-[1.75rem] font-black tracking-[-0.01em] leading-tight text-texto">{modulo.titulo}</h1>
+          <h1 className="font-display text-[1.75rem] font-bold tracking-[-0.01em] leading-tight text-texto">{modulo.titulo}</h1>
           <p className="mt-1 text-sm text-suave">{modulo.descricao}</p>
           <p className="mt-2 flex items-center gap-3 text-xs text-suave">
             <span className="flex items-center gap-1">

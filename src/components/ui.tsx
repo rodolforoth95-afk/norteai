@@ -10,7 +10,7 @@ export function TituloSecao({ titulo, subtitulo, acao }: { titulo: string; subti
   return (
     <div className="flex items-end justify-between gap-3">
       <div>
-        <h2 className="font-display text-[17px] font-extrabold text-texto">{titulo}</h2>
+        <h2 className="font-display text-[17px] font-semibold text-texto">{titulo}</h2>
         {subtitulo ? <p className="mt-0.5 text-sm text-suave">{subtitulo}</p> : null}
       </div>
       {acao}

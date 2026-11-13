@@ -28,7 +28,7 @@ export default async function PaginaImportar() {
         Carteira
       </Link>
       <div>
-        <h1 className="font-display text-[1.75rem] font-black tracking-[-0.01em] text-texto">Importar ou atualizar saldos</h1>
+        <h1 className="font-display text-[1.75rem] font-bold tracking-[-0.01em] text-texto">Importar ou atualizar saldos</h1>
         <p className="mt-1 text-sm text-suave">
           Envie o extrato ou digite os saldos. Comparamos com o que você já tem, mostramos o que rendeu e o que é novo, e você confirma antes de salvar.
         </p>

@@ -143,7 +143,7 @@ export default async function PaginaInicio() {
       <header className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-sm text-suave">{dataHoje}</p>
-          <h1 className="mt-1 font-display text-[1.75rem] font-black leading-tight tracking-[-0.01em] text-texto lg:text-[2.1rem]">
+          <h1 className="mt-1 font-display text-[1.75rem] font-bold leading-tight tracking-[-0.01em] text-texto lg:text-[2.1rem]">
             {saudacao()}
             {primeiroNome ? `, ${primeiroNome}` : ""}.
           </h1>
@@ -179,7 +179,7 @@ export default async function PaginaInicio() {
               <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <p className="text-sm text-suave">Patrimônio</p>
-                  <p className="mt-0.5 font-display text-[2.4rem] font-black leading-none tracking-[-0.02em] tabular-nums text-texto">{brl(carteira.patrimonio)}</p>
+                  <p className="mt-0.5 font-display text-[2.4rem] font-bold leading-none tracking-[-0.02em] tabular-nums text-texto">{brl(carteira.patrimonio)}</p>
                   <p className="mt-2 text-xs text-suave">
                     {carteira.quantidade} investimentos{ultimoRegistro ? ` · último registro em ${formatarData(ultimoRegistro)}` : ""}
                   </p>
@@ -202,7 +202,7 @@ export default async function PaginaInicio() {
           ) : (
             <Painel>
               <p className="text-sm text-suave">Patrimônio</p>
-              <p className="mt-1 font-display text-xl font-extrabold text-texto">Nenhum investimento cadastrado ainda</p>
+              <p className="mt-1 font-display text-xl font-semibold text-texto">Nenhum investimento cadastrado ainda</p>
               <p className="mt-1 max-w-lg text-sm text-suave">
                 Com a carteira aqui, você vê quanto rendeu no mês sem contar os aportes e compara com o CDI. Escolha o jeito mais rápido para você:
               </p>
@@ -229,7 +229,7 @@ export default async function PaginaInicio() {
           {/* Para fazer */}
           <Painel semPadding>
             <div className="flex items-baseline justify-between px-5 pt-5">
-              <h2 className="font-display text-[17px] font-extrabold text-texto">Para fazer</h2>
+              <h2 className="font-display text-[17px] font-semibold text-texto">Para fazer</h2>
               <span className="text-xs tabular-nums text-suave">
                 {feitas.length} de {tarefas.length} concluídas
               </span>
@@ -284,7 +284,7 @@ export default async function PaginaInicio() {
           {/* Trilhas */}
           <Painel semPadding>
             <div className="flex items-baseline justify-between px-5 pt-5">
-              <h2 className="font-display text-[17px] font-extrabold text-texto">Estudos</h2>
+              <h2 className="font-display text-[17px] font-semibold text-texto">Estudos</h2>
               <Link href="/aprender" className="text-sm font-semibold text-ciano hover:underline">
                 Ver trilhas
               </Link>
@@ -317,7 +317,7 @@ export default async function PaginaInicio() {
         <aside className="flex min-w-0 flex-col gap-6">
           <Painel semPadding>
             <div className="flex items-baseline justify-between px-5 pt-5">
-              <h2 className="font-display text-[17px] font-extrabold text-texto">Mercado agora</h2>
+              <h2 className="font-display text-[17px] font-semibold text-texto">Mercado agora</h2>
               <Link href="/mercado" className="text-sm font-semibold text-ciano hover:underline">
                 Abrir
               </Link>
@@ -340,7 +340,7 @@ export default async function PaginaInicio() {
           {perfil ? (
             <Painel>
               <p className="text-sm text-suave">Seu perfil</p>
-              <p className="mt-0.5 font-display text-xl font-extrabold text-texto">
+              <p className="mt-0.5 font-display text-xl font-semibold text-texto">
                 {perfil.estilo} <span className="text-sm font-semibold text-suave">· {INFO_ESTILO[perfil.estilo].risco.toLowerCase()}</span>
               </p>
               <p className="mt-2 text-[13px] leading-relaxed text-suave">
@@ -365,7 +365,7 @@ export default async function PaginaInicio() {
                 Usar
               </Link>
             </div>
-            <p className="mt-0.5 font-display text-xl font-extrabold tabular-nums text-texto">
+            <p className="mt-0.5 font-display text-xl font-semibold tabular-nums text-texto">
               {moedasResumo.saldo.toLocaleString("pt-BR")} <span className="text-sm font-semibold text-suave">· nível {moedasResumo.nivel}</span>
             </p>
             {moedasResumo.proximo ? (
@@ -407,7 +407,7 @@ function Numero({ rotulo, valor, classe, extra }: { rotulo: string; valor: strin
     <div className="flex items-baseline justify-between gap-3 py-3 sm:block sm:px-4 sm:py-0 sm:first:pl-0 sm:last:pr-0">
       <dt className="text-sm text-suave sm:truncate sm:text-xs">{rotulo}</dt>
       <dd className="text-right sm:text-left">
-        <span className={`block font-display text-base font-extrabold tabular-nums sm:mt-0.5 sm:text-lg ${classe}`}>{valor}</span>
+        <span className={`block font-display text-base font-semibold tabular-nums sm:mt-0.5 sm:text-lg ${classe}`}>{valor}</span>
         <span className="block text-xs tabular-nums text-suave">{extra}</span>
       </dd>
     </div>

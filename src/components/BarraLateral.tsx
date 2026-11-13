@@ -36,7 +36,7 @@ export function BarraLateral({ saldo, nivel, nome }: { saldo: number; nivel: str
                 <Link
                   href={href}
                   aria-current={ativo ? "page" : undefined}
-                  className={`flex min-h-10 items-center gap-3 rounded-lg px-3 text-sm transition ${
+                  className={`flex min-h-10 items-center gap-3 rounded-full px-3 text-sm transition ${
                     ativo ? "bg-superficie-2 font-semibold text-texto" : "font-medium text-suave hover:bg-superficie-2/70 hover:text-texto"
                   }`}
                 >
@@ -57,7 +57,7 @@ export function BarraLateral({ saldo, nivel, nome }: { saldo: number; nivel: str
         <span className="text-xs text-suave">nível {nivel}</span>
       </Link>
       <div className="flex items-center gap-2 border-t border-linha px-1 pt-3">
-        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-superficie-2 font-display text-sm font-extrabold text-texto" aria-hidden="true">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-superficie-2 font-display text-sm font-semibold text-texto" aria-hidden="true">
           {(nome || "?").charAt(0).toUpperCase()}
         </span>
         <span className="min-w-0 flex-1">

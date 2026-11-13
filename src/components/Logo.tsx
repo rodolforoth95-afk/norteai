@@ -42,7 +42,7 @@ export function Logo({ tamanho = "md" }: Props) {
   return (
     <span className="inline-flex items-center gap-1" role="img" aria-label="findomo">
       <Mascote className={mascote} piscando />
-      <span aria-hidden="true" className={`font-display font-black tracking-[-0.03em] text-texto ${texto}`}>
+      <span aria-hidden="true" className={`font-marca font-black tracking-[-0.03em] text-texto ${texto}`}>
         fin<span className="text-ciano">domo</span>
       </span>
     </span>

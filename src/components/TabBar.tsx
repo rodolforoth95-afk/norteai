@@ -16,7 +16,7 @@ export function TabBar() {
   const caminho = usePathname();
   return (
     <nav aria-label="Navegação principal" className="fixed inset-x-0 bottom-0 z-20 px-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] lg:hidden">
-      <ul className="vidro mx-auto grid max-w-lg grid-cols-5 rounded-2xl border border-linha p-1.5 shadow-[0_12px_40px_-12px_rgb(0_0_0/0.5)]">
+      <ul className="vidro mx-auto grid max-w-lg grid-cols-5 rounded-[1.75rem] border border-linha p-1.5 shadow-[0_12px_40px_-12px_rgb(0_0_0/0.5)]">
         {ABAS.map(({ href, rotulo, Icone }) => {
           const ativa = caminho.startsWith(href);
           return (
@@ -24,7 +24,7 @@ export function TabBar() {
               <Link
                 href={href}
                 aria-current={ativa ? "page" : undefined}
-                className={`flex h-14 flex-col items-center justify-center gap-1 rounded-xl text-[11px] transition ${
+                className={`flex h-14 flex-col items-center justify-center gap-1 rounded-[1.35rem] text-[11px] transition ${
                   ativa ? "bg-superficie-2 font-semibold text-texto" : "text-suave"
                 }`}
               >

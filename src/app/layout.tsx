@@ -1,19 +1,26 @@
 import type { Metadata, Viewport } from "next";
-import { DM_Sans, Nunito } from "next/font/google";
+import { Geist, Geist_Mono, Nunito } from "next/font/google";
 import { cookies } from "next/headers";
 import "./globals.css";
 
-// Marca e títulos em Nunito (arredondada e próxima); textos em DM Sans.
-const titulo = Nunito({
-  variable: "--font-titulo",
-  subsets: ["latin"],
-  weight: ["600", "700", "800", "900"],
-});
-
-const texto = DM_Sans({
+// Geist em títulos e textos (grotesca limpa, pesos intermediários); Geist Mono em números
+// técnicos; Nunito só no logotipo, para manter o desenho da marca.
+const texto = Geist({
   variable: "--font-texto",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
+});
+
+const mono = Geist_Mono({
+  variable: "--font-mono-app",
+  subsets: ["latin"],
+  weight: ["400", "500"],
+});
+
+const marca = Nunito({
+  variable: "--font-nunito",
+  subsets: ["latin"],
+  weight: ["800", "900"],
 });
 
 export const metadata: Metadata = {
@@ -47,7 +54,7 @@ export default async function RootLayout({
   const tema = (await cookies()).get("tema")?.value === "claro" ? "claro" : "escuro";
   return (
     <html lang="pt-BR" data-tema={tema}>
-      <body className={`${titulo.variable} ${texto.variable} antialiased`}>
+      <body className={`${texto.variable} ${mono.variable} ${marca.variable} antialiased`}>
         {children}
       </body>
     </html>

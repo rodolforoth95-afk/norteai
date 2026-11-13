@@ -56,7 +56,7 @@ export function DRE({ linhas, meses, categorias, aoEscolherCategoria }: { linhas
             const negativo = (l.tipo === "resultado" || l.tipo === "destaque") && v < 0;
             const estilo =
               l.tipo === "destaque"
-                ? "bg-ciano/8 font-display text-[15px] font-black"
+                ? "bg-ciano/8 font-display text-[15px] font-bold"
                 : l.tipo === "resultado"
                   ? "bg-superficie-2/50 font-bold"
                   : l.tipo === "grupo"

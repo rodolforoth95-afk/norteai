@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 /* Identidade visual Findomo (conceito "mordomo-IA"): azul-assistente, laranja-gravata e
-   azul-noite, com Nunito na marca e nos títulos e DM Sans nos textos.
+   azul-noite. Geist em títulos e textos, Geist Mono em números técnicos, Nunito só no logotipo.
    As cores vêm de variáveis que mudam com o tema (data-tema="claro" | "escuro" no <html>). */
 @theme inline {
   --color-fundo: var(--fundo);
@@ -21,7 +21,9 @@
   --color-erro: var(--baixa); /* baixa e erros */
 
   --font-sans: var(--font-texto), system-ui, sans-serif;
-  --font-display: var(--font-titulo), system-ui, sans-serif;
+  --font-display: var(--font-texto), system-ui, sans-serif;
+  --font-marca: var(--font-nunito), var(--font-texto), system-ui, sans-serif;
+  --font-mono: var(--font-mono-app), ui-monospace, monospace;
 
   --animate-subir: subir 0.5s ease-out both;
   --animate-brilho: brilho 3s ease-in-out infinite;
@@ -63,8 +65,14 @@
   }
 }
 
+/* Azul da marca com brilho sutil por cima e sombra azul difusa (botões em pílula). */
 @utility gradiente-marca {
   background-color: #2d5bff;
+  background-image: linear-gradient(170deg, rgb(255 255 255 / 0.16) 15%, rgb(0 0 0 / 0.1) 85%);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.18),
+    0 4px 12px -2px rgb(45 91 255 / 0.28),
+    0 10px 24px -8px rgb(45 91 255 / 0.3);
 }
 
 @utility gradiente-noite {
@@ -84,25 +92,26 @@
 @utility borda-gradiente {
   border: 1px solid var(--linha);
   background: var(--superficie);
-  box-shadow: inset 0 1px 0 var(--realce), 0 1px 2px rgb(0 0 0 / 0.06);
+  box-shadow: inset 0 1px 0 var(--realce), var(--sombra-cartao);
 }
 
+/* Cartão: bem arredondado, borda leve e sombra azulada difusa (no claro). */
 @utility painel {
   border: 1px solid var(--linha);
   background: var(--superficie);
-  border-radius: 1rem;
-  box-shadow: inset 0 1px 0 var(--realce), 0 1px 2px rgb(0 0 0 / 0.06);
+  border-radius: 1.375rem;
+  box-shadow: inset 0 1px 0 var(--realce), var(--sombra-cartao);
 }
 
 /* Modo claro: branco com azul-noite no texto. */
 :root[data-tema="claro"],
 [data-tema="claro"] {
-  --fundo: #f5f7fc;
+  --fundo: #f1f6fe;
   --superficie: #ffffff;
-  --superficie-2: #f1f4fb;
-  --linha: #e1e6f2;
-  --texto: #0e1638;
-  --suave: #5a6488;
+  --superficie-2: #edf3fc;
+  --linha: #e0e9f5;
+  --texto: #143352;
+  --suave: #687d95;
   --azul-forte: #2d5bff;
   --azul-claro: #5b7fff;
   --destaque: #2d5bff;
@@ -111,16 +120,17 @@
   --coins: #c2560f;
   --rosa: #be185d;
   --baixa: #dc2626;
-  --brilho: rgb(45 91 255 / 0.06);
-  --brilho-2: rgb(255 138 61 / 0.04);
+  --brilho: rgb(120 165 255 / 0.22);
+  --brilho-2: rgb(255 190 150 / 0.2);
   --realce: rgb(255 255 255 / 0);
+  --sombra-cartao: 0 1px 2px rgb(20 51 82 / 0.04), 0 12px 32px -18px rgb(20 51 82 / 0.18);
   --mascote-balao: #2d5bff;
   --mascote-rosto: #ffffff;
   --mascote-no: #d9631a;
   --auth-fundo: #f3f6fd;
-  --auth-texto: #0e1638;
-  --auth-texto-2: #2b3561;
-  --auth-texto-3: #4f5a82;
+  --auth-texto: #143352;
+  --auth-texto-2: #2c4a6b;
+  --auth-texto-3: #587089;
   --auth-titulo-2: #2d5bff;
   --auth-cartao: rgb(255 255 255 / 0.72);
   --auth-borda: rgb(14 22 56 / 0.1);
@@ -156,6 +166,7 @@
   --brilho: rgb(45 91 255 / 0.16);
   --brilho-2: rgb(255 138 61 / 0.05);
   --realce: rgb(255 255 255 / 0.04);
+  --sombra-cartao: 0 1px 2px rgb(0 0 0 / 0.2), 0 16px 40px -24px rgb(0 0 0 / 0.6);
   --mascote-balao: #ffffff;
   --mascote-rosto: #14215c;
   --mascote-no: #ffb27a;
@@ -197,9 +208,11 @@ html {
 }
 
 body {
-  font-feature-settings: "tnum" 1; /* números com largura fixa, bons para cotações */
+  font-feature-settings: "tnum" 1, "ss01" 1;
+  letter-spacing: -0.005em; /* números com largura fixa, bons para cotações */
   background:
-    radial-gradient(48rem 22rem at 100% -6rem, var(--brilho), transparent 70%),
+    radial-gradient(50rem 26rem at 85% -8rem, var(--brilho), transparent 70%),
+    radial-gradient(40rem 22rem at 0% -6rem, var(--brilho-2), transparent 70%),
     var(--fundo);
   background-attachment: fixed;
   color: var(--texto);

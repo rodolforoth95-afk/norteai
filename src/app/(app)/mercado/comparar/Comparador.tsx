@@ -119,7 +119,7 @@ export function Comparador({ iniciais, periodoAnalise }: { iniciais: string[]; p
           <Cartao className={`flex flex-col gap-3 transition-opacity ${carregando ? "opacity-50" : ""}`}>
             <div className="flex flex-wrap items-end justify-between gap-3">
               <TituloSecao titulo="Desempenho em base 100" subtitulo="Todos começam em 100: dá para comparar preços muito diferentes" />
-              <div className="flex rounded-xl border border-linha bg-superficie-2 p-0.5" role="radiogroup" aria-label="Período">
+              <div className="flex rounded-full border border-linha bg-superficie-2 p-1" role="radiogroup" aria-label="Período">
                 {PERIODOS.map((x) => (
                   <button
                     key={x.id}
@@ -127,7 +127,7 @@ export function Comparador({ iniciais, periodoAnalise }: { iniciais: string[]; p
                     role="radio"
                     aria-checked={periodo === x.id}
                     onClick={() => setPeriodo(x.id)}
-                    className={`min-h-9 min-w-11 rounded-lg px-3 text-xs font-semibold ${periodo === x.id ? "bg-superficie text-texto shadow" : "text-suave"}`}
+                    className={`min-h-9 min-w-11 rounded-full px-3 text-xs font-semibold ${periodo === x.id ? "bg-superficie text-texto shadow" : "text-suave"}`}
                   >
                     {x.rotulo}
                   </button>

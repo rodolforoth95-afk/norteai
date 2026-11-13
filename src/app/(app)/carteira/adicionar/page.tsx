@@ -14,7 +14,7 @@ export default async function PaginaAdicionar() {
         Carteira
       </Link>
       <div>
-        <h1 className="font-display text-[1.75rem] font-black tracking-[-0.01em] text-texto">Adicionar investimento</h1>
+        <h1 className="font-display text-[1.75rem] font-bold tracking-[-0.01em] text-texto">Adicionar investimento</h1>
         <p className="mt-1 text-sm text-suave">Cadastre um investimento por vez, com a data e o valor da aplicação. Depois você registra aplicações, resgates e atualizações de saldo.</p>
       </div>
       <FormNovoInvestimento />

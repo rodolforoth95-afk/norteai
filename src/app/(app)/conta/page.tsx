@@ -9,7 +9,7 @@ export default async function PaginaConta() {
   const { usuario, email, teste } = await exigirUsuario();
   return (
     <section className="mx-auto flex w-full max-w-2xl flex-col gap-6">
-      <h1 className="font-display text-[1.75rem] font-black tracking-[-0.01em] text-texto">Conta</h1>
+      <h1 className="font-display text-[1.75rem] font-bold tracking-[-0.01em] text-texto">Conta</h1>
       <dl className="painel p-5">
         <dt className="text-xs text-suave">Nome</dt>
         <dd className="font-medium text-texto">{usuario?.nome_completo}</dd>

@@ -81,7 +81,7 @@ export function MapaDoDia({ grupos }: { grupos: GrupoMapa[] }) {
       </div>
 
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex rounded-xl border border-linha bg-superficie-2 p-0.5" role="radiogroup" aria-label="Ordenar">
+        <div className="flex rounded-full border border-linha bg-superficie-2 p-1" role="radiogroup" aria-label="Ordenar">
           {ORDENS.map((o) => (
             <button
               key={o.id}
@@ -89,13 +89,13 @@ export function MapaDoDia({ grupos }: { grupos: GrupoMapa[] }) {
               role="radio"
               aria-checked={ordem === o.id}
               onClick={() => setOrdem(o.id)}
-              className={`min-h-9 whitespace-nowrap rounded-lg px-3 text-xs font-semibold ${ordem === o.id ? "bg-superficie text-texto shadow" : "text-suave hover:text-texto"}`}
+              className={`min-h-9 whitespace-nowrap rounded-full px-3 text-xs font-semibold ${ordem === o.id ? "bg-superficie text-texto shadow" : "text-suave hover:text-texto"}`}
             >
               {o.rotulo}
             </button>
           ))}
         </div>
-        <div className="flex rounded-xl border border-linha bg-superficie-2 p-0.5" role="radiogroup" aria-label="Quantidade">
+        <div className="flex rounded-full border border-linha bg-superficie-2 p-1" role="radiogroup" aria-label="Quantidade">
           {QUANTIDADES.map((q) => (
             <button
               key={q}
@@ -103,7 +103,7 @@ export function MapaDoDia({ grupos }: { grupos: GrupoMapa[] }) {
               role="radio"
               aria-checked={quantidade === q}
               onClick={() => setQuantidade(q)}
-              className={`min-h-9 min-w-11 rounded-lg px-3 text-xs font-semibold ${quantidade === q ? "bg-superficie text-texto shadow" : "text-suave hover:text-texto"}`}
+              className={`min-h-9 min-w-11 rounded-full px-3 text-xs font-semibold ${quantidade === q ? "bg-superficie text-texto shadow" : "text-suave hover:text-texto"}`}
             >
               {q}
             </button>

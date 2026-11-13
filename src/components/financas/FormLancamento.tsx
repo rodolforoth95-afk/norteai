@@ -150,7 +150,7 @@ export function FormLancamento({
 
       {/* Tipo e valor */}
       <div className="flex flex-col items-center gap-3">
-        <div className="flex rounded-xl border border-linha bg-superficie-2 p-0.5" role="radiogroup" aria-label="Tipo">
+        <div className="flex rounded-full border border-linha bg-superficie-2 p-1" role="radiogroup" aria-label="Tipo">
           {(["despesa", "receita"] as const).map((t) => (
             <button
               key={t}
@@ -161,7 +161,7 @@ export function FormLancamento({
                 setTipo(t);
                 setCategoriaEscolhida(null);
               }}
-              className={`min-h-9 min-w-24 rounded-lg px-4 text-sm font-semibold transition ${tipo === t ? (t === "despesa" ? "bg-superficie text-erro shadow" : "bg-superficie text-menta shadow") : "text-suave hover:text-texto"}`}
+              className={`min-h-9 min-w-24 rounded-full px-4 text-sm font-semibold transition ${tipo === t ? (t === "despesa" ? "bg-superficie text-erro shadow" : "bg-superficie text-menta shadow") : "text-suave hover:text-texto"}`}
             >
               {t === "despesa" ? "Despesa" : "Receita"}
             </button>
@@ -177,7 +177,7 @@ export function FormLancamento({
             placeholder="0,00"
             aria-label="Valor"
             autoFocus={!inicial.valor}
-            className={`w-full max-w-[14rem] bg-transparent text-center font-display text-[2.6rem] font-black tabular-nums tracking-tight outline-none placeholder:text-linha ${tipo === "despesa" ? "text-texto" : "text-menta"}`}
+            className={`w-full max-w-[14rem] bg-transparent text-center font-display text-[2.6rem] font-bold tabular-nums tracking-tight outline-none placeholder:text-linha ${tipo === "despesa" ? "text-texto" : "text-menta"}`}
           />
         </label>
         {meio === "credito" && tipo === "despesa" && parcelas > 1 && valor ? (
@@ -373,7 +373,7 @@ export function FormLancamento({
             <Trash2 className="h-5 w-5" aria-hidden="true" />
           </button>
         ) : null}
-        <button type="submit" disabled={salvando} className="gradiente-marca flex h-12 flex-1 items-center justify-center gap-2 rounded-xl text-[15px] font-bold text-white transition hover:brightness-110 disabled:opacity-60">
+        <button type="submit" disabled={salvando} className="gradiente-marca flex h-12 flex-1 items-center justify-center gap-2 rounded-full text-[15px] font-bold text-white transition hover:brightness-110 disabled:opacity-60">
           {salvando ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : <Check className="h-5 w-5" aria-hidden="true" />}
           {editando ? "Salvar alterações" : valor ? `Lançar ${brl(valor)}` : "Lançar"}
         </button>

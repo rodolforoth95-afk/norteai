@@ -51,7 +51,7 @@ export default async function PaginaAula({ params }: { params: Promise<{ slug: s
             {aula.minutos} min de leitura
           </span>
         </div>
-        <h1 className="font-display text-[1.75rem] font-black tracking-[-0.01em] leading-tight text-texto">{aula.titulo}</h1>
+        <h1 className="font-display text-[1.75rem] font-bold tracking-[-0.01em] leading-tight text-texto">{aula.titulo}</h1>
       </header>
 
       {video ? (

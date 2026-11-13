@@ -26,7 +26,7 @@ export default async function PaginaAprender() {
   return (
     <section className="flex flex-col gap-8">
       <div>
-        <h1 className="font-display text-[1.75rem] font-black tracking-[-0.01em] text-texto">Aprender</h1>
+        <h1 className="font-display text-[1.75rem] font-bold tracking-[-0.01em] text-texto">Aprender</h1>
         <p className="mt-1 text-sm text-suave">
           {aulasLidas} de {totalAulas} aulas lidas. Cada aula leva de 3 a 7 minutos e cada trilha termina com um quiz curto que vale 30 coins.
         </p>
@@ -79,7 +79,7 @@ export default async function PaginaAprender() {
 
       <Cartao className="flex flex-col gap-5">
         <div className="flex items-center gap-4">
-          <span className="gradiente-marca flex h-14 w-14 items-center justify-center rounded-2xl">
+          <span className="gradiente-marca flex h-14 w-14 items-center justify-center rounded-full">
             <Trophy className="h-7 w-7 text-white" aria-hidden="true" />
           </span>
           <div className="flex-1">

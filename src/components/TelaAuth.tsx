@@ -41,7 +41,7 @@ export function TelaAuth({
         {/* Base: título à esquerda e formulário à direita, na mesma linha de base */}
         <div className="mt-auto grid items-end gap-6 pt-10 sm:gap-8 sm:pt-16 lg:grid-cols-[minmax(0,1fr)_27rem] lg:gap-16 lg:pt-0">
           <div className="max-w-[52rem] pb-1">
-            <h2 className="font-display text-[1.85rem] font-extrabold leading-[1.08] tracking-[-0.03em] text-[var(--auth-texto)] sm:text-[3rem] lg:text-[3.4rem] xl:text-[3.9rem]">
+            <h2 className="font-display text-[1.85rem] font-semibold leading-[1.08] tracking-[-0.03em] text-[var(--auth-texto)] sm:text-[3rem] lg:text-[3.4rem] xl:text-[3.9rem]">
               Seu dinheiro em ordem,
               <span className="block text-[var(--auth-titulo-2)]">explicado e acompanhado.</span>
             </h2>

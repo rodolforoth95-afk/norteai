@@ -23,7 +23,7 @@ export default async function PaginaPerfil() {
   if (!perfil) {
     return (
       <section className="flex flex-col gap-6">
-        <h1 className="font-display text-[1.75rem] font-black tracking-[-0.01em] text-texto">Meu perfil</h1>
+        <h1 className="font-display text-[1.75rem] font-bold tracking-[-0.01em] text-texto">Meu perfil</h1>
         <div className="borda-gradiente relative overflow-hidden rounded-2xl p-6">
           <Sparkles className="h-8 w-8 text-ciano" aria-hidden="true" />
           <p className="mt-4 text-sm text-suave">Seu estilo de investidor (educacional)</p>
@@ -54,7 +54,7 @@ export default async function PaginaPerfil() {
 
   return (
     <section className="flex flex-col gap-7">
-      <h1 className="animate-subir font-display text-[1.75rem] font-black tracking-[-0.01em] text-texto">Meu perfil</h1>
+      <h1 className="animate-subir font-display text-[1.75rem] font-bold tracking-[-0.01em] text-texto">Meu perfil</h1>
 
       {/* Cartão do estilo */}
       <div data-tema="escuro" className="gradiente-noite relative animate-subir overflow-hidden rounded-2xl p-6 text-white">

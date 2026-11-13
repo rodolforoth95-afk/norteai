@@ -199,7 +199,7 @@ export function PainelFinancas(p: Props) {
       {/* Cabeçalho com o mês */}
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="font-display text-[1.75rem] font-black tracking-[-0.01em] text-texto lg:text-[2rem]">
+          <h1 className="font-display text-[1.75rem] font-bold tracking-[-0.025em] text-texto lg:text-[2.25rem]">
             Finanças
           </h1>
           <p className="mt-0.5 text-sm text-suave">
@@ -317,7 +317,7 @@ export function PainelFinancas(p: Props) {
               <c.Icone className={`h-4 w-4 ${c.cor}`} aria-hidden="true" />
             </span>
             <span
-              className={`truncate font-display text-[1.3rem] font-black tabular-nums tracking-tight lg:text-[1.75rem] xl:text-[1.5rem] 2xl:text-[1.6rem] ${c.rotulo === "Saldo livre" || c.rotulo === "Potencial de aporte" ? c.cor : "text-texto"}`}
+              className={`truncate font-display text-[1.3rem] font-bold tabular-nums tracking-tight lg:text-[1.75rem] xl:text-[1.5rem] 2xl:text-[1.6rem] ${c.rotulo === "Saldo livre" || c.rotulo === "Potencial de aporte" ? c.cor : "text-texto"}`}
             >
               {brl(c.valor)}
             </span>
@@ -500,7 +500,7 @@ export function PainelFinancas(p: Props) {
                         <span className="max-w-[6.5rem] truncate text-[11px] text-suave">
                           {ativo ? ativo.nome : "Despesas"}
                         </span>
-                        <span className="font-display text-base font-black tabular-nums text-texto">
+                        <span className="font-display text-base font-bold tabular-nums text-texto">
                           {brl0(ativo ? ativo.total : p.resumo.despesas)}
                         </span>
                         {ativo && p.resumo.despesas > 0 ? (
@@ -567,59 +567,12 @@ export function PainelFinancas(p: Props) {
             </div>
           </div>
           {p.orcamento.length ? (
-            <ul className="flex flex-col gap-3.5">
-              {p.orcamento.map((o) => {
-                const c = cat(o.categoriaId);
-                const cor =
-                  o.estado === "estourou"
-                    ? "bg-erro"
-                    : o.estado === "atencao"
-                      ? "bg-gravata"
-                      : "bg-menta";
-                return (
-                  <li key={o.categoriaId} className="flex items-center gap-3">
-                    {c ? (
-                      <IconeCategoria
-                        icone={c.icone}
-                        cor={c.cor}
-                        tamanho={32}
-                      />
-                    ) : null}
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-baseline justify-between gap-2 text-[13px]">
-                        <span className="truncate font-medium text-texto">
-                          {c?.nome ?? "Outros"}
-                        </span>
-                        <span className="shrink-0 tabular-nums text-suave">
-                          <span
-                            className={
-                              o.estado === "estourou"
-                                ? "font-semibold text-erro"
-                                : "text-texto"
-                            }
-                          >
-                            {brl0(o.gasto)}
-                          </span>{" "}
-                          / {brl0(o.limite)}
-                        </span>
-                      </div>
-                      <div
-                        className="mt-1.5 h-2 overflow-hidden rounded-full bg-superficie-2"
-                        role="meter"
-                        aria-valuenow={Math.round(o.pct)}
-                        aria-valuemin={0}
-                        aria-valuemax={100}
-                        aria-label={`${c?.nome}: ${Math.round(o.pct)}% do limite`}
-                      >
-                        <div
-                          className={`h-full rounded-full ${cor} transition-all`}
-                          style={{ width: `${Math.min(100, o.pct)}%` }}
-                        />
-                      </div>
-                    </div>
-                  </li>
-                );
-              })}
+            <ul className="grid grid-cols-3 gap-x-2 gap-y-5 sm:grid-cols-3">
+              {p.orcamento.map((o) => (
+                <li key={o.categoriaId}>
+                  <AnelOrcamento item={o} categoria={cat(o.categoriaId)} />
+                </li>
+              ))}
             </ul>
           ) : (
             <Link
@@ -652,7 +605,7 @@ export function PainelFinancas(p: Props) {
             <>
               <div>
                 <div className="flex items-baseline justify-between gap-2">
-                  <span className="font-display text-2xl font-black tabular-nums text-texto">
+                  <span className="font-display text-2xl font-bold tabular-nums text-texto">
                     {brl0(p.progresso.economizado)}
                   </span>
                   <span className="text-xs tabular-nums text-suave">
@@ -687,7 +640,7 @@ export function PainelFinancas(p: Props) {
               {p.progresso.livreParaAportar >= 50 ? (
                 <Link
                   href="/carteira/adicionar"
-                  className="gradiente-marca flex h-11 items-center justify-center rounded-xl text-sm font-bold text-white hover:brightness-110"
+                  className="gradiente-marca flex h-11 items-center justify-center rounded-full text-sm font-bold text-white hover:brightness-110"
                 >
                   Registrar aporte na carteira
                 </Link>
@@ -696,7 +649,7 @@ export function PainelFinancas(p: Props) {
           ) : (
             <Link
               href="/financas/plano"
-              className="gradiente-marca flex h-11 items-center justify-center gap-2 rounded-xl text-sm font-bold text-white hover:brightness-110"
+              className="gradiente-marca flex h-11 items-center justify-center gap-2 rounded-full text-sm font-bold text-white hover:brightness-110"
             >
               <Target className="h-4 w-4" aria-hidden="true" />
               Montar meu plano de aporte
@@ -727,7 +680,7 @@ export function PainelFinancas(p: Props) {
           </div>
           <div className="flex w-full flex-wrap items-center justify-between gap-2 sm:w-auto">
             <div
-              className="flex rounded-xl border border-linha bg-superficie-2 p-0.5"
+              className="flex rounded-full border border-linha bg-superficie-2 p-1"
               role="radiogroup"
               aria-label="Visão"
             >
@@ -743,7 +696,7 @@ export function PainelFinancas(p: Props) {
                   role="radio"
                   aria-checked={visao === id}
                   onClick={() => setVisao(id)}
-                  className={`min-h-8 rounded-lg px-3.5 text-xs font-semibold ${visao === id ? "bg-superficie text-texto shadow" : "text-suave hover:text-texto"}`}
+                  className={`min-h-8 rounded-full px-3.5 text-xs font-semibold ${visao === id ? "bg-superficie text-texto shadow" : "text-suave hover:text-texto"}`}
                 >
                   {rotulo}
                 </button>
@@ -751,7 +704,7 @@ export function PainelFinancas(p: Props) {
             </div>
             {visao === "lista" ? (
               <div
-                className="flex rounded-xl border border-linha bg-superficie-2 p-0.5"
+                className="flex rounded-full border border-linha bg-superficie-2 p-1"
                 role="radiogroup"
                 aria-label="Tipo"
               >
@@ -768,7 +721,7 @@ export function PainelFinancas(p: Props) {
                     role="radio"
                     aria-checked={filtroTipo === id}
                     onClick={() => setFiltroTipo(id)}
-                    className={`min-h-8 rounded-lg px-3 text-xs font-semibold ${filtroTipo === id ? "bg-superficie text-texto shadow" : "text-suave hover:text-texto"}`}
+                    className={`min-h-8 rounded-full px-3 text-xs font-semibold ${filtroTipo === id ? "bg-superficie text-texto shadow" : "text-suave hover:text-texto"}`}
                   >
                     {rotulo}
                   </button>
@@ -889,5 +842,36 @@ export function PainelFinancas(p: Props) {
         </div>
       ) : null}
     </section>
+  );
+}
+
+// Termômetro em anel: a volta enche com o gasto e muda de cor (verde, laranja, vermelho).
+function AnelOrcamento({ item, categoria }: { item: ItemOrcamento; categoria?: Categoria }) {
+  const raio = 26;
+  const volta = 2 * Math.PI * raio;
+  const fracao = Math.min(1, item.pct / 100);
+  const cor = item.estado === "estourou" ? "var(--baixa)" : item.estado === "atencao" ? "var(--gravata)" : "var(--alta)";
+  const resta = item.limite - item.gasto;
+  return (
+    <div
+      className="flex flex-col items-center gap-1.5 text-center"
+      role="meter"
+      aria-valuenow={Math.round(item.pct)}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-label={`${categoria?.nome ?? "Outros"}: ${brl0(item.gasto)} de ${brl0(item.limite)}`}
+    >
+      <span className="relative flex h-[68px] w-[68px] items-center justify-center">
+        <svg viewBox="0 0 64 64" className="absolute inset-0 h-full w-full -rotate-90" aria-hidden="true">
+          <circle cx="32" cy="32" r={raio} fill="none" stroke="var(--superficie-2)" strokeWidth="5" />
+          <circle cx="32" cy="32" r={raio} fill="none" stroke={cor} strokeWidth="5" strokeLinecap="round" strokeDasharray={volta} strokeDashoffset={volta * (1 - fracao)} className="transition-[stroke-dashoffset] duration-700" />
+        </svg>
+        <IconeCategoria icone={categoria?.icone ?? "Tag"} cor={categoria?.cor ?? "#94A3B8"} tamanho={36} />
+      </span>
+      <span className={`text-sm font-semibold tabular-nums ${resta < 0 ? "text-erro" : "text-texto"}`}>{resta < 0 ? `−${brl0(-resta)}` : brl0(resta)}</span>
+      <span className="-mt-1 text-[11px] leading-tight text-suave">
+        {resta < 0 ? "acima" : "restam"} · {categoria?.nome ?? "Outros"}
+      </span>
+    </div>
   );
 }

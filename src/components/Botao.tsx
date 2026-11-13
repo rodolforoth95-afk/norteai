@@ -5,9 +5,9 @@ type Variante = "primario" | "secundario" | "perigo" | "texto";
 
 const ESTILOS: Record<Variante, string> = {
   primario:
-    "bg-[#2D5BFF] font-semibold text-white shadow-[0_1px_2px_rgb(20_33_92/0.2),inset_0_1px_0_rgb(255_255_255/0.15)] hover:bg-[#2450E8] active:bg-[#1F45CC] disabled:bg-none disabled:bg-superficie-2 disabled:text-suave disabled:shadow-none",
+    "gradiente-marca font-medium text-white hover:brightness-110 active:brightness-95 disabled:bg-none disabled:bg-superficie-2 disabled:text-suave disabled:shadow-none",
   secundario:
-    "border border-linha bg-superficie/60 text-texto hover:border-violeta hover:bg-superficie-2 disabled:text-suave",
+    "border border-linha bg-superficie text-texto shadow-[0_1px_2px_rgb(20_51_82/0.05)] hover:border-violeta hover:bg-superficie-2 disabled:text-suave",
   perigo: "bg-erro text-fundo hover:brightness-110 disabled:bg-superficie-2 disabled:text-suave",
   texto: "text-texto underline underline-offset-4 hover:text-ciano",
 };
@@ -16,7 +16,7 @@ export function classesBotao(variante: Variante = "primario", larguraTotal = fal
   const base =
     variante === "texto"
       ? "inline-flex min-h-11 items-center font-medium"
-      : "inline-flex min-h-12 items-center justify-center gap-2 rounded-xl px-5 font-semibold transition disabled:cursor-not-allowed";
+      : "inline-flex min-h-12 items-center justify-center gap-2 rounded-full px-6 font-medium transition disabled:cursor-not-allowed";
   return `${base} ${ESTILOS[variante]} ${larguraTotal ? "w-full" : ""}`;
 }
 

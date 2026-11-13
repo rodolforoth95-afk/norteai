@@ -65,14 +65,14 @@ export default async function PaginaCripto({ params }: { params: Promise<{ id: s
         <div className="flex items-center gap-4">
           <LogoAtivo simbolo={c.simbolo} logo={c.logo} tamanho={56} />
           <div className="min-w-0">
-            <h1 className="font-display text-[1.75rem] font-black tracking-[-0.01em] text-texto lg:text-[2rem]">{c.nome}</h1>
+            <h1 className="font-display text-[1.75rem] font-bold tracking-[-0.025em] text-texto lg:text-[2.25rem]">{c.nome}</h1>
             <p className="text-sm text-suave">
               {c.simbolo} · criptomoeda{c.posicao ? ` · ${c.posicao}ª em valor de mercado` : ""}
             </p>
           </div>
         </div>
         <div className="lg:text-right">
-          <p className="font-display text-3xl font-black tabular-nums text-texto lg:text-4xl">{brl(c.preco)}</p>
+          <p className="font-display text-3xl font-bold tabular-nums text-texto lg:text-4xl">{brl(c.preco)}</p>
           <p className="mt-1 flex items-center gap-2 lg:justify-end">
             <SeloVariacao valor={c.variacao24h} grande />
             <span className="text-sm text-suave">em 24 horas</span>
@@ -112,7 +112,7 @@ export default async function PaginaCripto({ params }: { params: Promise<{ id: s
           <GraduationCap className="h-7 w-7 shrink-0 text-ciano" aria-hidden="true" />
           <span className="flex-1">
             <span className="block text-sm text-suave">Antes de comprar qualquer cripto</span>
-            <span className="block font-display font-extrabold text-texto">Como funcionam as criptomoedas e onde guardar</span>
+            <span className="block font-display font-semibold text-texto">Como funcionam as criptomoedas e onde guardar</span>
           </span>
           <ArrowRight className="h-5 w-5 text-suave" aria-hidden="true" />
         </Link>

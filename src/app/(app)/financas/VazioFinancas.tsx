@@ -9,13 +9,13 @@ export function VazioFinancas() {
   const { abrir } = useLancador();
   return (
     <section className="flex flex-col gap-6">
-      <h1 className="font-display text-[1.75rem] font-black tracking-[-0.01em] text-texto lg:text-[2rem]">Finanças</h1>
+      <h1 className="font-display text-[1.75rem] font-bold tracking-[-0.025em] text-texto lg:text-[2.25rem]">Finanças</h1>
       <div className="painel flex flex-col gap-7 p-6 lg:flex-row lg:items-center lg:p-8">
         <div className="max-w-xl flex-1">
           <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-superficie-2">
             <Mascote className="h-8 w-8" piscando />
           </span>
-          <p className="mt-4 font-display text-xl font-extrabold text-texto">Para onde vai o seu dinheiro todo mês?</p>
+          <p className="mt-4 font-display text-xl font-semibold text-texto">Para onde vai o seu dinheiro todo mês?</p>
           <p className="mt-1.5 text-sm leading-relaxed text-suave">
             Lance receitas e despesas do jeito mais rápido para você: falando, fotografando o comprovante ou digitando. Eu separo por categoria, aprendo com as suas
             correções e mostro quanto sobra para investir, com um plano de onde ajustar.

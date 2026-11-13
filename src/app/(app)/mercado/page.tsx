@@ -22,7 +22,7 @@ export default async function PaginaMercado() {
   if (!brapiDisponivel()) {
     return (
       <section className="flex flex-col gap-6">
-        <h1 className="font-display text-[1.75rem] font-black tracking-[-0.01em] text-texto">Mercado</h1>
+        <h1 className="font-display text-[1.75rem] font-bold tracking-[-0.01em] text-texto">Mercado</h1>
         <Cartao>
           <p className="text-sm text-suave">Configure BRAPI_TOKEN no .env.local para ver as cotações.</p>
         </Cartao>
@@ -34,7 +34,7 @@ export default async function PaginaMercado() {
     <section className="flex flex-col gap-7">
       <div className="flex items-end justify-between gap-3">
         <div>
-          <h1 className="font-display text-[1.75rem] font-black tracking-[-0.01em] text-texto lg:text-[2rem]">Mercado</h1>
+          <h1 className="font-display text-[1.75rem] font-bold tracking-[-0.025em] text-texto lg:text-[2.25rem]">Mercado</h1>
           <p className="text-sm text-suave">Cotações da B3 com até 30 minutos de atraso. Abra um ativo para ver suportes, resistências e o desempenho mês a mês.</p>
         </div>
         <BotaoAtualizar />

@@ -239,7 +239,7 @@ export function ProvedorLancador({
           onClick={() => setMenu((v) => !v)}
           aria-expanded={menu}
           aria-label={menu ? "Fechar opções de lançamento" : "Novo lançamento"}
-          className="gradiente-marca flex h-14 w-14 items-center justify-center rounded-2xl text-white shadow-[0_14px_34px_-10px_rgb(45_91_255/0.75)] transition hover:brightness-110 active:scale-95"
+          className="gradiente-marca flex h-14 w-14 items-center justify-center rounded-full text-white shadow-[0_14px_34px_-10px_rgb(45_91_255/0.75)] transition hover:brightness-110 active:scale-95"
         >
           <Plus
             className={`h-7 w-7 transition-transform ${menu ? "rotate-45" : ""}`}
@@ -520,7 +520,7 @@ function LerFoto({
           type="button"
           disabled={lendo}
           onClick={() => camera.current?.click()}
-          className="gradiente-marca flex h-12 items-center justify-center gap-2 rounded-xl text-sm font-bold text-white disabled:opacity-60"
+          className="gradiente-marca flex h-12 items-center justify-center gap-2 rounded-full text-sm font-bold text-white disabled:opacity-60"
         >
           <Camera className="h-5 w-5" aria-hidden="true" />
           Tirar foto

@@ -529,7 +529,7 @@ function Segmentos({
   rotulo: string;
 }) {
   return (
-    <div className="flex rounded-xl border border-linha bg-superficie-2 p-0.5" role="radiogroup" aria-label={rotulo}>
+    <div className="flex rounded-full border border-linha bg-superficie-2 p-1" role="radiogroup" aria-label={rotulo}>
       {opcoes.map((o) => (
         <button
           key={o.id}
@@ -537,7 +537,7 @@ function Segmentos({
           role="radio"
           aria-checked={valor === o.id}
           onClick={() => onChange(o.id)}
-          className={`flex min-h-9 items-center gap-1.5 rounded-lg px-3 text-xs font-semibold transition ${valor === o.id ? "bg-superficie text-texto shadow" : "text-suave hover:text-texto"}`}
+          className={`flex min-h-9 items-center gap-1.5 rounded-full px-3 text-xs font-semibold transition ${valor === o.id ? "bg-superficie text-texto shadow" : "text-suave hover:text-texto"}`}
         >
           {o.Icone ? <o.Icone className="h-3.5 w-3.5" aria-hidden="true" /> : null}
           {o.rotulo}

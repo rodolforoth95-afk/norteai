@@ -80,7 +80,7 @@ export function Simulador({ estilo, carteiras, ind }: { estilo: Estilo; carteira
           <FlaskConical className="h-3.5 w-3.5" aria-hidden="true" />
           Simulação educativa · não é recomendação
         </span>
-        <h1 className="font-display text-[1.75rem] font-black tracking-[-0.01em] text-texto lg:text-[2rem]">Simulador de carteiras</h1>
+        <h1 className="font-display text-[1.75rem] font-bold tracking-[-0.025em] text-texto lg:text-[2.25rem]">Simulador de carteiras</h1>
         <p className="max-w-3xl text-sm text-suave lg:text-base">
           Informe quanto tem hoje, quanto vai aportar por mês e por quanto tempo. Depois, veja 3 carteiras de exemplo para o estilo{" "}
           <span className="font-semibold text-ciano">{estilo}</span> ({INFO_ESTILO[estilo].risco.toLowerCase()}), da mais protegida à que busca mais
@@ -727,7 +727,7 @@ function Analise({ carteira, entrada }: { carteira: string; entrada: { valor: nu
     <div className="borda-gradiente rounded-2xl p-5 lg:p-6">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start">
         <div className="flex items-center gap-3 lg:w-72 lg:shrink-0 lg:flex-col lg:items-start">
-          <span className="gradiente-marca flex h-11 w-11 items-center justify-center rounded-2xl text-white">
+          <span className="gradiente-marca flex h-11 w-11 items-center justify-center rounded-full text-white">
             <Sparkles className="h-6 w-6" aria-hidden="true" />
           </span>
           <div>

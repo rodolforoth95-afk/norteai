@@ -22,7 +22,7 @@ export default async function PaginaPlano() {
         <Link href="/financas" className="inline-flex items-center gap-1 text-sm text-suave hover:text-texto">
           <ChevronLeft className="h-4 w-4" aria-hidden="true" /> Finanças
         </Link>
-        <h1 className="mt-1 font-display text-[1.75rem] font-black tracking-[-0.01em] text-texto lg:text-[2rem]">Plano de aporte</h1>
+        <h1 className="mt-1 font-display text-[1.75rem] font-bold tracking-[-0.025em] text-texto lg:text-[2.25rem]">Plano de aporte</h1>
         <p className="mt-0.5 text-sm text-suave">Diga quanto quer investir por mês. Eu olho seus gastos e mostro onde ajustar, sem mexer no essencial.</p>
       </div>
       <PlanoMordomo

@@ -272,7 +272,7 @@ export function ChatEntrevista({
             type="submit"
             aria-label="Enviar resposta"
             disabled={!texto.trim() || pendente || Boolean(pensando)}
-            className="gradiente-marca flex h-12 w-12 items-center justify-center rounded-2xl text-white disabled:opacity-50"
+            className="gradiente-marca flex h-12 w-12 items-center justify-center rounded-full text-white disabled:opacity-50"
           >
             <SendHorizontal className="h-5 w-5" aria-hidden="true" />
           </button>

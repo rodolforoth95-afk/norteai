@@ -16,7 +16,7 @@ export default async function PaginaSimulador() {
   if (!perfil) {
     return (
       <section className="mx-auto flex w-full max-w-2xl flex-col gap-5">
-        <h1 className="font-display text-[1.75rem] font-black tracking-[-0.01em] text-texto">Simulador de carteiras</h1>
+        <h1 className="font-display text-[1.75rem] font-bold tracking-[-0.01em] text-texto">Simulador de carteiras</h1>
         <Link href="/entrevista" className="borda-gradiente flex items-center gap-4 rounded-2xl p-5">
           <FlaskConical className="h-8 w-8 shrink-0 text-ciano" aria-hidden="true" />
           <span className="flex-1">

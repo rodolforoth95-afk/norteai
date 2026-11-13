@@ -22,10 +22,10 @@ export default async function PaginaCarteira() {
   if (!carteira.investimentos.length) {
     return (
       <section className="flex flex-col gap-6">
-        <h1 className="font-display text-[1.75rem] font-black tracking-[-0.01em] text-texto lg:text-[2rem]">Carteira</h1>
+        <h1 className="font-display text-[1.75rem] font-bold tracking-[-0.025em] text-texto lg:text-[2.25rem]">Carteira</h1>
         <div className="borda-gradiente flex flex-col gap-6 rounded-2xl p-6 lg:p-8">
           <div className="max-w-2xl">
-            <p className="font-display text-xl font-extrabold text-texto">Nenhum investimento cadastrado</p>
+            <p className="font-display text-xl font-semibold text-texto">Nenhum investimento cadastrado</p>
             <p className="mt-1 text-sm leading-relaxed text-suave">
               Cadastre o que você tem hoje e registre os saldos uma vez por mês. O Findomo separa o rendimento do dinheiro que você aplicou e mostra quanto isso
               representa do CDI, da poupança e da inflação no mesmo período.

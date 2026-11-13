@@ -276,7 +276,7 @@ export function Importador({ existentes, iaLigada }: { existentes: Existente[]; 
                   fonte?.id === f.id ? "border-ciano bg-ciano/10" : "border-linha bg-superficie hover:border-ciano"
                 } disabled:cursor-not-allowed disabled:opacity-50`}
               >
-                <span className="gradiente-marca flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white">
+                <span className="gradiente-marca flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white">
                   <f.Icone className="h-5 w-5" aria-hidden="true" />
                 </span>
                 <span>
@@ -387,12 +387,12 @@ export function Importador({ existentes, iaLigada }: { existentes: Existente[]; 
                   onChange={(e) => alterar(l.chave, { nome: e.target.value })}
                   placeholder="Nome ou código"
                   aria-label="Nome ou código"
-                  className="min-h-10 min-w-0 flex-1 rounded-lg border border-transparent bg-transparent px-2 font-semibold text-texto hover:border-linha focus:border-ciano focus:outline-none"
+                  className="min-h-10 min-w-0 flex-1 rounded-full border border-transparent bg-transparent px-2 font-semibold text-texto hover:border-linha focus:border-ciano focus:outline-none"
                 />
                 <button
                   type="button"
                   onClick={() => alterar(l.chave, { ignorar: !l.ignorar })}
-                  className="min-h-9 rounded-lg px-2 text-xs font-medium text-suave hover:text-texto"
+                  className="min-h-9 rounded-full px-2 text-xs font-medium text-suave hover:text-texto"
                 >
                   {l.ignorar ? "Incluir" : "Ignorar"}
                 </button>
@@ -541,7 +541,7 @@ export function Importador({ existentes, iaLigada }: { existentes: Existente[]; 
                       role="radio"
                       aria-checked={(ausentes[e.id] ?? "manter") === a}
                       onClick={() => setAusentes((x) => ({ ...x, [e.id]: a }))}
-                      className={`min-h-9 rounded-lg border px-3 text-xs font-semibold ${
+                      className={`min-h-9 rounded-full border px-3 text-xs font-semibold ${
                         (ausentes[e.id] ?? "manter") === a ? (a === "zerar" ? "border-erro bg-erro/15 text-erro" : "border-ciano bg-ciano/15 text-texto") : "border-linha text-suave"
                       }`}
                     >
