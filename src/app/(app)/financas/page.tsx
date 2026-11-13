@@ -1,5 +1,5 @@
 import { hojeBR } from "@/lib/dominio/carteira";
-import { dreDosMeses, insights, mesDe, ocorrenciasDoMes, orcamentoDoMes, progressoMeta, resumoDoMes, serieDeMeses, somarMeses } from "@/lib/dominio/financas";
+import { dreDosMeses, evolucaoFinanceira, insights, mesDe, ocorrenciasDoMes, orcamentoDoMes, progressoMeta, resumoDoMes, serieDeMeses, somarMeses } from "@/lib/dominio/financas";
 import { exigirUsuario } from "@/lib/servidor/sessao";
 import { aportesPorMes, carregarFinancas } from "@/lib/servidor/financas";
 import { PainelFinancas } from "./PainelFinancas";
@@ -44,6 +44,7 @@ export default async function PaginaFinancas({ searchParams }: { searchParams: P
       progresso={progresso ? { economizado: progresso.economizado, aportado: progresso.aportado, livreParaAportar: progresso.livreParaAportar, objetivo: progresso.objetivo, pct: progresso.pct, mesesPassados: progresso.mesesPassados } : null}
       avisos={insights({ resumo, anterior, orcamento, meta, livreParaAportar: progresso?.livreParaAportar ?? 0, categorias: dados.categorias, hoje })}
       dre={dreDosMeses(dados, mesesDre, aportes)}
+      evolucao={evolucaoFinanceira(dados, mes, aportes)}
       mesesDre={mesesDre}
       temExemplo={dados.lancamentos.some((l) => l.origem === "exemplo")}
     />

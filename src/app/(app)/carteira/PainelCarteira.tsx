@@ -73,8 +73,8 @@ const PERIODOS = [
 
 const INDICADORES = [
   { id: "cdi", rotulo: "CDI", cor: "#FF8A3D" },
-  { id: "poupanca", rotulo: "Poupança", cor: "#8B5CF6" },
-  { id: "ipca", rotulo: "Inflação", cor: "#EC4899" },
+  { id: "poupanca", rotulo: "Poupança", cor: "#38BDF8" },
+  { id: "ipca", rotulo: "Inflação", cor: "#FFB27A" },
 ] as const;
 type IdIndicador = (typeof INDICADORES)[number]["id"];
 

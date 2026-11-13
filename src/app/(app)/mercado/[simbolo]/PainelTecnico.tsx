@@ -18,11 +18,11 @@ import {
 
 const VERDE = "#22C55E";
 const VERMELHO = "#EF4444";
-const COR_SUPORTE = "#22C55E";
-const COR_RESISTENCIA = "#F97316";
-const COR_PIVO = "#A78BFA";
-const COR_MM9 = "#60A5FA";
-const COR_MM21 = "#F472B6";
+const COR_SUPORTE = "#38BDF8";
+const COR_RESISTENCIA = "#FF8A3D";
+const COR_PIVO = "#A5B4FC";
+const COR_MM9 = "#8FA8FF";
+const COR_MM21 = "#FFB27A";
 
 const PERIODOS = [
   { id: "1m", rotulo: "1M", pregoes: 22 },

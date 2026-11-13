@@ -25,10 +25,10 @@ export function TabBar() {
                 href={href}
                 aria-current={ativa ? "page" : undefined}
                 className={`flex h-14 flex-col items-center justify-center gap-1 rounded-[1.35rem] text-[11px] transition ${
-                  ativa ? "bg-superficie-2 font-semibold text-texto" : "text-suave"
+                  ativa ? "degrade-ativo font-semibold text-white" : "text-suave"
                 }`}
               >
-                <Icone className={`h-[22px] w-[22px] ${ativa ? "text-ciano" : ""}`} aria-hidden="true" strokeWidth={ativa ? 2.25 : 1.75} />
+                <Icone className="h-[22px] w-[22px]" aria-hidden="true" strokeWidth={ativa ? 2.25 : 1.75} />
                 {rotulo}
               </Link>
             </li>

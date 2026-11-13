@@ -42,12 +42,12 @@ const COR_PRODUTO: Record<string, string> = {
   lci_lca: "#7A97FF",
   tesouro_prefixado: "#A9BDFF",
   tesouro_ipca: "#1D2F85",
-  credito_privado: "#0EA5E9",
-  multimercado: "#8B5CF6",
-  fiis: "#14B8A6",
+  credito_privado: "#60A5FA",
+  multimercado: "#A5B4FC",
+  fiis: "#38BDF8",
   acoes_br: "#FF8A3D",
-  exterior: "#EC4899",
-  bitcoin: "#F5B70A",
+  exterior: "#FFB27A",
+  bitcoin: "#F5A524",
 };
 
 const VALORES_RAPIDOS = [1000, 5000, 10000, 50000];

@@ -34,7 +34,7 @@ import {
   type Categoria,
   type Insight,
   type ItemOrcamento,
-  type LinhaDRE,
+  type Evolucao as DadosEvolucao, type LinhaDRE,
   type Ocorrencia,
   type ResumoMes,
 } from "@/lib/dominio/financas";
@@ -45,6 +45,8 @@ import { IconeCategoria } from "@/components/financas/IconeCategoria";
 import { brl, brl0, dataCurta } from "@/components/financas/formato";
 import { BotaoExemploFinancas } from "./BotoesExemplo";
 import { DRE } from "./DRE";
+import { Evolucao } from "./Evolucao";
+import { COR } from "@/components/paleta";
 
 type Props = {
   hoje: string;
@@ -78,6 +80,7 @@ type Props = {
   } | null;
   avisos: Insight[];
   dre: LinhaDRE[];
+  evolucao: DadosEvolucao;
   mesesDre: string[];
   temExemplo: boolean;
 };
@@ -342,6 +345,8 @@ export function PainelFinancas(p: Props) {
         ))}
       </div>
 
+      <Evolucao dados={p.evolucao} />
+
       {/* Fluxo de caixa + categorias */}
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:gap-6">
         <div className="painel flex min-w-0 flex-col gap-3 p-5">
@@ -408,7 +413,7 @@ export function PainelFinancas(p: Props) {
                 <Bar
                   dataKey="receitas"
                   name="Receitas"
-                  fill="#10B981"
+                  fill={COR.azul}
                   radius={[6, 6, 0, 0]}
                   maxBarSize={22}
                   animationDuration={500}
@@ -416,7 +421,7 @@ export function PainelFinancas(p: Props) {
                 <Bar
                   dataKey="despesas"
                   name="Despesas"
-                  fill="#F87171"
+                  fill={COR.pessego}
                   radius={[6, 6, 0, 0]}
                   maxBarSize={22}
                   animationDuration={500}
@@ -425,9 +430,9 @@ export function PainelFinancas(p: Props) {
                   type="monotone"
                   dataKey="reinvestido"
                   name="Reinvestido"
-                  stroke="#FF8A3D"
+                  stroke={COR.laranja}
                   strokeWidth={2.5}
-                  dot={{ r: 3, fill: "#FF8A3D", strokeWidth: 0 }}
+                  dot={{ r: 3, fill: COR.laranja, strokeWidth: 0 }}
                   animationDuration={500}
                 />
               </ComposedChart>

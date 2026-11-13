@@ -79,23 +79,45 @@ const c = (id: string, nome: string, tipo: TipoLancamento, grupo: GrupoCategoria
 export const CATEGORIAS_PADRAO: Categoria[] = [
   c("moradia", "Moradia", "despesa", "fixa", "#2D5BFF", "Home", true),
   c("contas", "Contas da casa", "despesa", "fixa", "#5B7FFF", "Zap", true),
-  c("mercado", "Mercado", "despesa", "variavel", "#14B8A6", "ShoppingCart", true),
-  c("alimentacao", "Restaurantes", "despesa", "variavel", "#F59E0B", "UtensilsCrossed"),
-  c("delivery", "Delivery", "despesa", "variavel", "#FF8A3D", "Bike"),
+  c("mercado", "Mercado", "despesa", "variavel", "#8FA8FF", "ShoppingCart", true),
+  c("alimentacao", "Restaurantes", "despesa", "variavel", "#FF8A3D", "UtensilsCrossed"),
+  c("delivery", "Delivery", "despesa", "variavel", "#FFB27A", "Bike"),
   c("transporte", "Transporte", "despesa", "variavel", "#0EA5E9", "Car"),
-  c("saude", "Saúde", "despesa", "fixa", "#22C55E", "HeartPulse", true),
-  c("educacao", "Educação", "despesa", "fixa", "#8B5CF6", "GraduationCap", true),
-  c("lazer", "Lazer", "despesa", "variavel", "#EC4899", "PartyPopper"),
-  c("compras", "Compras", "despesa", "variavel", "#F472B6", "ShoppingBag"),
-  c("assinaturas", "Assinaturas", "despesa", "variavel", "#A78BFA", "Repeat"),
-  c("cuidados", "Cuidados pessoais", "despesa", "variavel", "#FB7185", "Sparkles"),
-  c("dividas", "Dívidas e tarifas", "despesa", "fixa", "#EF4444", "CreditCard", true),
+  c("saude", "Saúde", "despesa", "fixa", "#38BDF8", "HeartPulse", true),
+  c("educacao", "Educação", "despesa", "fixa", "#6366F1", "GraduationCap", true),
+  c("lazer", "Lazer", "despesa", "variavel", "#F5A524", "PartyPopper"),
+  c("compras", "Compras", "despesa", "variavel", "#E8590C", "ShoppingBag"),
+  c("assinaturas", "Assinaturas", "despesa", "variavel", "#A5B4FC", "Repeat"),
+  c("cuidados", "Cuidados pessoais", "despesa", "variavel", "#FDBA74", "Sparkles"),
+  c("dividas", "Dívidas e tarifas", "despesa", "fixa", "#4338CA", "CreditCard", true),
   c("outros", "Outros gastos", "despesa", "variavel", "#94A3B8", "CircleEllipsis"),
-  c("salario", "Salário", "receita", "receita", "#34D399", "Briefcase"),
-  c("extra", "Renda extra", "receita", "receita", "#10B981", "HandCoins"),
-  c("passiva", "Renda passiva", "receita", "receita", "#7C9BFF", "TrendingUp"),
-  c("outras-receitas", "Outras receitas", "receita", "receita", "#64748B", "Plus"),
+  c("salario", "Salário", "receita", "receita", "#2D5BFF", "Briefcase"),
+  c("extra", "Renda extra", "receita", "receita", "#38BDF8", "HandCoins"),
+  c("passiva", "Renda passiva", "receita", "receita", "#8FA8FF", "TrendingUp"),
+  c("outras-receitas", "Outras receitas", "receita", "receita", "#94A3B8", "Plus"),
 ];
+
+// Cores padrão anteriores (arco-íris), trocadas pela paleta da marca ao carregar.
+export const CORES_ANTIGAS: Record<string, string> = {
+  "moradia": "#2D5BFF",
+  "contas": "#5B7FFF",
+  "mercado": "#14B8A6",
+  "alimentacao": "#F59E0B",
+  "delivery": "#FF8A3D",
+  "transporte": "#0EA5E9",
+  "saude": "#22C55E",
+  "educacao": "#8B5CF6",
+  "lazer": "#EC4899",
+  "compras": "#F472B6",
+  "assinaturas": "#A78BFA",
+  "cuidados": "#FB7185",
+  "dividas": "#EF4444",
+  "outros": "#94A3B8",
+  "salario": "#34D399",
+  "extra": "#10B981",
+  "passiva": "#7C9BFF",
+  "outras-receitas": "#64748B",
+};
 
 export function financasVazias(): FinancasDados {
   return { versao: 1, categorias: CATEGORIAS_PADRAO.map((x) => ({ ...x })), lancamentos: [], regras: [], metas: [], atualizada_em: new Date().toISOString() };
@@ -739,4 +761,86 @@ export function dreDosMeses(dados: Pick<FinancasDados, "lancamentos" | "categori
     { id: "aportes", rotulo: "(−) Aportes na carteira", tipo: "grupo", sinal: -1, valores: aplicado },
     { id: "caixa", rotulo: "= Caixa livre após aportes", tipo: "resultado", sinal: 1, valores: meses.map((_, i) => arred(resultado[i] - aplicado[i])) },
   ];
+}
+
+// --- Evolução: o cliente está avançando? ---------------------------------------------------
+
+export type MesEvolucao = { mes: string; receitas: number; despesas: number; saldo: number; essenciais: number; variaveis: number; taxaPoupanca: number | null; acumulado: number; aportes: number };
+
+export type Evolucao = {
+  meses: MesEvolucao[];
+  pontuacao: number; // 0 a 100
+  nivel: "atencao" | "caminho" | "otimo";
+  partes: { id: string; rotulo: string; pontos: number; maximo: number; dica: string }[];
+  mesesPositivos: number;
+  taxaMedia: number | null;
+  variacaoVariaveis: number | null; // % das variáveis (3 últimos meses vs 3 anteriores)
+  variacaoTaxa: number | null; // pontos percentuais da taxa de poupança (mês atual vs média anterior)
+};
+
+// Seis meses de receitas, despesas e sobra, com uma pontuação simples de saúde financeira:
+// quanto sobra (40), peso do essencial (25), tendência dos gastos variáveis (15) e constância (20).
+export function evolucaoFinanceira(dados: Pick<FinancasDados, "lancamentos" | "categorias">, mesFinal: string, aportes: Record<string, number>, quantidade = 6): Evolucao {
+  let acumulado = 0;
+  const meses: MesEvolucao[] = serieDeMeses(dados, mesFinal, quantidade).map((r) => {
+    acumulado += r.saldo;
+    return {
+      mes: r.mes,
+      receitas: r.receitas,
+      despesas: r.despesas,
+      saldo: r.saldo,
+      essenciais: r.fixas,
+      variaveis: r.variaveis,
+      taxaPoupanca: r.receitas > 0 ? arred((r.saldo / r.receitas) * 100) : null,
+      acumulado: arred(acumulado),
+      aportes: arred(aportes[r.mes] ?? 0),
+    };
+  });
+  const comDados = meses.filter((m) => m.receitas + m.despesas > 0);
+  const ultimos = comDados.slice(-3);
+  const anteriores = comDados.slice(-6, -3);
+  const soma = (ls: MesEvolucao[], f: (m: MesEvolucao) => number) => ls.reduce((s, m) => s + f(m), 0);
+
+  const rec3 = soma(ultimos, (m) => m.receitas);
+  const taxaRecente = rec3 > 0 ? (soma(ultimos, (m) => m.saldo) / rec3) * 100 : null;
+  const pesoEssencial = rec3 > 0 ? (soma(ultimos, (m) => m.essenciais) / rec3) * 100 : null;
+  const var3 = soma(ultimos, (m) => m.variaveis);
+  const varAntes = soma(anteriores, (m) => m.variaveis);
+  const variacaoVariaveis = anteriores.length && varAntes > 0 ? ((var3 / ultimos.length - varAntes / anteriores.length) / (varAntes / anteriores.length)) * 100 : null;
+  const mesesPositivos = comDados.filter((m) => m.saldo > 0).length;
+  const aportou = comDados.slice(-3).filter((m) => m.aportes > 0).length;
+
+  const ptsSobra = taxaRecente === null ? 0 : Math.round(Math.max(0, Math.min(1, taxaRecente / 20)) * 40);
+  const ptsEssencial = pesoEssencial === null ? 0 : Math.round(Math.max(0, Math.min(1, (80 - pesoEssencial) / 30)) * 25);
+  const ptsTendencia = variacaoVariaveis === null ? 8 : variacaoVariaveis <= -5 ? 15 : variacaoVariaveis < 5 ? 10 : variacaoVariaveis < 15 ? 5 : 0;
+  const ptsConstancia = comDados.length ? Math.round((mesesPositivos / comDados.length) * 14 + (aportou / 3) * 6) : 0;
+  const pontuacao = Math.min(100, ptsSobra + ptsEssencial + ptsTendencia + ptsConstancia);
+
+  const fmt = (v: number) => `${Math.round(v)}%`;
+  const partes = [
+    { id: "sobra", rotulo: "Quanto sobra", pontos: ptsSobra, maximo: 40, dica: taxaRecente === null ? "Lance suas receitas para medir." : `Sobram ${fmt(taxaRecente)} das receitas; a referência é 20%.` },
+    { id: "essencial", rotulo: "Peso do essencial", pontos: ptsEssencial, maximo: 25, dica: pesoEssencial === null ? "Sem receitas no período." : `O essencial leva ${fmt(pesoEssencial)} das receitas; até 50% é confortável.` },
+    {
+      id: "tendencia",
+      rotulo: "Gastos variáveis",
+      pontos: ptsTendencia,
+      maximo: 15,
+      dica: variacaoVariaveis === null ? "Com mais meses lançados eu mostro a tendência." : Math.abs(variacaoVariaveis) < 1 ? "Ficaram estáveis na comparação com os 3 meses anteriores." : variacaoVariaveis < 0 ? `Caíram ${fmt(-variacaoVariaveis)} na comparação com os 3 meses anteriores.` : `Subiram ${fmt(variacaoVariaveis)} na comparação com os 3 meses anteriores.`,
+    },
+    { id: "constancia", rotulo: "Constância", pontos: ptsConstancia, maximo: 20, dica: `${mesesPositivos} de ${comDados.length || 0} meses no azul${aportou ? `, com aporte em ${aportou} dos últimos 3` : ", sem aportes recentes"}.` },
+  ];
+
+  const taxas = comDados.map((m) => m.taxaPoupanca).filter((t): t is number => t !== null);
+  const atual = comDados.at(-1)?.taxaPoupanca ?? null;
+  const antes = taxas.slice(0, -1);
+  return {
+    meses,
+    pontuacao,
+    nivel: pontuacao >= 70 ? "otimo" : pontuacao >= 40 ? "caminho" : "atencao",
+    partes,
+    mesesPositivos,
+    taxaMedia: taxas.length ? arred(taxas.reduce((s, t) => s + t, 0) / taxas.length) : null,
+    variacaoVariaveis: variacaoVariaveis === null ? null : arred(variacaoVariaveis),
+    variacaoTaxa: atual !== null && antes.length ? arred(atual - antes.reduce((s, t) => s + t, 0) / antes.length) : null,
+  };
 }

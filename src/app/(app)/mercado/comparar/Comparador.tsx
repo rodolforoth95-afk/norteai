@@ -7,8 +7,9 @@ import { CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Too
 import { Cartao, TituloSecao } from "@/components/ui";
 import { useCoresTema } from "@/components/useCoresTema";
 import { base100, estatisticas, porMes, type Candle } from "@/lib/dominio/tecnica";
+import { SERIES } from "@/components/paleta";
 
-const CORES = ["#2D5BFF", "#FF8A3D", "#14B8A6", "#EC4899", "#8B5CF6"];
+const CORES = SERIES.slice(0, 5);
 const MAXIMO = 5;
 const PERIODOS = [
   { id: "1m", rotulo: "1M", pregoes: 22 },

@@ -57,9 +57,12 @@ export default async function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   // Tema salvo pelo alternador (padrão: noite, o visual principal do app).
-  const tema = (await cookies()).get("tema")?.value === "claro" ? "claro" : "escuro";
+  const jar = await cookies();
+  const tema = jar.get("tema")?.value === "claro" ? "claro" : "escuro";
+  // Menu lateral do computador fixado aberto ou recolhido em trilho (padrão: aberto).
+  const menu = jar.get("menu")?.value === "fechado" ? "fechado" : "aberto";
   return (
-    <html lang="pt-BR" data-tema={tema}>
+    <html lang="pt-BR" data-tema={tema} data-menu={menu}>
       <body className={`${titulo.variable} ${texto.variable} ${mono.variable} ${marca.variable} antialiased`}>
         {children}
       </body>

@@ -1,5 +1,5 @@
 // Confere a leitura de frases, o aprendizado e o plano de economia. Rodar: npm run testar:financas
-import { aprender, diagnosticar, dreDosMeses, exemploFinancas, financasVazias, interpretarFrase, lerTextoComprovante, planejar, resumoDoMes, sugerirCategoria } from "../src/lib/dominio/financas";
+import { aprender, diagnosticar, dreDosMeses, evolucaoFinanceira, exemploFinancas, financasVazias, interpretarFrase, lerTextoComprovante, planejar, resumoDoMes, sugerirCategoria } from "../src/lib/dominio/financas";
 
 let falhas = 0;
 const ok = (nome: string, cond: boolean, info: unknown = "") => {
@@ -72,6 +72,20 @@ ok("data futura ignorada", futuro.data === hoje && futuro.valor === 10, futuro);
   ok("DRE essenciais + variáveis = despesas", Math.abs(linha("essenciais").valores[1] + linha("variaveis").valores[1] - r.despesas) < 0.01);
   ok("DRE caixa = resultado − aportes", Math.abs(linha("caixa").valores[1] - (r.saldo - 500)) < 0.01);
   ok("DRE itens de receita", dre.some((l) => l.categoriaId === "salario"));
+}
+
+// Evolução
+{
+  const dados = { ...financasVazias(), lancamentos: exemploFinancas(hoje, () => Math.random().toString(36).slice(2)) };
+  const ev = evolucaoFinanceira(dados, "2026-11", { "2026-10": 500 });
+  ok("evolução: 6 meses", ev.meses.length === 6, ev.meses.length);
+  ok("evolução: pontuação 0–100", ev.pontuacao >= 0 && ev.pontuacao <= 100, ev.pontuacao);
+  ok("evolução: soma das partes", ev.partes.reduce((s, x) => s + x.pontos, 0) === ev.pontuacao, ev.partes);
+  const ult = ev.meses.at(-1)!;
+  ok("evolução: acumulado = soma dos saldos", Math.abs(ult.acumulado - ev.meses.reduce((s, m) => s + m.saldo, 0)) < 0.05);
+  const vazio = evolucaoFinanceira(financasVazias(), "2026-11", {});
+  ok("evolução sem dados", vazio.pontuacao <= 8 && vazio.taxaMedia === null, vazio);
+  console.log(`pontuação exemplo ${ev.pontuacao} (${ev.nivel}) · taxa média ${ev.taxaMedia}% · variáveis ${ev.variacaoVariaveis}%`);
 }
 
 if (falhas) {

@@ -4,6 +4,9 @@
    azul-noite. Space Grotesk em títulos e números, IBM Plex Sans nos textos, Geist Mono em números técnicos,
    Nunito só no logotipo.
    As cores vêm de variáveis que mudam com o tema (data-tema="claro" | "escuro" no <html>). */
+/* "menu-aberto:" aplica quando o menu lateral está fixado aberto (data-menu no <html>). */
+@custom-variant menu-aberto (&:where([data-menu="aberto"], [data-menu="aberto"] *));
+
 @theme inline {
   --color-fundo: var(--fundo);
   --color-superficie: var(--superficie);
@@ -97,6 +100,12 @@
 }
 
 /* Cartão: bem arredondado, borda leve e sombra azulada difusa (no claro). */
+/* Item ativo do menu: degradê no azul da Findomo. */
+@utility degrade-ativo {
+  background-image: linear-gradient(100deg, #2d5bff 0%, #4f74ff 55%, #7c9bff 100%);
+  box-shadow: 0 6px 18px -8px rgb(45 91 255 / 0.6), inset 0 1px 0 rgb(255 255 255 / 0.18);
+}
+
 @utility painel {
   border: 1px solid var(--linha);
   background: var(--superficie);

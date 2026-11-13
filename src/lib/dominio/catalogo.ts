@@ -31,28 +31,28 @@ export const CLASSES: Record<Classe, InfoClasse> = {
     grupo: "Renda variável",
     risco: "Médio",
     descricao: "Cotas de imóveis e títulos imobiliários que costumam pagar rendimentos todo mês.",
-    cor: "#14B8A6",
+    cor: "#38BDF8",
   },
   multimercado: {
     nome: "Fundos multimercado",
     grupo: "Renda variável",
     risco: "Médio",
     descricao: "Fundos que misturam juros, ações e câmbio. Um gestor decide onde investir.",
-    cor: "#8B5CF6",
+    cor: "#8FA8FF",
   },
   cripto: {
     nome: "Criptomoedas",
     grupo: "Reserva de valor",
     risco: "Muito alto",
     descricao: "Moedas digitais sem banco central por trás. Podem subir e cair muito em pouco tempo.",
-    cor: "#F5B70A",
+    cor: "#F5A524",
   },
   exterior: {
     nome: "Investimentos no exterior",
     grupo: "Exterior",
     risco: "Alto",
     descricao: "Empresas e títulos de outros países, que expõem o dinheiro ao dólar ou a outras moedas.",
-    cor: "#EC4899",
+    cor: "#FFB27A",
   },
 };
 
@@ -93,7 +93,7 @@ export const INFO_ESTILO: Record<Estilo, { risco: string; frase: string; cor: st
   Cauteloso: {
     risco: "Risco baixo",
     frase: "Você prioriza segurança e previsibilidade. Faz sentido conhecer primeiro a renda fixa.",
-    cor: "#14B8A6",
+    cor: "#38BDF8",
   },
   Equilibrado: {
     risco: "Risco médio",
@@ -103,7 +103,7 @@ export const INFO_ESTILO: Record<Estilo, { risco: string; frase: string; cor: st
   Ousado: {
     risco: "Risco alto",
     frase: "Você tolera quedas fortes no caminho e pensa no longo prazo.",
-    cor: "#EC4899",
+    cor: "#FF8A3D",
   },
 };
 

@@ -1,5 +1,5 @@
 import "server-only";
-import { CATEGORIAS_PADRAO, financasVazias, mesDe, type FinancasDados } from "@/lib/dominio/financas";
+import { CATEGORIAS_PADRAO, CORES_ANTIGAS, financasVazias, mesDe, type FinancasDados } from "@/lib/dominio/financas";
 import { ErroCarteira, carregarCarteira } from "./carteira";
 import type { Repositorio } from "./repositorio";
 
@@ -12,7 +12,11 @@ export { ErroCarteira as ErroFinancas };
 export async function carregarFinancas(repo: Repositorio, uid: string): Promise<FinancasDados> {
   const dados = (await repo.obterFinancas(uid)) ?? financasVazias();
   // Categorias padrão novas aparecem para quem já tinha o documento.
-  for (const padrao of CATEGORIAS_PADRAO) if (!dados.categorias.some((c) => c.id === padrao.id)) dados.categorias.push({ ...padrao });
+  for (const padrao of CATEGORIAS_PADRAO) {
+    const atual = dados.categorias.find((c) => c.id === padrao.id);
+    if (!atual) dados.categorias.push({ ...padrao });
+    else if (atual.cor.toUpperCase() === CORES_ANTIGAS[padrao.id]?.toUpperCase()) atual.cor = padrao.cor;
+  }
   return dados;
 }
 
