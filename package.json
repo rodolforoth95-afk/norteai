@@ -10,7 +10,9 @@
     "testar:financas": "tsx scripts/testar-financas.ts",
     "testar:carteira": "tsx scripts/testar-carteira.ts",
     "testar:simulador": "tsx scripts/testar-simulador.ts",
-    "testar:ia": "tsx --env-file=.env.local --conditions=react-server scripts/testar-ia.ts"
+    "testar:ia": "tsx --env-file=.env.local --conditions=react-server scripts/testar-ia.ts",
+    "testar:whatsapp": "tsx --conditions=react-server scripts/testar-whatsapp.ts",
+    "simular:whatsapp": "tsx --env-file=.env.local scripts/simular-whatsapp.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.3.0",

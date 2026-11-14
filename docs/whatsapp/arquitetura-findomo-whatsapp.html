@@ -1,0 +1,256 @@
+<title>Findomo no WhatsApp</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Layout: coluna de leitura única, com blocos de comparação e uma conversa de exemplo à direita no desktop */
+:root {
+  --bg: #f5f7fb;
+  --sup: #ffffff;
+  --sup2: #eef2f8;
+  --linha: #dbe2ee;
+  --texto: #121a2b;
+  --suave: #5a6680;
+  --ciano: #1a8fb8;
+  --anil: #4b56d8;
+  --menta: #12805c;
+  --alerta: #a35a00;
+  --perigo: #b4233c;
+  --zap: #dcf5d0;
+  --zap-bot: #ffffff;
+  --display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --corpo: "Inter", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1220; --sup: #151c2e; --sup2: #1c2540; --linha: #2a3555; --texto: #e8edf7; --suave: #9aa6c2;
+    --ciano: #4cc3ea; --anil: #8b93ff; --menta: #46c99a; --alerta: #f0a94a; --perigo: #ff7b8f;
+    --zap: #1f3b2a; --zap-bot: #1c2540; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1220; --sup: #151c2e; --sup2: #1c2540; --linha: #2a3555; --texto: #e8edf7; --suave: #9aa6c2;
+  --ciano: #4cc3ea; --anil: #8b93ff; --menta: #46c99a; --alerta: #f0a94a; --perigo: #ff7b8f;
+  --zap: #1f3b2a; --zap-bot: #1c2540; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--texto); font-family: var(--corpo); font-size: 15px; line-height: 1.6; }
+.pagina { max-width: 980px; margin: 0 auto; padding-block: 40px 72px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 48px; }
+h1, h2, h3 { font-family: var(--display); text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h1 { font-size: clamp(2rem, 5vw, 2.8rem); line-height: 1.1; }
+h2 { font-size: 1.5rem; }
+h3 { font-size: 1.05rem; }
+p { margin: 0; max-width: 68ch; }
+.rotulo { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ciano); }
+.suave { color: var(--suave); }
+section { display: flex; flex-direction: column; gap: 16px; }
+.topo { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 32px; align-items: start; }
+.topo .texto { display: flex; flex-direction: column; gap: 14px; }
+.chat { background: var(--sup2); border: 1px solid var(--linha); border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 8px; font-size: 14px; }
+.chat .cab { font-size: 12px; color: var(--suave); display: flex; justify-content: space-between; padding-bottom: 6px; border-bottom: 1px solid var(--linha); }
+.msg { max-width: 86%; padding: 8px 11px; border-radius: 12px; line-height: 1.45; }
+.msg.eu { align-self: flex-end; background: var(--zap); border-bottom-right-radius: 4px; }
+.msg.bot { align-self: flex-start; background: var(--zap-bot); border: 1px solid var(--linha); border-bottom-left-radius: 4px; }
+.msg small { display: block; color: var(--suave); font-size: 11px; margin-top: 2px; }
+.diagrama { background: var(--sup); border: 1px solid var(--linha); border-radius: 16px; padding: 20px; overflow-x: auto; }
+.grade { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 12px; }
+.bloco { background: var(--sup); border: 1px solid var(--linha); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.bloco h3 { display: flex; align-items: center; gap: 8px; }
+.tag { font-family: var(--corpo); font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--sup2); color: var(--suave); white-space: nowrap; }
+.tag.ok { color: var(--menta); }
+.tag.alerta { color: var(--alerta); }
+.tag.risco { color: var(--perigo); }
+.tabela { overflow-x: auto; border: 1px solid var(--linha); border-radius: 14px; background: var(--sup); }
+table { border-collapse: collapse; width: 100%; min-width: 620px; font-size: 14px; }
+th, td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--linha); vertical-align: top; }
+th { font-family: var(--display); font-weight: 600; background: var(--sup2); }
+tr:last-child td { border-bottom: 0; }
+td.n { font-variant-numeric: tabular-nums; }
+.destaque { border: 1px solid var(--ciano); background: var(--sup); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+ul, ol { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.88em; background: var(--sup2); padding: 1px 5px; border-radius: 5px; }
+.fases { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.fase { background: var(--sup); border: 1px solid var(--linha); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.fase .num { font-family: var(--display); font-weight: 700; color: var(--anil); }
+@media (max-width: 760px) { .topo { grid-template-columns: 1fr; } }
+</style>
+
+<div class="pagina">
+
+<header class="topo">
+  <div class="texto">
+    <span class="rotulo">Proposta de arquitetura</span>
+    <h1>Findomo no WhatsApp</h1>
+    <p>O cliente conversa com o Findomo pelo WhatsApp como conversa com um assistente: lança receitas e despesas por texto, foto ou áudio, pergunta como está o mês, o plano, a carteira e a bolsa, e tira dúvidas sobre investimentos. Tudo cai na mesma conta do site, na hora.</p>
+    <p class="suave">A estrutura segue o guia do FARO (um serviço separado para o WhatsApp que conversa com o sistema principal por uma chave interna). Onde o guia deixa lacunas para um produto que vai escalar, a proposta melhora e explica por quê.</p>
+  </div>
+  <div class="chat" aria-label="Conversa de exemplo">
+    <div class="cab"><span>Findomo</span><span>exemplo</span></div>
+    <div class="msg eu">gastei 85 no almoço no débito</div>
+    <div class="msg bot">Anotei: <b>despesa R$ 85,00</b> em Alimentação, débito, hoje. Confirma? Responda <b>sim</b> ou <b>corrigir</b>.</div>
+    <div class="msg eu">sim</div>
+    <div class="msg bot">Feito ✅ Em novembro você já gastou R$ 640 de R$ 900 em Alimentação.</div>
+    <div class="msg eu">🎤 áudio 0:06<small>"como tá a petro hoje?"</small></div>
+    <div class="msg bot">PETR4 está em R$ 38,12, alta de 1,4% hoje. Não indico compra ou venda, mas posso explicar o que move o preço de uma ação.</div>
+  </div>
+</header>
+
+<section>
+  <span class="rotulo">Como as peças se ligam</span>
+  <h2>A arquitetura</h2>
+  <p>São três peças. O <b>Canal</b> só fala com o WhatsApp. O <b>Findomo</b> recebe as mensagens, entende o que o cliente quer e responde. O <b>banco</b> é o mesmo do site, então o que entra pelo WhatsApp aparece no app e vice-versa.</p>
+  <div class="diagrama">
+<pre class="mermaid">
+flowchart LR
+  U["Cliente no WhatsApp"] <-->|mensagens| C["Canal WhatsApp<br/>(serviço separado)"]
+  C -->|"1. webhook assinado"| W["Findomo: porta de entrada<br/>/api/whatsapp/webhook"]
+  W -->|"2. guarda e enfileira"| F[("Fila de mensagens<br/>Supabase")]
+  F -->|"3. processa"| M["Mordomo do WhatsApp<br/>IA Claude + ferramentas"]
+  M -->|"lê e grava"| D[("Dados do cliente<br/>finanças, planos, carteira")]
+  M -->|"cotações"| B["brapi / indicadores"]
+  M -->|"4. resposta"| C
+  S["Site Findomo"] <-->|mesmas funções| D
+</pre>
+  </div>
+  <div class="grade">
+    <div class="bloco">
+      <h3>Canal WhatsApp</h3>
+      <p class="suave">Mantém a conexão com o número, recebe e envia mensagens, baixa fotos e áudios. Não sabe nada de finanças. Pode ser o Baileys do guia ou a API oficial da Meta: o resto do sistema não muda.</p>
+    </div>
+    <div class="bloco">
+      <h3>Porta de entrada</h3>
+      <p class="suave">Confere a assinatura de cada mensagem, ignora repetidas, grava e responde "recebido" em milissegundos. O trabalho pesado vai para a fila, para nada se perder se a IA demorar.</p>
+    </div>
+    <div class="bloco">
+      <h3>Mordomo do WhatsApp</h3>
+      <p class="suave">A IA que já existe no site, agora com ferramentas: lançar, consultar mês, plano, carteira, cotação, explicar conceitos. Usa as mesmas regras do site, inclusive a de nunca recomendar ativo.</p>
+    </div>
+  </div>
+</section>
+
+<section>
+  <span class="rotulo">A decisão mais importante</span>
+  <h2>Baileys (como no guia) ou API oficial da Meta</h2>
+  <p>O guia usa o Baileys, que imita o WhatsApp Web. Funciona e não cobra por mensagem, mas é uma conexão não oficial: a Meta pode banir o número, e se isso acontecer com o número do Findomo todos os clientes perdem o canal de uma vez. Para um produto de finanças que quer escalar, recomendo a API oficial. A arquitetura acima aceita as duas, então dá para trocar depois sem refazer nada.</p>
+  <div class="tabela">
+    <table>
+      <thead><tr><th></th><th>Baileys (guia FARO)</th><th>API oficial (WhatsApp Cloud API)</th></tr></thead>
+      <tbody>
+        <tr><td>Risco de banimento</td><td><span class="tag risco">alto</span> uso fora dos termos do WhatsApp</td><td><span class="tag ok">baixo</span> canal aprovado pela Meta</td></tr>
+        <tr><td>Custo por mensagem</td><td>zero</td><td>respostas a mensagens do cliente (janela de 24 h) são gratuitas; só mensagens que o Findomo inicia (alertas, resumo semanal) são cobradas, alguns centavos cada</td></tr>
+        <tr><td>Servidor extra</td><td>sim, um servidor sempre ligado (cerca de US$ 5–10/mês), porque a Vercel não segura a conexão</td><td>não, o webhook roda na própria Vercel</td></tr>
+        <tr><td>Selo e confiança</td><td>número comum</td><td>perfil comercial verificado, nome e logo do Findomo</td></tr>
+        <tr><td>Para começar</td><td>um chip e ler um QR code</td><td>conta Meta Business verificada (CNPJ) e um número dedicado; leva de dias a poucas semanas</td></tr>
+        <tr><td>Escala</td><td>um número por conexão; volume alto chama atenção da Meta</td><td>milhares de mensagens por segundo, sem mudar nada</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="destaque">
+    <h3>Decisão: Baileys, como no guia <span class="tag ok">14/11/2026</span></h3>
+    <p>O canal foi construído com o Baileys 6.7.24. Para reduzir o risco de banimento, o Findomo só responde a quem escreve, envia uma mensagem por vez com intervalo mínimo de 1,2 s e não faz disparos em massa. Se um dia for preciso trocar para a API oficial, só o serviço do canal muda; o Mordomo, a fila e o banco continuam os mesmos.</p>
+  </div>
+</section>
+
+<section>
+  <span class="rotulo">Guia FARO × proposta Findomo</span>
+  <h2>O que fica igual e o que melhora</h2>
+  <div class="tabela">
+    <table>
+      <thead><tr><th>Ponto</th><th>No guia</th><th>No Findomo</th></tr></thead>
+      <tbody>
+        <tr><td>Serviço separado para o WhatsApp</td><td>container Node com Baileys</td><td>igual, com adaptador para a API oficial</td></tr>
+        <tr><td>Chave interna entre os serviços</td><td>chave fixa no código e no compose</td><td>chave só em variável de ambiente, assinatura HMAC por mensagem, conferida dos dois lados</td></tr>
+        <tr><td>Mensagem repetida ou perdida</td><td>sem fila, sem retry, sem checar repetidas</td><td>grava pelo id da mensagem (não processa duas vezes) e fila com novas tentativas</td></tr>
+        <tr><td>Banco</td><td>SQLite em arquivo</td><td>Supabase (Postgres), o mesmo do site, com regras de acesso por usuário</td></tr>
+        <tr><td>Bot</td><td>comandos por palavra-chave ("APROVAR DEM-123")</td><td>IA que entende frases livres e usa ferramentas, com confirmação antes de gravar</td></tr>
+        <tr><td>Quem está falando</td><td>procura o telefone com <code>LIKE</code></td><td>vínculo verificado: o cliente prova que o número é dele com um código gerado no site</td></tr>
+        <tr><td>Ações pendentes</td><td>tabela prevista, não usada</td><td>usada em todo lançamento: "Confirma? sim / corrigir", expira em 10 min</td></tr>
+        <tr><td>Áudio</td><td>baixado mas não transcrito</td><td>transcrito e tratado como texto</td></tr>
+        <tr><td>Foto de nota ou comprovante</td><td>baixada, sem uso</td><td>lida pela mesma IA que já lê fotos no site</td></tr>
+        <tr><td>Horário de silêncio</td><td>previsto</td><td>mantido para mensagens que o Findomo inicia</td></tr>
+        <tr><td>LGPD e regra da CVM</td><td>não tratado</td><td>consentimento no vínculo, "SAIR" desliga, mensagens apagadas em 90 dias, IA nunca recomenda ativo</td></tr>
+        <tr><td>LID do WhatsApp</td><td>mapa em arquivo JSON</td><td>guardado no banco junto do vínculo</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section>
+  <span class="rotulo">Segurança</span>
+  <h2>Como o número fica ligado à conta</h2>
+  <ol>
+    <li>No site, em <b>Conta › WhatsApp</b>, o cliente toca em <b>Conectar WhatsApp</b> e aceita os termos do canal.</li>
+    <li>O Findomo mostra um código de uso único (por exemplo <code>FINDOMO 482913</code>) e um botão que abre o WhatsApp com a mensagem já escrita para o nosso número.</li>
+    <li>O cliente envia. Como a mensagem saiu do celular dele, sabemos que o número é dele. O código vale 15 minutos.</li>
+    <li>O Mordomo responde com boas-vindas e o que dá para fazer. A partir daí, cada mensagem daquele número age só naquela conta.</li>
+  </ol>
+  <p class="suave">Quem manda mensagem sem vínculo recebe só uma explicação e o link para criar conta. Nenhum dado financeiro sai para um número não verificado. O cliente pode desligar a qualquer hora, no site ou mandando "SAIR".</p>
+</section>
+
+<section>
+  <span class="rotulo">O que o Mordomo sabe fazer</span>
+  <h2>Ferramentas, as mesmas do site</h2>
+  <div class="grade">
+    <div class="bloco"><h3>Lançar <span class="tag ok">fase 1</span></h3><p class="suave">Receita ou despesa por texto; categoria, forma de pagamento e data deduzidas. Sempre pede confirmação. "Apagar o último" desfaz.</p></div>
+    <div class="bloco"><h3>Consultar o mês <span class="tag ok">fase 1</span></h3><p class="suave">Quanto entrou, saiu e sobrou; gastos por categoria; limites do plano em foco; comparação com o mês passado.</p></div>
+    <div class="bloco"><h3>Plano <span class="tag ok">fase 1</span></h3><p class="suave">Quanto guardou no mês contra a meta, acumulado, próximo aporte.</p></div>
+    <div class="bloco"><h3>Foto e áudio <span class="tag alerta">fase 2</span></h3><p class="suave">Foto de nota, comprovante ou extrato vira lançamento; áudio é transcrito e entendido.</p></div>
+    <div class="bloco"><h3>Carteira e bolsa <span class="tag alerta">fase 2</span></h3><p class="suave">Resumo da carteira, cotação de um ativo, Ibovespa, dólar, CDI. Sem recomendação de compra ou venda.</p></div>
+    <div class="bloco"><h3>Aprender <span class="tag alerta">fase 2</span></h3><p class="suave">Explica conceitos (o que é FII, CDB, Tesouro) e manda o link da aula certa no app.</p></div>
+    <div class="bloco"><h3>Avisos <span class="tag">fase 3</span></h3><p class="suave">Limite estourado, resumo semanal, lembrete de aporte. Respeita o horário de silêncio e a escolha do cliente.</p></div>
+  </div>
+</section>
+
+<section>
+  <span class="rotulo">Dados</span>
+  <h2>Tabelas novas no Supabase</h2>
+  <div class="tabela">
+    <table>
+      <thead><tr><th>Tabela</th><th>Guarda</th></tr></thead>
+      <tbody>
+        <tr><td><code>whatsapp_vinculo</code></td><td>usuário, telefone, LID, quando foi verificado, ativo, avisos ligados, horário de silêncio</td></tr>
+        <tr><td><code>whatsapp_codigo</code></td><td>códigos de vínculo de uso único, com validade</td></tr>
+        <tr><td><code>whatsapp_mensagens</code></td><td>entrada e saída, id da mensagem (único), tipo, texto, status de processamento, tentativas; apagadas após 90 dias</td></tr>
+        <tr><td><code>whatsapp_pendentes</code></td><td>ação aguardando "sim" (ex.: lançamento proposto), com validade de 10 min</td></tr>
+        <tr><td><code>whatsapp_eventos</code></td><td>auditoria: vínculos, desvínculos, erros do canal, uso de IA (sem conteúdo pessoal)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="suave">O lançamento em si vai para as finanças do cliente com a origem "whatsapp", pelas mesmas funções que o site usa hoje. Assim não existe uma segunda versão das regras.</p>
+</section>
+
+<section>
+  <span class="rotulo">Para crescer sem refazer</span>
+  <h2>Escala</h2>
+  <ul>
+    <li><b>Mesmo cérebro, vários canais.</b> As funções de finanças, carteira e IA viram um núcleo usado pelo site e pelo WhatsApp. Telegram ou app nativo depois seriam só outro adaptador.</li>
+    <li><b>Fila desde o começo.</b> Hoje uma tabela no Supabase. Com volume alto, troca-se por uma fila dedicada (Upstash QStash ou Redis) sem mexer no Mordomo.</li>
+    <li><b>Respostas rápidas sem IA.</b> "sim", "saldo", "apagar o último" são resolvidos por regra, sem custo de IA. A IA entra quando a frase é livre.</li>
+    <li><b>Limites por cliente.</b> Teto de mensagens por hora e de uso de IA por dia, como o site já faz.</li>
+    <li><b>Observabilidade.</b> Painel no admin com status do canal, mensagens por hora, tempo de resposta e erros.</li>
+  </ul>
+</section>
+
+<section>
+  <span class="rotulo">Entrega</span>
+  <h2>Fases</h2>
+  <div class="fases">
+    <div class="fase"><span class="num">Fase 1 <span class="tag ok">construída</span></span><h3>Conversa básica</h3><p class="suave">Canal Baileys em Docker, vínculo por código, fila em disco com novas tentativas, Mordomo para lançar com confirmação, corrigir, apagar e consultar o mês e o plano. Tela Conta › WhatsApp no site.</p></div>
+    <div class="fase"><span class="num">Fase 2 <span class="tag ok">construída</span></span><h3>Findomo completo</h3><p class="suave">Foto e PDF de comprovante, áudio transcrito, carteira, cotações, Selic, CDI e IPCA, e aulas do Aprender com link. Painel do canal com QR para parear.</p></div>
+    <div class="fase"><span class="num">Fase 3</span><h3>Avisos e painel</h3><p class="suave">Alertas de limite, resumo semanal, lembrete de aporte e métricas de operação. O vínculo já guarda a preferência de avisos e o horário de silêncio.</p></div>
+  </div>
+</section>
+
+<section>
+  <span class="rotulo">Do seu lado</span>
+  <h2>O que você precisa providenciar</h2>
+  <ol>
+    <li>Rodar o arquivo <code>supabase/migrations/0007_whatsapp.sql</code> no Supabase.</li>
+    <li>Um número de celular só para o Findomo (chip novo, que não esteja em uso no WhatsApp pessoal).</li>
+    <li>Um servidor pequeno sempre ligado para o canal (Railway, Render, Fly.io ou uma VPS com Docker), com uma pasta persistente para a sessão.</li>
+    <li>Na Vercel: <code>WHATSAPP_CHAVE_INTERNA</code> (a mesma do servidor), <code>WHATSAPP_NUMERO</code>, <code>WHATSAPP_OPERADORES</code>, a <code>ANTHROPIC_API_KEY</code> que já está pendente e, para áudio, <code>OPENAI_API_KEY</code>.</li>
+    <li>Ler o QR em Conta › WhatsApp com o celular do número do Findomo.</li>
+  </ol>
+  <p class="suave">O passo a passo completo está em <code>docs/whatsapp/README.md</code> no projeto.</p>
+</section>
+
+</div>

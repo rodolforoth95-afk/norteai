@@ -6,7 +6,7 @@
 export type TipoLancamento = "despesa" | "receita";
 export type GrupoCategoria = "fixa" | "variavel" | "receita";
 export type Meio = "pix" | "debito" | "credito" | "dinheiro" | "boleto" | "transferencia";
-export type OrigemLancamento = "manual" | "foto" | "audio" | "exemplo";
+export type OrigemLancamento = "manual" | "foto" | "audio" | "exemplo" | "whatsapp";
 
 export type Categoria = {
   id: string;

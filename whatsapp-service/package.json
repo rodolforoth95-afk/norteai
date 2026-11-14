@@ -1,0 +1,19 @@
+{
+  "name": "findomo-whatsapp",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Canal WhatsApp do Findomo (Baileys): recebe mensagens, repassa ao Findomo e envia as respostas.",
+  "main": "src/index.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node src/index.js",
+    "testar": "node --test"
+  },
+  "dependencies": {
+    "@whiskeysockets/baileys": "6.7.24",
+    "pino": "10.4.0",
+    "qrcode": "1.5.4"
+  }
+}

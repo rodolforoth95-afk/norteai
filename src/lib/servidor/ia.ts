@@ -25,6 +25,7 @@ function claude() {
   cliente ??= new Anthropic();
   return cliente;
 }
+export { claude as clienteClaude, MODELO_ENTREVISTA as MODELO_CONVERSA };
 
 const ROTEIRO = PERGUNTAS.map(
   (p, i) => `${i + 1}. [${p.campo}] ${p.texto}\n   Opções válidas: ${p.opcoes.map((o) => `"${o}"`).join(" | ")}`,

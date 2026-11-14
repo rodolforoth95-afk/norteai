@@ -1,0 +1,11 @@
+# Canal WhatsApp do Findomo numa VPS: docker compose up -d --build
+# A pasta ./dados guarda a sessão do número (não apague) e a fila de mensagens.
+services:
+  whatsapp:
+    build: .
+    container_name: findomo_whatsapp
+    restart: always
+    init: true
+    env_file: .env
+    volumes:
+      - ./dados:/app/dados
