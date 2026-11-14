@@ -1,3 +1,4 @@
+const fs = require("node:fs");
 const path = require("node:path");
 
 // Configuração só por variáveis de ambiente. Sem valores padrão para segredos:
@@ -14,6 +15,15 @@ function ler() {
     process.exit(1);
   }
   const dados = path.resolve(process.env.DADOS_DIR || path.join(__dirname, "..", "dados"));
+  try {
+    fs.mkdirSync(dados, { recursive: true });
+    fs.accessSync(dados, fs.constants.W_OK);
+  } catch {
+    console.error(
+      `[canal] sem permissão para gravar em ${dados}. No Railway, adicione a variável RAILWAY_RUN_UID=0 e faça um novo deploy.`,
+    );
+    process.exit(1);
+  }
   return {
     findomoUrl,
     chave,

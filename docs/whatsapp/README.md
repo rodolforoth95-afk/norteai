@@ -56,10 +56,21 @@ docker compose up -d --build
 docker logs -f findomo_whatsapp
 ```
 
-**Railway / Render / Fly.io:**
-1. Crie um serviço a partir do repositório, com a pasta `whatsapp-service`. O Dockerfile já está pronto.
-2. Configure as variáveis do `.env.example`.
-3. Monte um **volume persistente em `/app/dados`**. Sem volume, o número desconecta a cada deploy.
+**Railway** (escolhido):
+1. **New Project › Deploy from GitHub repo**, escolha o repositório do Findomo.
+2. No serviço, em **Settings**:
+   - **Root Directory**: `whatsapp-service`. O Railway acha o Dockerfile sozinho.
+   - **Watch Paths**: `/whatsapp-service/**`. Assim, mudanças no site não reiniciam o canal.
+   - **Restart Policy**: Always.
+   - **Replicas**: 1. Nunca mais de uma, porque o número só aceita uma conexão.
+   - **Domínio público**: não precisa.
+3. Em **Variables**, cadastre:
+   - `FINDOMO_URL`: o endereço do site;
+   - `WHATSAPP_CHAVE_INTERNA`: a mesma da Vercel;
+   - `RAILWAY_RUN_UID=0`: o volume do Railway pertence ao root, e sem ela o canal avisa nos logs que não consegue gravar.
+4. Clique com o botão direito no serviço, escolha **Attach Volume** e informe o mount path **`/app/dados`**. Sem volume, o número desconecta a cada deploy.
+
+**Render / Fly.io:** mesmo esquema, com a pasta `whatsapp-service`, as variáveis do `.env.example` e um volume persistente em `/app/dados`.
 
 ### 4. Parear o número
 
