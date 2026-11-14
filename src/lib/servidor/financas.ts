@@ -17,6 +17,14 @@ export async function carregarFinancas(repo: Repositorio, uid: string): Promise<
     if (!atual) dados.categorias.push({ ...padrao });
     else if (atual.cor.toUpperCase() === CORES_ANTIGAS[padrao.id]?.toUpperCase()) atual.cor = padrao.cor;
   }
+  // Planos: as metas antigas inativas viram histórico; a ativa leva a meta de guardar.
+  if (!dados.planosV) {
+    for (const m of dados.metas) {
+      if (!m.ativa) m.arquivada = true;
+      else if (m.guardar === undefined) m.guardar = dados.metaGuardar ?? null;
+    }
+    dados.planosV = true;
+  }
   return dados;
 }
 

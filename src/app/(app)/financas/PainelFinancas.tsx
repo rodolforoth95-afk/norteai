@@ -4,13 +4,9 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
   ArrowDownRight,
-  ArrowRight,
   ArrowUpRight,
   CheckCircle2,
   ChevronLeft,
-  Compass,
-  Minus,
-  Plus,
   ChevronRight,
   Layers,
   PiggyBank,
@@ -95,6 +91,8 @@ type Props = {
   evolucao: DadosEvolucao;
   diagnostico: Diagnostico;
   metaGuardar: MetaGuardar | null;
+  planoId: string | null;
+  planoParam: string;
   escada: EscadaGuardar | null;
   rendaAtual: number;
   primeiroNome: string;
@@ -216,7 +214,7 @@ export function PainelFinancas(p: Props) {
   }
 
   return (
-    <section className="flex flex-col gap-5 lg:gap-6">
+    <section className="flex flex-col gap-5 pb-16 lg:gap-6 lg:pb-20">
       {/* Cabeçalho com o mês */}
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>
@@ -227,36 +225,23 @@ export function PainelFinancas(p: Props) {
             Receitas, despesas e quanto sobra para investir.
           </p>
         </div>
-        <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto">
-          <button
-            type="button"
-            onClick={() => abrir("texto", { tipo: "receita" })}
-            className="flex h-11 items-center justify-center gap-2 rounded-xl border border-menta/40 bg-menta/10 px-4 text-sm font-semibold text-texto transition hover:bg-menta/20"
-          >
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-menta text-white">
-              <Plus
-                className="h-3.5 w-3.5"
-                aria-hidden="true"
-                strokeWidth={3}
-              />
+        <Link
+          href="/financas"
+          className="flex h-11 max-w-full items-center gap-2 rounded-full border border-linha bg-superficie py-1 pl-1 pr-4 text-sm font-semibold text-texto hover:bg-superficie-2"
+        >
+          <span className="degrade-ativo flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white">
+            <Target className="h-4 w-4" aria-hidden="true" />
+          </span>
+          <span className="min-w-0">
+            <span className="block text-[10px] font-medium uppercase tracking-wider text-suave">
+              Plano
             </span>
-            Nova receita
-          </button>
-          <button
-            type="button"
-            onClick={() => abrir("texto", { tipo: "despesa" })}
-            className="flex h-11 items-center justify-center gap-2 rounded-xl border border-erro/40 bg-erro/10 px-4 text-sm font-semibold text-texto transition hover:bg-erro/20"
-          >
-            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-erro text-white">
-              <Minus
-                className="h-3.5 w-3.5"
-                aria-hidden="true"
-                strokeWidth={3}
-              />
+            <span className="block truncate leading-tight">
+              {p.meta ? p.meta.nome : "Sem plano"}
             </span>
-            Nova despesa
-          </button>
-        </div>
+          </span>
+          <span className="ml-1 text-xs font-semibold text-ciano">Trocar</span>
+        </Link>
       </header>
 
       <div className="-mt-1 flex w-full flex-wrap items-center justify-between gap-2">
@@ -265,7 +250,7 @@ export function PainelFinancas(p: Props) {
           aria-label="Mês"
         >
           <Link
-            href={`/financas?mes=${somarMeses(p.mes, -1)}`}
+            href={`/financas?mes=${somarMeses(p.mes, -1)}&p=${p.planoParam}`}
             className="flex h-9 w-9 items-center justify-center rounded-lg text-suave hover:bg-superficie-2 hover:text-texto"
             aria-label="Mês anterior"
           >
@@ -275,7 +260,7 @@ export function PainelFinancas(p: Props) {
             {nomeMes(p.mes)}
           </span>
           <Link
-            href={`/financas?mes=${somarMeses(p.mes, 1)}`}
+            href={`/financas?mes=${somarMeses(p.mes, 1)}&p=${p.planoParam}`}
             className={`flex h-9 w-9 items-center justify-center rounded-lg text-suave hover:bg-superficie-2 hover:text-texto ${p.mes >= somarMeses(p.mesAtual, 12) ? "pointer-events-none opacity-30" : ""}`}
             aria-label="Próximo mês"
           >
@@ -283,14 +268,6 @@ export function PainelFinancas(p: Props) {
           </Link>
         </nav>
         <div className="flex gap-1.5">
-          <Link
-            href={temPlano ? "#meu-plano" : "/financas/jornada"}
-            className="flex h-10 items-center gap-1.5 rounded-xl border border-linha bg-superficie px-2.5 text-sm font-semibold text-texto hover:bg-superficie-2 sm:px-3"
-          >
-            <Target className="h-4 w-4 text-gravata" aria-hidden="true" />
-            <span className="hidden sm:inline">Meu plano</span>
-            <span className="sm:hidden">Plano</span>
-          </Link>
           <Link
             href="/financas/categorias"
             className="flex h-10 w-10 items-center justify-center rounded-xl border border-linha bg-superficie text-suave hover:bg-superficie-2 hover:text-texto"
@@ -300,55 +277,6 @@ export function PainelFinancas(p: Props) {
           </Link>
         </div>
       </div>
-
-      {!temPlano ? (
-        <div className="painel relative overflow-hidden p-0">
-          <div className="grid gap-5 p-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] lg:items-center lg:p-7">
-            <div className="flex flex-col gap-3">
-              <span className="degrade-ativo flex h-11 w-11 items-center justify-center rounded-xl text-white">
-                <Compass className="h-5 w-5" aria-hidden="true" />
-              </span>
-              <h2 className="font-display text-xl font-semibold text-texto lg:text-2xl">
-                Comece pela sua jornada
-              </h2>
-              <p className="text-sm text-suave">
-                Em 4 passos você define quanto da renda quer guardar e quanto
-                vai investir por mês. Depois é só acompanhar aqui.
-              </p>
-              <Link
-                href="/financas/jornada"
-                className="gradiente-marca mt-1 flex h-11 w-fit items-center gap-2 rounded-full px-6 text-sm font-semibold text-white hover:brightness-110"
-              >
-                Montar meu plano{" "}
-                <ArrowRight className="h-4 w-4" aria-hidden="true" />
-              </Link>
-            </div>
-            <ol className="grid grid-cols-2 gap-2">
-              {[
-                ["Ponto de partida", "Quanto entra, sai e sobra"],
-                ["Quanto guardar", "% da renda e o ritmo"],
-                ["Plano de aporte", "Valor, prazo e objetivo"],
-                ["Revisão", "Ativar e acompanhar"],
-              ].map(([t, d], i) => (
-                <li
-                  key={t}
-                  className="flex items-start gap-2.5 rounded-xl bg-superficie-2/60 p-3"
-                >
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-ciano/15 text-xs font-bold text-ciano">
-                    {i + 1}
-                  </span>
-                  <span>
-                    <span className="block text-sm font-semibold text-texto">
-                      {t}
-                    </span>
-                    <span className="block text-xs text-suave">{d}</span>
-                  </span>
-                </li>
-              ))}
-            </ol>
-          </div>
-        </div>
-      ) : null}
 
       {/* Diagnóstico logo no início e a assistente ao lado */}
       <div className="grid gap-4 lg:grid-cols-2 lg:gap-6">
@@ -461,10 +389,10 @@ export function PainelFinancas(p: Props) {
               plano
             </p>
             <Link
-              href="/financas/jornada"
+              href={`/financas/jornada?plano=${p.planoId}`}
               className="flex h-9 items-center gap-1.5 rounded-full border border-linha px-3.5 text-xs font-semibold text-texto hover:bg-superficie-2"
             >
-              Refazer plano
+              Editar plano
             </Link>
           </div>
           {p.metaGuardar && p.escada ? (

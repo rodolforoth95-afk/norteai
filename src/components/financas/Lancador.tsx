@@ -9,7 +9,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   Camera,
   CheckCircle2,
@@ -17,6 +17,7 @@ import {
   Keyboard,
   Loader2,
   Mic,
+  Minus,
   Plus,
   Square,
   X,
@@ -80,6 +81,7 @@ export function ProvedorLancador({
   children: ReactNode;
 }) {
   const router = useRouter();
+  const naFinancas = usePathname() === "/financas";
   const [aberto, setAberto] = useState(false);
   const [menu, setMenu] = useState(false);
   const [modo, setModo] = useState<Modo>("texto");
@@ -182,8 +184,43 @@ export function ProvedorLancador({
     <ContextoLancador.Provider value={{ abrir }}>
       {children}
 
+      {/* Em Finanças: barra fixa embaixo com Receita e Despesa (mais claro que o botão +) */}
+      {naFinancas ? (
+        <div className="fixed inset-x-0 bottom-[calc(6.25rem+env(safe-area-inset-bottom))] z-40 flex justify-center px-4 lg:bottom-6 lg:left-[4.5rem] lg:menu-aberto:left-60">
+          <div className="flex w-full max-w-md items-center gap-1.5 rounded-full border border-linha bg-superficie/95 p-1.5 shadow-[0_18px_44px_-14px_rgb(0_0_0/0.45)] backdrop-blur">
+            <button
+              type="button"
+              onClick={() => abrir("texto", { tipo: "receita" })}
+              className="flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-menta/12 text-sm font-semibold text-texto transition hover:bg-menta/20 active:scale-[0.98]"
+            >
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-menta text-white">
+                <Plus className="h-3.5 w-3.5" strokeWidth={3} aria-hidden="true" />
+              </span>
+              Receita
+            </button>
+            <button
+              type="button"
+              onClick={() => abrir("texto", { tipo: "despesa" })}
+              className="flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-erro/12 text-sm font-semibold text-texto transition hover:bg-erro/20 active:scale-[0.98]"
+            >
+              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-erro text-white">
+                <Minus className="h-3.5 w-3.5" strokeWidth={3} aria-hidden="true" />
+              </span>
+              Despesa
+            </button>
+            <span className="mx-0.5 h-7 w-px bg-linha" aria-hidden="true" />
+            <button type="button" onClick={() => abrir("camera")} aria-label="Lançar pela foto do comprovante" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-ciano hover:bg-superficie-2">
+              <Camera className="h-5 w-5" aria-hidden="true" />
+            </button>
+            <button type="button" onClick={() => abrir("voz")} aria-label="Lançar falando" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-ciano hover:bg-superficie-2">
+              <Mic className="h-5 w-5" aria-hidden="true" />
+            </button>
+          </div>
+        </div>
+      ) : null}
+
       {/* Botão flutuante e suas três opções */}
-      {menu ? (
+      {menu && !naFinancas ? (
         <button
           type="button"
           className="fixed inset-0 z-30 cursor-default bg-[rgb(3_6_20/0.35)] backdrop-blur-[2px]"
@@ -191,7 +228,7 @@ export function ProvedorLancador({
           onClick={() => setMenu(false)}
         />
       ) : null}
-      <div className="fixed bottom-[calc(6.25rem+env(safe-area-inset-bottom))] right-4 z-40 flex flex-col items-end gap-2.5 lg:bottom-8 lg:right-8">
+      <div className={`fixed bottom-[calc(6.25rem+env(safe-area-inset-bottom))] right-4 z-40 flex-col items-end gap-2.5 lg:bottom-8 lg:right-8 ${naFinancas ? "hidden" : "flex"}`}>
         {menu ? (
           <>
             {[
@@ -253,7 +290,7 @@ export function ProvedorLancador({
       {aviso ? (
         <div
           role="status"
-          className="animate-subir fixed inset-x-4 bottom-[calc(10.5rem+env(safe-area-inset-bottom))] z-40 mx-auto flex max-w-md items-center gap-3 rounded-2xl border border-linha bg-superficie px-4 py-3 text-sm shadow-[0_18px_44px_-14px_rgb(0_0_0/0.5)] lg:bottom-28"
+          className="animate-subir fixed inset-x-4 bottom-[calc(11rem+env(safe-area-inset-bottom))] z-40 mx-auto flex max-w-md items-center gap-3 rounded-2xl border border-linha bg-superficie px-4 py-3 text-sm shadow-[0_18px_44px_-14px_rgb(0_0_0/0.5)] lg:bottom-28"
         >
           <CheckCircle2
             className="h-5 w-5 shrink-0 text-menta"

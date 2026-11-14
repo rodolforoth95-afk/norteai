@@ -22,7 +22,6 @@ import {
 } from "lucide-react";
 import {
   PASSO_RITMO,
-  nomeMes,
   planejar,
   type Categoria,
   type Diagnostico,
@@ -31,13 +30,7 @@ import {
   type Plano,
   type RitmoGuardar,
 } from "@/lib/dominio/financas";
-import {
-  encerrarMeta,
-  encerrarMetaGuardar,
-  gerarPlanoIA,
-  salvarMeta,
-  salvarMetaGuardar,
-} from "@/app/acoes-financas";
+import { excluirPlano, gerarPlanoIA, salvarPlano } from "@/app/acoes-financas";
 import { Mascote } from "@/components/Logo";
 import { IconeCategoria } from "@/components/financas/IconeCategoria";
 import { brl0, lerValor } from "@/components/financas/formato";
@@ -160,7 +153,6 @@ export function JornadaPlano({
     0,
     Math.ceil((alvo - Math.min(rendaAtual, alvo)) / PASSO_RITMO[ritmo].passo),
   );
-  const temPlano = Boolean(meta || metaGuardar);
 
   if (!temLancamentos) {
     return (
@@ -186,31 +178,33 @@ export function JornadaPlano({
   function ativar() {
     setErro(null);
     iniciar(async () => {
-      const g = await salvarMetaGuardar({ alvoPct: alvo, ritmo });
-      if ("erro" in g) return setErro(g.erro);
-      const m = await salvarMeta({
+      const r = await salvarPlano({
+        id: meta?.id,
         nome: nomeMeta.trim() || `${brl0(valorMensal)}/mês para ${destino}`,
         destino,
         valorMensal,
         meses,
         dias,
+        alvoPct: alvo,
+        ritmo,
       });
-      if ("erro" in m) return setErro(m.erro);
-      router.push("/financas");
+      if ("erro" in r) return setErro(r.erro);
+      router.push(`/financas?p=${r.id ?? "sem"}`);
       router.refresh();
     });
   }
 
-  function encerrarTudo() {
+  function excluir() {
     if (
+      !meta ||
       !window.confirm(
-        "Encerrar o seu plano atual? A meta de guardar e o plano de aporte deixam de aparecer em Finanças. Seus lançamentos continuam.",
+        `Excluir o plano "${meta.nome}"? Seus lançamentos continuam.`,
       )
     )
       return;
     iniciar(async () => {
-      if (meta) await encerrarMeta(meta.id);
-      if (metaGuardar) await encerrarMetaGuardar();
+      const r = await excluirPlano(meta.id);
+      if ("erro" in r) return setErro(r.erro);
       router.push("/financas");
       router.refresh();
     });
@@ -732,19 +726,21 @@ export function JornadaPlano({
                 </button>
               ) : null}
             </div>
-            {temPlano ? (
+            {meta ? (
               <p className="text-xs text-suave">
-                Ativar substitui o plano atual
-                {meta
-                  ? ` (desde ${nomeMes(meta.inicio).toLowerCase()})`
-                  : ""}.{" "}
+                Salvar atualiza o plano “{meta.nome}”
+                {metaGuardar &&
+                (metaGuardar.alvoPct !== alvo || metaGuardar.ritmo !== ritmo)
+                  ? " e reinicia a escada da meta de guardar"
+                  : ""}
+                .{" "}
                 <button
                   type="button"
-                  onClick={encerrarTudo}
+                  onClick={excluir}
                   disabled={pendente}
                   className="font-semibold text-suave underline hover:text-erro"
                 >
-                  Ou encerre o plano sem criar outro
+                  Excluir este plano
                 </button>
               </p>
             ) : null}
@@ -798,7 +794,7 @@ export function JornadaPlano({
               ) : (
                 <CheckCircle2 className="h-4 w-4" aria-hidden="true" />
               )}
-              Ativar meu plano
+              {meta ? "Salvar plano" : "Ativar meu plano"}
             </button>
           )}
         </div>

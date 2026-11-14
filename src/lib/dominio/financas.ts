@@ -51,6 +51,9 @@ export type MetaEconomia = {
   cortes: CorteCategoria[];
   ativa: boolean;
   criada_em: string;
+  // Cada plano tem a sua meta de guardar; planos excluídos ficam arquivados.
+  guardar?: MetaGuardar | null;
+  arquivada?: boolean;
 };
 
 // Meta gradual de quanto guardar da renda: sobe alguns pontos por mês até o alvo.
@@ -64,8 +67,11 @@ export type FinancasDados = {
   regras: Regra[];
   metas: MetaEconomia[];
   metaGuardar?: MetaGuardar | null;
+  planosV?: boolean;
   atualizada_em: string;
 };
+
+export const planosDe = (d: Pick<FinancasDados, "metas">) => d.metas.filter((m) => !m.arquivada);
 
 // --- Categorias padrão ---------------------------------------------------------------
 
@@ -533,7 +539,7 @@ export function insights(params: { resumo: ResumoMes; anterior: ResumoMes; orcam
         tom: "alerta",
         titulo: `${nome(o.categoriaId)} passou do combinado`,
         texto: `Foram ${brl(o.gasto)} de ${brl(o.limite)} planejados. Compensar em outra categoria até o fim do mês mantém o aporte de ${meta ? brl(meta.valorMensal) : "este mês"}.`,
-        acao: { rotulo: "Ver plano", href: "/financas/jornada" },
+        acao: { rotulo: "Ver plano", href: meta ? `/financas/jornada?plano=${meta.id}` : "/financas/jornada" },
       });
     } else {
       lista.push({
@@ -569,7 +575,7 @@ export function insights(params: { resumo: ResumoMes; anterior: ResumoMes; orcam
       tom: "alerta",
       titulo: `Saídas maiores que entradas em ${brl(Math.abs(resumo.saldo))}`,
       texto: "Antes de pensar em aportes, o primeiro passo é zerar essa diferença. O seu plano mostra onde dá para cortar.",
-      acao: { rotulo: "Ver diagnóstico", href: "/financas/jornada" },
+      acao: { rotulo: "Ver diagnóstico", href: meta ? `/financas/jornada?plano=${meta.id}` : "/financas/jornada" },
     });
   }
   return lista.slice(0, 3);
