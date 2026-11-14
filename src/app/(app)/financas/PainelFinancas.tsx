@@ -5,13 +5,11 @@ import { useMemo, useState } from "react";
 import {
   ArrowDownRight,
   ArrowUpRight,
-  CheckCircle2,
   ChevronLeft,
   ChevronRight,
   Layers,
   PiggyBank,
   Repeat,
-  Target,
   Wallet,
   X,
 } from "lucide-react";
@@ -52,7 +50,8 @@ import { BotaoExemploFinancas } from "./BotoesExemplo";
 import { DRE } from "./DRE";
 import { Evolucao } from "./Evolucao";
 import { ChatFinancas } from "./ChatFinancas";
-import { DesafioGuardar } from "./DesafioGuardar";
+import { AbasFinancas } from "./AbasFinancas";
+import { PlanoEmFoco } from "./PlanoEmFoco";
 import { DiagnosticoResumo } from "./DiagnosticoResumo";
 import { COR } from "@/components/paleta";
 
@@ -92,7 +91,7 @@ type Props = {
   diagnostico: Diagnostico;
   metaGuardar: MetaGuardar | null;
   planoId: string | null;
-  planoParam: string;
+  totalPlanos: number;
   escada: EscadaGuardar | null;
   rendaAtual: number;
   primeiroNome: string;
@@ -112,7 +111,6 @@ function variacao(atual: number, antes: number) {
 
 export function PainelFinancas(p: Props) {
   const { abrir } = useLancador();
-  const temPlano = Boolean(p.meta || p.metaGuardar);
   const tema = useCoresTema();
   const [filtroCategoria, setFiltroCategoria] = useState<string | null>(null);
   const [filtroTipo, setFiltroTipo] = useState<"todos" | "despesa" | "receita">(
@@ -216,32 +214,16 @@ export function PainelFinancas(p: Props) {
   return (
     <section className="flex flex-col gap-5 pb-16 lg:gap-6 lg:pb-20">
       {/* Cabeçalho com o mês */}
-      <header className="flex flex-wrap items-end justify-between gap-3">
+      <header className="flex flex-col gap-4">
         <div>
           <h1 className="font-display text-[1.75rem] font-bold tracking-[-0.025em] text-texto lg:text-[2.25rem]">
             Finanças
           </h1>
           <p className="mt-0.5 text-sm text-suave">
-            Receitas, despesas e quanto sobra para investir.
+            Controle financeiro: tudo o que entra e sai, mês a mês.
           </p>
         </div>
-        <Link
-          href="/financas"
-          className="flex h-11 max-w-full items-center gap-2 rounded-full border border-linha bg-superficie py-1 pl-1 pr-4 text-sm font-semibold text-texto hover:bg-superficie-2"
-        >
-          <span className="degrade-ativo flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-white">
-            <Target className="h-4 w-4" aria-hidden="true" />
-          </span>
-          <span className="min-w-0">
-            <span className="block text-[10px] font-medium uppercase tracking-wider text-suave">
-              Plano
-            </span>
-            <span className="block truncate leading-tight">
-              {p.meta ? p.meta.nome : "Sem plano"}
-            </span>
-          </span>
-          <span className="ml-1 text-xs font-semibold text-ciano">Trocar</span>
-        </Link>
+        <AbasFinancas ativa="controle" planos={p.totalPlanos} />
       </header>
 
       <div className="-mt-1 flex w-full flex-wrap items-center justify-between gap-2">
@@ -250,7 +232,7 @@ export function PainelFinancas(p: Props) {
           aria-label="Mês"
         >
           <Link
-            href={`/financas?mes=${somarMeses(p.mes, -1)}&p=${p.planoParam}`}
+            href={`/financas?mes=${somarMeses(p.mes, -1)}`}
             className="flex h-9 w-9 items-center justify-center rounded-lg text-suave hover:bg-superficie-2 hover:text-texto"
             aria-label="Mês anterior"
           >
@@ -260,7 +242,7 @@ export function PainelFinancas(p: Props) {
             {nomeMes(p.mes)}
           </span>
           <Link
-            href={`/financas?mes=${somarMeses(p.mes, 1)}&p=${p.planoParam}`}
+            href={`/financas?mes=${somarMeses(p.mes, 1)}`}
             className={`flex h-9 w-9 items-center justify-center rounded-lg text-suave hover:bg-superficie-2 hover:text-texto ${p.mes >= somarMeses(p.mesAtual, 12) ? "pointer-events-none opacity-30" : ""}`}
             aria-label="Próximo mês"
           >
@@ -378,124 +360,14 @@ export function PainelFinancas(p: Props) {
         ))}
       </div>
 
-      {temPlano ? (
-        <div
-          id="meu-plano"
-          className="painel flex scroll-mt-6 flex-col gap-6 p-5 lg:p-6"
-        >
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-ciano">
-              <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" /> Meu
-              plano
-            </p>
-            <Link
-              href={`/financas/jornada?plano=${p.planoId}`}
-              className="flex h-9 items-center gap-1.5 rounded-full border border-linha px-3.5 text-xs font-semibold text-texto hover:bg-superficie-2"
-            >
-              Editar plano
-            </Link>
-          </div>
-          {p.metaGuardar && p.escada ? (
-            <DesafioGuardar
-              meta={p.metaGuardar}
-              escada={p.escada}
-              categorias={p.categorias}
-            />
-          ) : null}
-          {p.metaGuardar && p.escada && p.meta ? (
-            <hr className="border-linha" />
-          ) : null}
-          {p.meta ? (
-            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)]">
-              <div className="flex flex-col gap-4">
-                <div>
-                  <h2 className="font-display text-base font-semibold text-texto">
-                    {p.meta ? p.meta.nome : "Plano de aporte"}
-                  </h2>
-                  <p className="text-xs text-suave">
-                    {p.meta
-                      ? `${brl0(p.meta.valorMensal)} por mês para ${p.meta.destino}, durante ${p.meta.meses} meses`
-                      : "Diga quanto quer investir por mês e eu monto os limites por categoria"}
-                  </p>
-                </div>
-                {p.progresso && p.meta ? (
-                  <>
-                    <div>
-                      <div className="flex items-baseline justify-between gap-2">
-                        <span className="font-display text-2xl font-semibold tabular-nums text-texto">
-                          {brl0(p.progresso.economizado)}
-                        </span>
-                        <span className="text-xs tabular-nums text-suave">
-                          de {brl0(p.progresso.objetivo)}
-                        </span>
-                      </div>
-                      <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-superficie-2">
-                        <div
-                          className="degrade-ativo h-full rounded-full"
-                          style={{ width: `${Math.max(2, p.progresso.pct)}%` }}
-                        />
-                      </div>
-                      <p className="mt-1.5 text-xs text-suave">
-                        {Math.round(p.progresso.pct)}% · mês{" "}
-                        {p.progresso.mesesPassados} de {p.meta.meses}
-                      </p>
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div className="rounded-xl bg-superficie-2/60 p-3">
-                        <p className="text-[11px] text-suave">Já aportado</p>
-                        <p className="font-display text-base font-semibold tabular-nums text-texto">
-                          {brl0(p.progresso.aportado)}
-                        </p>
-                      </div>
-                      <div className="rounded-xl bg-gravata/10 p-3">
-                        <p className="text-[11px] text-suave">
-                          Livre para investir
-                        </p>
-                        <p className="font-display text-base font-semibold tabular-nums text-gravata">
-                          {brl0(p.progresso.livreParaAportar)}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                      {p.progresso.livreParaAportar >= 50 ? (
-                        <Link
-                          href="/carteira/adicionar"
-                          className="gradiente-marca flex h-10 items-center justify-center rounded-full px-4 text-sm font-semibold text-white hover:brightness-110"
-                        >
-                          Registrar aporte
-                        </Link>
-                      ) : null}
-                    </div>
-                  </>
-                ) : null}
-              </div>
-              <div className="flex flex-col gap-3 lg:border-l lg:border-linha lg:pl-6">
-                <p className="text-xs font-semibold text-suave">
-                  Limites do mês por categoria
-                </p>
-                {p.orcamento.length ? (
-                  <ul className="grid grid-cols-3 gap-x-2 gap-y-5">
-                    {p.orcamento.map((o) => (
-                      <li key={o.categoriaId}>
-                        <AnelOrcamento
-                          item={o}
-                          categoria={cat(o.categoriaId)}
-                        />
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="rounded-xl border border-dashed border-linha p-4 text-sm text-suave">
-                    {p.meta
-                      ? "Seu plano não precisou de cortes: a sobra já cobre a meta."
-                      : "Os limites aparecem aqui quando você ativar um plano."}
-                  </p>
-                )}
-              </div>
-            </div>
-          ) : null}
-        </div>
-      ) : null}
+      <PlanoEmFoco
+        meta={p.meta}
+        planoId={p.planoId}
+        escada={p.escada}
+        progresso={p.progresso}
+        orcamento={p.orcamento}
+        totalPlanos={p.totalPlanos}
+      />
 
       <Evolucao dados={p.evolucao} />
 
@@ -885,77 +757,5 @@ export function PainelFinancas(p: Props) {
         </div>
       ) : null}
     </section>
-  );
-}
-
-// Termômetro em anel: a volta enche com o gasto e muda de cor (verde, laranja, vermelho).
-function AnelOrcamento({
-  item,
-  categoria,
-}: {
-  item: ItemOrcamento;
-  categoria?: Categoria;
-}) {
-  const raio = 26;
-  const volta = 2 * Math.PI * raio;
-  const fracao = Math.min(1, item.pct / 100);
-  const cor =
-    item.estado === "estourou"
-      ? "var(--baixa)"
-      : item.estado === "atencao"
-        ? "var(--gravata)"
-        : "var(--alta)";
-  const resta = item.limite - item.gasto;
-  return (
-    <div
-      className="flex flex-col items-center gap-1.5 text-center"
-      role="meter"
-      aria-valuenow={Math.round(item.pct)}
-      aria-valuemin={0}
-      aria-valuemax={100}
-      aria-label={`${categoria?.nome ?? "Outros"}: ${brl0(item.gasto)} de ${brl0(item.limite)}`}
-    >
-      <span className="relative flex h-[68px] w-[68px] items-center justify-center">
-        <svg
-          viewBox="0 0 64 64"
-          className="absolute inset-0 h-full w-full -rotate-90"
-          aria-hidden="true"
-        >
-          <circle
-            cx="32"
-            cy="32"
-            r={raio}
-            fill="none"
-            stroke="var(--superficie-2)"
-            strokeWidth="5"
-          />
-          <circle
-            cx="32"
-            cy="32"
-            r={raio}
-            fill="none"
-            stroke={cor}
-            strokeWidth="5"
-            strokeLinecap="round"
-            strokeDasharray={volta}
-            strokeDashoffset={volta * (1 - fracao)}
-            className="transition-[stroke-dashoffset] duration-700"
-          />
-        </svg>
-        <IconeCategoria
-          icone={categoria?.icone ?? "Tag"}
-          cor={categoria?.cor ?? "#94A3B8"}
-          tamanho={36}
-        />
-      </span>
-      <span
-        className={`text-sm font-semibold tabular-nums ${resta < 0 ? "text-erro" : "text-texto"}`}
-      >
-        {resta < 0 ? `−${brl0(-resta)}` : brl0(resta)}
-      </span>
-      <span className="-mt-1 text-[11px] leading-tight text-suave">
-        {resta < 0 ? "acima" : "restam"} · {categoria?.nome ?? "Outros"}
-      </span>
-    </div>
   );
 }

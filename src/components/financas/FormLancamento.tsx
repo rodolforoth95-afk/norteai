@@ -1,13 +1,34 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
-import { CalendarDays, Check, Loader2, Repeat, Sparkles, Trash2 } from "lucide-react";
-import { sugerirCategoria, type Categoria, type Meio, type Regra, type TipoLancamento } from "@/lib/dominio/financas";
+import {
+  CalendarDays,
+  Check,
+  Loader2,
+  Repeat,
+  Sparkles,
+  Trash2,
+} from "lucide-react";
+import {
+  sugerirCategoria,
+  type Categoria,
+  type Meio,
+  type Regra,
+  type TipoLancamento,
+} from "@/lib/dominio/financas";
 import { excluirLancamento, salvarLancamento } from "@/app/acoes-financas";
 import { IconeCategoria } from "./IconeCategoria";
 import { MEIOS, brl, lerValor, valorParaTexto } from "./formato";
 
-export type ItemHistorico = { descricao: string; estabelecimento: string | null; categoriaId: string; tipo: TipoLancamento; meio: Meio | null; valor: number; usos: number };
+export type ItemHistorico = {
+  descricao: string;
+  estabelecimento: string | null;
+  categoriaId: string;
+  tipo: TipoLancamento;
+  meio: Meio | null;
+  valor: number;
+  usos: number;
+};
 
 export type ValoresLancamento = {
   id?: string;
@@ -24,7 +45,12 @@ export type ValoresLancamento = {
   parcela?: { atual: number; total: number } | null;
 };
 
-export type ContextoLancamento = { categorias: Categoria[]; regras: Regra[]; historico: ItemHistorico[]; hoje: string };
+export type ContextoLancamento = {
+  categorias: Categoria[];
+  regras: Regra[];
+  historico: ItemHistorico[];
+  hoje: string;
+};
 
 function deslocar(hoje: string, dias: number) {
   const d = new Date(`${hoje}T12:00:00`);
@@ -49,8 +75,12 @@ export function FormLancamento({
   const [tipo, setTipo] = useState<TipoLancamento>(inicial.tipo);
   const [valorTexto, setValorTexto] = useState(valorParaTexto(inicial.valor));
   const [descricao, setDescricao] = useState(inicial.descricao);
-  const [estabelecimento, setEstabelecimento] = useState(inicial.estabelecimento);
-  const [categoriaEscolhida, setCategoriaEscolhida] = useState<string | null>(inicial.categoriaId);
+  const [estabelecimento, setEstabelecimento] = useState(
+    inicial.estabelecimento,
+  );
+  const [categoriaEscolhida, setCategoriaEscolhida] = useState<string | null>(
+    inicial.categoriaId,
+  );
   const [data, setData] = useState(inicial.data);
   const [meio, setMeio] = useState<Meio | null>(inicial.meio);
   const [parcelas, setParcelas] = useState(inicial.parcelas);
@@ -64,20 +94,48 @@ export function FormLancamento({
 
   const doTipo = categorias.filter((c) => c.tipo === tipo);
   const sugestao = useMemo(
-    () => (descricao.trim().length >= 2 ? sugerirCategoria(`${estabelecimento ?? ""} ${descricao}`, tipo, { regras, categorias }) : null),
+    () =>
+      descricao.trim().length >= 2
+        ? sugerirCategoria(`${estabelecimento ?? ""} ${descricao}`, tipo, {
+            regras,
+            categorias,
+          })
+        : null,
     [descricao, estabelecimento, tipo, regras, categorias],
   );
-  const categoriaId = categoriaEscolhida && doTipo.some((c) => c.id === categoriaEscolhida) ? categoriaEscolhida : (sugestao?.categoriaId ?? null);
+  const categoriaId =
+    categoriaEscolhida && doTipo.some((c) => c.id === categoriaEscolhida)
+      ? categoriaEscolhida
+      : (sugestao?.categoriaId ?? null);
   const categoria = categorias.find((c) => c.id === categoriaId) ?? null;
 
   const termo = descricao.trim().toLowerCase();
-  const sugestoes = termo.length >= 1 ? historico.filter((h) => h.tipo === tipo && h.descricao.toLowerCase().includes(termo) && h.descricao.toLowerCase() !== termo).slice(0, 5) : [];
+  const sugestoes =
+    termo.length >= 1
+      ? historico
+          .filter(
+            (h) =>
+              h.tipo === tipo &&
+              h.descricao.toLowerCase().includes(termo) &&
+              h.descricao.toLowerCase() !== termo,
+          )
+          .slice(0, 5)
+      : [];
 
   // Categorias em ordem: a sugerida primeiro, depois as mais usadas no histórico.
   const usos = new Map<string, number>();
-  for (const h of historico) usos.set(h.categoriaId, (usos.get(h.categoriaId) ?? 0) + h.usos);
-  const principais = doTipo.filter((c) => !c.paiId).sort((a, b) => (b.id === categoriaId ? 1 : 0) - (a.id === categoriaId ? 1 : 0) || (usos.get(b.id) ?? 0) - (usos.get(a.id) ?? 0));
-  const subcategorias = categoria ? doTipo.filter((c) => c.paiId === (categoria.paiId ?? categoria.id)) : [];
+  for (const h of historico)
+    usos.set(h.categoriaId, (usos.get(h.categoriaId) ?? 0) + h.usos);
+  const principais = doTipo
+    .filter((c) => !c.paiId)
+    .sort(
+      (a, b) =>
+        (b.id === categoriaId ? 1 : 0) - (a.id === categoriaId ? 1 : 0) ||
+        (usos.get(b.id) ?? 0) - (usos.get(a.id) ?? 0),
+    );
+  const subcategorias = categoria
+    ? doTipo.filter((c) => c.paiId === (categoria.paiId ?? categoria.id))
+    : [];
 
   const valor = lerValor(valorTexto);
   const dataEhOutra = data !== hoje && data !== deslocar(hoje, -1);
@@ -105,10 +163,16 @@ export function FormLancamento({
       valor,
       data,
       descricao: descricao.trim(),
-      estabelecimento: estabelecimento?.trim() || (inicial.origem !== "manual" ? null : descricao.trim()),
+      estabelecimento:
+        estabelecimento?.trim() ||
+        (inicial.origem !== "manual" ? null : descricao.trim()),
       categoriaId,
       meio,
-      parcelas: editando ? 1 : meio === "credito" && tipo === "despesa" ? parcelas : 1,
+      parcelas: editando
+        ? 1
+        : meio === "credito" && tipo === "despesa"
+          ? parcelas
+          : 1,
       recorrente: parcelas > 1 && !editando ? false : recorrente,
       origem: inicial.origem,
       serie,
@@ -128,7 +192,14 @@ export function FormLancamento({
   async function excluir() {
     if (!inicial.id) return;
     const temSerie = Boolean(inicial.parcela);
-    if (!window.confirm(temSerie && serie ? "Excluir todas as parcelas desta compra?" : "Excluir este lançamento?")) return;
+    if (
+      !window.confirm(
+        temSerie && serie
+          ? "Excluir todas as parcelas desta compra?"
+          : "Excluir este lançamento?",
+      )
+    )
+      return;
     setSalvando(true);
     const r = await excluirLancamento(inicial.id, serie ? "serie" : "este");
     setSalvando(false);
@@ -140,7 +211,10 @@ export function FormLancamento({
     <form onSubmit={salvar} className="flex flex-col gap-5">
       {destaque ? (
         <div className="flex items-start gap-3 rounded-2xl border border-ciano/30 bg-ciano/8 p-3.5">
-          <Sparkles className="mt-0.5 h-4 w-4 shrink-0 text-ciano" aria-hidden="true" />
+          <Sparkles
+            className="mt-0.5 h-4 w-4 shrink-0 text-ciano"
+            aria-hidden="true"
+          />
           <div className="text-sm">
             <p className="font-semibold text-texto">{destaque.titulo}</p>
             <p className="mt-0.5 text-suave">{destaque.texto}</p>
@@ -150,7 +224,11 @@ export function FormLancamento({
 
       {/* Tipo e valor */}
       <div className="flex flex-col items-center gap-3">
-        <div className="flex rounded-full border border-linha bg-superficie-2 p-1" role="radiogroup" aria-label="Tipo">
+        <div
+          className="flex rounded-full border border-linha bg-superficie-2 p-1"
+          role="radiogroup"
+          aria-label="Tipo"
+        >
           {(["despesa", "receita"] as const).map((t) => (
             <button
               key={t}
@@ -182,14 +260,18 @@ export function FormLancamento({
         </label>
         {meio === "credito" && tipo === "despesa" && parcelas > 1 && valor ? (
           <p className="-mt-2 text-xs text-suave">
-            {parcelas}x de {brl(valor / parcelas)} a partir de {data.slice(8, 10)}/{data.slice(5, 7)}
+            {parcelas}x de {brl(valor / parcelas)} a partir de{" "}
+            {data.slice(8, 10)}/{data.slice(5, 7)}
           </p>
         ) : null}
       </div>
 
       {/* Descrição com autocompletar */}
       <div className="relative">
-        <label htmlFor="fin-descricao" className="mb-1.5 block text-xs font-semibold text-suave">
+        <label
+          htmlFor="fin-descricao"
+          className="mb-1.5 block text-xs font-semibold text-suave"
+        >
           Descrição ou estabelecimento
         </label>
         <input
@@ -204,19 +286,41 @@ export function FormLancamento({
           onBlur={() => setTimeout(() => setMostrarSugestoes(false), 150)}
           maxLength={60}
           autoComplete="off"
-          placeholder={tipo === "despesa" ? "Ex.: iFood, Posto Ipiranga, Aluguel" : "Ex.: Salário, Dividendos, Freela"}
+          placeholder={
+            tipo === "despesa"
+              ? "Ex.: iFood, Posto Ipiranga, Aluguel"
+              : "Ex.: Salário, Dividendos, Freela"
+          }
           className="h-12 w-full rounded-xl border border-linha bg-superficie-2 px-3.5 text-[15px] text-texto outline-none transition placeholder:text-suave/70 focus:border-ciano"
         />
         {mostrarSugestoes && sugestoes.length ? (
-          <ul className="absolute inset-x-0 top-full z-10 mt-1 overflow-hidden rounded-xl border border-linha bg-superficie shadow-[0_18px_40px_-16px_rgb(0_0_0/0.45)]" role="listbox">
+          <ul
+            className="absolute inset-x-0 top-full z-10 mt-1 overflow-hidden rounded-xl border border-linha bg-superficie shadow-[0_18px_40px_-16px_rgb(0_0_0/0.45)]"
+            role="listbox"
+          >
             {sugestoes.map((h) => {
               const cat = categorias.find((c) => c.id === h.categoriaId);
               return (
                 <li key={`${h.descricao}-${h.categoriaId}`}>
-                  <button type="button" onMouseDown={(e) => e.preventDefault()} onClick={() => escolherHistorico(h)} className="flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm hover:bg-superficie-2">
-                    {cat ? <IconeCategoria icone={cat.icone} cor={cat.cor} tamanho={28} /> : null}
-                    <span className="min-w-0 flex-1 truncate font-medium text-texto">{h.descricao}</span>
-                    <span className="text-xs tabular-nums text-suave">{brl(h.valor)}</span>
+                  <button
+                    type="button"
+                    onMouseDown={(e) => e.preventDefault()}
+                    onClick={() => escolherHistorico(h)}
+                    className="flex w-full items-center gap-3 px-3 py-2.5 text-left text-sm hover:bg-superficie-2"
+                  >
+                    {cat ? (
+                      <IconeCategoria
+                        icone={cat.icone}
+                        cor={cat.cor}
+                        tamanho={28}
+                      />
+                    ) : null}
+                    <span className="min-w-0 flex-1 truncate font-medium text-texto">
+                      {h.descricao}
+                    </span>
+                    <span className="text-xs tabular-nums text-suave">
+                      {brl(h.valor)}
+                    </span>
                   </button>
                 </li>
               );
@@ -236,7 +340,11 @@ export function FormLancamento({
             </span>
           ) : null}
         </p>
-        <div className="-mx-1 flex flex-wrap gap-1.5 px-1" role="radiogroup" aria-label="Categoria">
+        <div
+          className="-mx-1 flex flex-wrap gap-1.5 px-1"
+          role="radiogroup"
+          aria-label="Categoria"
+        >
           {principais.map((c) => {
             const ativa = c.id === categoriaId || c.id === categoria?.paiId;
             return (
@@ -247,7 +355,14 @@ export function FormLancamento({
                 aria-checked={ativa}
                 onClick={() => setCategoriaEscolhida(c.id)}
                 className={`flex min-h-9 items-center gap-1.5 rounded-full border py-1 pl-1 pr-3 text-[13px] font-medium transition ${ativa ? "border-transparent text-texto" : "border-linha text-suave hover:text-texto"}`}
-                style={ativa ? { background: `${c.cor}26`, boxShadow: `inset 0 0 0 1.5px ${c.cor}` } : undefined}
+                style={
+                  ativa
+                    ? {
+                        background: `${c.cor}26`,
+                        boxShadow: `inset 0 0 0 1.5px ${c.cor}`,
+                      }
+                    : undefined
+                }
               >
                 <IconeCategoria icone={c.icone} cor={c.cor} tamanho={26} />
                 {c.nome}
@@ -261,7 +376,11 @@ export function FormLancamento({
               <button
                 key={s.id}
                 type="button"
-                onClick={() => setCategoriaEscolhida(s.id === categoriaId ? (s.paiId ?? s.id) : s.id)}
+                onClick={() =>
+                  setCategoriaEscolhida(
+                    s.id === categoriaId ? (s.paiId ?? s.id) : s.id,
+                  )
+                }
                 className={`min-h-8 rounded-full border px-3 text-xs font-medium ${s.id === categoriaId ? "border-ciano bg-ciano/10 text-texto" : "border-linha text-suave"}`}
               >
                 {s.nome}
@@ -289,10 +408,21 @@ export function FormLancamento({
                 {o.rotulo}
               </button>
             ))}
-            <label className={`relative flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-xl border text-sm font-medium ${dataEhOutra ? "border-ciano bg-ciano/10 text-texto" : "border-linha text-suave"}`}>
+            <label
+              className={`relative flex min-h-10 flex-1 items-center justify-center gap-1.5 rounded-xl border text-sm font-medium ${dataEhOutra ? "border-ciano bg-ciano/10 text-texto" : "border-linha text-suave"}`}
+            >
               <CalendarDays className="h-4 w-4" aria-hidden="true" />
-              {dataEhOutra ? `${data.slice(8, 10)}/${data.slice(5, 7)}` : "Outra"}
-              <input type="date" value={data} max={recorrente || parcelas > 1 ? undefined : hoje} onChange={(e) => e.target.value && setData(e.target.value)} className="absolute inset-0 opacity-0" aria-label="Escolher data" />
+              {dataEhOutra
+                ? `${data.slice(8, 10)}/${data.slice(5, 7)}`
+                : "Outra"}
+              <input
+                type="date"
+                value={data}
+                max={recorrente || parcelas > 1 ? undefined : hoje}
+                onChange={(e) => e.target.value && setData(e.target.value)}
+                className="absolute inset-0 opacity-0"
+                aria-label="Escolher data"
+              />
             </label>
           </div>
         </div>
@@ -335,21 +465,39 @@ export function FormLancamento({
               </select>
             </label>
           ) : null}
-          <label className={`flex items-center justify-between gap-3 text-sm ${parcelas > 1 ? "opacity-40" : ""}`}>
+          <label
+            className={`flex items-center justify-between gap-3 text-sm ${parcelas > 1 ? "opacity-40" : ""}`}
+          >
             <span className="flex items-center gap-2 font-medium text-texto">
               <Repeat className="h-4 w-4 text-suave" aria-hidden="true" />
               Repete todo mês
-              <span className="hidden text-xs font-normal text-suave sm:inline">aluguel, salário, assinaturas</span>
+              <span className="hidden text-xs font-normal text-suave sm:inline">
+                aluguel, salário, assinaturas
+              </span>
             </span>
-            <input type="checkbox" checked={recorrente} disabled={parcelas > 1} onChange={(e) => setRecorrente(e.target.checked)} className="h-5 w-5 accent-[var(--destaque)]" />
+            <input
+              type="checkbox"
+              checked={recorrente}
+              disabled={parcelas > 1}
+              onChange={(e) => setRecorrente(e.target.checked)}
+              className="h-5 w-5 accent-[var(--destaque)]"
+            />
           </label>
         </div>
       ) : inicial.parcela ? (
         <label className="flex items-center justify-between gap-3 rounded-2xl border border-linha bg-superficie-2/50 p-3.5 text-sm">
           <span className="text-texto">
-            Parcela {inicial.parcela.atual} de {inicial.parcela.total}. <span className="text-suave">Aplicar descrição e categoria a todas</span>
+            Parcela {inicial.parcela.atual} de {inicial.parcela.total}.{" "}
+            <span className="text-suave">
+              Aplicar descrição e categoria a todas
+            </span>
           </span>
-          <input type="checkbox" checked={serie} onChange={(e) => setSerie(e.target.checked)} className="h-5 w-5 accent-[var(--destaque)]" />
+          <input
+            type="checkbox"
+            checked={serie}
+            onChange={(e) => setSerie(e.target.checked)}
+            className="h-5 w-5 accent-[var(--destaque)]"
+          />
         </label>
       ) : (
         <label className="flex items-center justify-between gap-3 rounded-2xl border border-linha bg-superficie-2/50 p-3.5 text-sm">
@@ -357,25 +505,51 @@ export function FormLancamento({
             <Repeat className="h-4 w-4 text-suave" aria-hidden="true" />
             Repete todo mês
           </span>
-          <input type="checkbox" checked={recorrente} onChange={(e) => setRecorrente(e.target.checked)} className="h-5 w-5 accent-[var(--destaque)]" />
+          <input
+            type="checkbox"
+            checked={recorrente}
+            onChange={(e) => setRecorrente(e.target.checked)}
+            className="h-5 w-5 accent-[var(--destaque)]"
+          />
         </label>
       )}
 
       {erro ? (
-        <p role="alert" className="rounded-xl bg-erro/10 px-3 py-2 text-sm text-erro">
+        <p
+          role="alert"
+          className="rounded-xl bg-erro/10 px-3 py-2 text-sm text-erro"
+        >
           {erro}
         </p>
       ) : null}
 
       <div className="flex gap-2">
         {editando ? (
-          <button type="button" onClick={excluir} disabled={salvando} className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-linha text-erro hover:bg-erro/10" aria-label="Excluir lançamento">
+          <button
+            type="button"
+            onClick={excluir}
+            disabled={salvando}
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-linha text-erro hover:bg-erro/10"
+            aria-label="Excluir lançamento"
+          >
             <Trash2 className="h-5 w-5" aria-hidden="true" />
           </button>
         ) : null}
-        <button type="submit" disabled={salvando} className="gradiente-marca flex h-12 flex-1 items-center justify-center gap-2 rounded-full text-[15px] font-bold text-white transition hover:brightness-110 disabled:opacity-60">
-          {salvando ? <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" /> : <Check className="h-5 w-5" aria-hidden="true" />}
-          {editando ? "Salvar alterações" : valor ? `Lançar ${brl(valor)}` : "Lançar"}
+        <button
+          type="submit"
+          disabled={salvando}
+          className="gradiente-marca flex h-12 flex-1 items-center justify-center gap-2 rounded-full text-[15px] font-bold text-white transition hover:brightness-110 disabled:opacity-60"
+        >
+          {salvando ? (
+            <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
+          ) : (
+            <Check className="h-5 w-5" aria-hidden="true" />
+          )}
+          {editando
+            ? "Salvar alterações"
+            : valor
+              ? `Lançar ${brl(valor)}`
+              : "Lançar"}
         </button>
       </div>
     </form>

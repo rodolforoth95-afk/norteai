@@ -194,7 +194,11 @@ export function ProvedorLancador({
               className="flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-menta/12 text-sm font-semibold text-texto transition hover:bg-menta/20 active:scale-[0.98]"
             >
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-menta text-white">
-                <Plus className="h-3.5 w-3.5" strokeWidth={3} aria-hidden="true" />
+                <Plus
+                  className="h-3.5 w-3.5"
+                  strokeWidth={3}
+                  aria-hidden="true"
+                />
               </span>
               Receita
             </button>
@@ -204,15 +208,29 @@ export function ProvedorLancador({
               className="flex h-11 flex-1 items-center justify-center gap-2 rounded-full bg-erro/12 text-sm font-semibold text-texto transition hover:bg-erro/20 active:scale-[0.98]"
             >
               <span className="flex h-6 w-6 items-center justify-center rounded-full bg-erro text-white">
-                <Minus className="h-3.5 w-3.5" strokeWidth={3} aria-hidden="true" />
+                <Minus
+                  className="h-3.5 w-3.5"
+                  strokeWidth={3}
+                  aria-hidden="true"
+                />
               </span>
               Despesa
             </button>
             <span className="mx-0.5 h-7 w-px bg-linha" aria-hidden="true" />
-            <button type="button" onClick={() => abrir("camera")} aria-label="Lançar pela foto do comprovante" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-ciano hover:bg-superficie-2">
+            <button
+              type="button"
+              onClick={() => abrir("camera")}
+              aria-label="Lançar pela foto do comprovante"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-ciano hover:bg-superficie-2"
+            >
               <Camera className="h-5 w-5" aria-hidden="true" />
             </button>
-            <button type="button" onClick={() => abrir("voz")} aria-label="Lançar falando" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-ciano hover:bg-superficie-2">
+            <button
+              type="button"
+              onClick={() => abrir("voz")}
+              aria-label="Lançar falando"
+              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-ciano hover:bg-superficie-2"
+            >
               <Mic className="h-5 w-5" aria-hidden="true" />
             </button>
           </div>
@@ -228,7 +246,9 @@ export function ProvedorLancador({
           onClick={() => setMenu(false)}
         />
       ) : null}
-      <div className={`fixed bottom-[calc(6.25rem+env(safe-area-inset-bottom))] right-4 z-40 flex-col items-end gap-2.5 lg:bottom-8 lg:right-8 ${naFinancas ? "hidden" : "flex"}`}>
+      <div
+        className={`fixed bottom-[calc(6.25rem+env(safe-area-inset-bottom))] right-4 z-40 flex-col items-end gap-2.5 lg:bottom-8 lg:right-8 ${naFinancas ? "hidden" : "flex"}`}
+      >
         {menu ? (
           <>
             {[

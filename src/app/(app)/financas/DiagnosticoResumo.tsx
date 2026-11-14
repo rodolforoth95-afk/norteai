@@ -32,10 +32,10 @@ export function DiagnosticoResumo({
           </div>
         </div>
         <Link
-          href="/financas/jornada"
+          href="/financas/planos/novo"
           className="flex shrink-0 items-center gap-1 text-xs font-semibold text-ciano hover:underline"
         >
-          Detalhes <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+          Montar plano <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
         </Link>
       </div>
 

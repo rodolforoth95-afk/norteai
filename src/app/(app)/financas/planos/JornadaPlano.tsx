@@ -159,7 +159,7 @@ export function JornadaPlano({
       <div className="painel flex flex-col items-center gap-3 p-8 text-center">
         <Mascote className="h-12 w-12" />
         <p className="font-semibold text-texto">
-          Primeiro, conte para mim como entra e sai o seu dinheiro
+          Um plano começa pelo seu controle financeiro
         </p>
         <p className="max-w-sm text-sm text-suave">
           Lance suas receitas e despesas (ou carregue o exemplo em Finanças).
@@ -169,7 +169,7 @@ export function JornadaPlano({
           href="/financas"
           className="mt-1 flex h-11 items-center rounded-full border border-linha px-5 text-sm font-semibold text-texto hover:bg-superficie-2"
         >
-          Ir para Finanças
+          Ir para o controle financeiro
         </Link>
       </div>
     );
@@ -180,7 +180,7 @@ export function JornadaPlano({
     iniciar(async () => {
       const r = await salvarPlano({
         id: meta?.id,
-        nome: nomeMeta.trim() || `${brl0(valorMensal)}/mês para ${destino}`,
+        nome: nomeMeta.trim() || destino,
         destino,
         valorMensal,
         meses,
@@ -189,7 +189,7 @@ export function JornadaPlano({
         ritmo,
       });
       if ("erro" in r) return setErro(r.erro);
-      router.push(`/financas?p=${r.id ?? "sem"}`);
+      router.push(r.id ? `/financas/planos/${r.id}` : "/financas/planos");
       router.refresh();
     });
   }
@@ -205,7 +205,7 @@ export function JornadaPlano({
     iniciar(async () => {
       const r = await excluirPlano(meta.id);
       if ("erro" in r) return setErro(r.erro);
-      router.push("/financas");
+      router.push("/financas/planos");
       router.refresh();
     });
   }
@@ -272,7 +272,7 @@ export function JornadaPlano({
           <>
             <Cabecalho
               titulo="Seu ponto de partida"
-              texto="Antes de traçar a meta, veja como o seu dinheiro se comporta hoje. Tudo vem dos seus lançamentos."
+              texto="Estes números vêm do seu controle financeiro: a média do que entrou, saiu e sobrou. É a base para uma meta realista."
             />
             <div
               className="flex rounded-full border border-linha bg-superficie-2 p-1 sm:w-fit"
@@ -576,7 +576,7 @@ export function JornadaPlano({
                     value={nomeMeta}
                     onChange={(e) => setNomeMeta(e.target.value)}
                     maxLength={60}
-                    placeholder={`${brl0(valorMensal)}/mês para ${destino}`}
+                    placeholder={`Ex.: ${destino}`}
                     className="h-11 rounded-xl border border-linha bg-superficie-2 px-3.5 text-sm text-texto outline-none placeholder:text-suave/70 focus:border-ciano"
                   />
                 </label>
@@ -659,7 +659,7 @@ export function JornadaPlano({
           <>
             <Cabecalho
               titulo="Revise o seu plano"
-              texto="É isso que vai aparecer em Finanças para você acompanhar mês a mês. Dá para refazer quando quiser."
+              texto="O plano fica salvo em Planos e acompanha o seu controle financeiro mês a mês. Ao salvar, ele passa a ser o plano em foco no controle. Dá para editar quando quiser."
             />
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="flex flex-col gap-1 rounded-2xl border border-linha p-4">
@@ -767,10 +767,10 @@ export function JornadaPlano({
             </button>
           ) : (
             <Link
-              href="/financas"
+              href="/financas/planos"
               className="flex h-11 items-center rounded-full px-4 text-sm font-semibold text-suave hover:bg-superficie-2 hover:text-texto"
             >
-              Agora não
+              Voltar aos planos
             </Link>
           )}
           {passo < PASSOS.length - 1 ? (

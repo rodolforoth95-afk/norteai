@@ -1,17 +1,32 @@
-export const brl = (v: number, casas = 2) => v.toLocaleString("pt-BR", { style: "currency", currency: "BRL", minimumFractionDigits: casas, maximumFractionDigits: casas });
+export const brl = (v: number, casas = 2) =>
+  v.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+    minimumFractionDigits: casas,
+    maximumFractionDigits: casas,
+  });
 export const brl0 = (v: number) => brl(v, 0);
 
 // "1.234,56", "85,5", "85.50", "R$ 1200" → número.
 export function lerValor(texto: string): number | null {
   const t = texto.replace(/[^\d.,]/g, "");
   if (!t) return null;
-  const normal = t.includes(",") ? t.replace(/\./g, "").replace(",", ".") : /\.\d{3}$/.test(t) ? t.replace(/\./g, "") : t;
+  const normal = t.includes(",")
+    ? t.replace(/\./g, "").replace(",", ".")
+    : /\.\d{3}$/.test(t)
+      ? t.replace(/\./g, "")
+      : t;
   const n = Number(normal);
   return Number.isFinite(n) && n > 0 ? Math.round(n * 100) / 100 : null;
 }
 
 export function valorParaTexto(v: number | null) {
-  return v === null ? "" : v.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return v === null
+    ? ""
+    : v.toLocaleString("pt-BR", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      });
 }
 
 export const MEIOS = [

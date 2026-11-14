@@ -3,7 +3,20 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { BookOpen, CandlestickChart, FlaskConical, Home, PanelLeftClose, PanelLeftOpen, PieChart, Radar, User, UserRound, Wallet } from "lucide-react";
+import {
+  BookOpen,
+  CandlestickChart,
+  FlaskConical,
+  Home,
+  PanelLeftClose,
+  PanelLeftOpen,
+  PieChart,
+  Radar,
+  Target,
+  User,
+  UserRound,
+  Wallet,
+} from "lucide-react";
 import { IconeApp, Logo } from "./Logo";
 import { AlternarTema } from "./AlternarTema";
 import { BotaoSair } from "./BotaoSair";
@@ -11,6 +24,7 @@ import { BotaoSair } from "./BotaoSair";
 const PRINCIPAIS = [
   { href: "/inicio", rotulo: "Início", Icone: Home },
   { href: "/financas", rotulo: "Finanças", Icone: Wallet },
+  { href: "/financas/planos", rotulo: "Planos", Icone: Target },
   { href: "/carteira", rotulo: "Carteira", Icone: PieChart },
   { href: "/mercado", rotulo: "Mercado", Icone: CandlestickChart },
   { href: "/simulador", rotulo: "Simulador", Icone: FlaskConical },
@@ -25,11 +39,22 @@ const CONTA = [
 // Menu do computador: fixado aberto (com nomes) ou recolhido em trilho de ícones.
 // Nos dois casos ocupa o próprio espaço e o conteúdo se ajusta, sem ficar por cima.
 // A escolha fica no cookie "menu" e no atributo data-menu do <html>.
-export function BarraLateral({ saldo, nivel, nome }: { saldo: number; nivel: string; nome: string }) {
+export function BarraLateral({
+  saldo,
+  nivel,
+  nome,
+}: {
+  saldo: number;
+  nivel: string;
+  nome: string;
+}) {
   const caminho = usePathname();
   const [aberto, setAberto] = useState(true);
 
-  useEffect(() => setAberto(document.documentElement.dataset.menu !== "fechado"), []);
+  useEffect(
+    () => setAberto(document.documentElement.dataset.menu !== "fechado"),
+    [],
+  );
 
   function alternar() {
     const novo = !aberto;
@@ -39,7 +64,14 @@ export function BarraLateral({ saldo, nivel, nome }: { saldo: number; nivel: str
   }
 
   const item = ({ href, rotulo, Icone }: (typeof PRINCIPAIS)[number]) => {
-    const ativo = caminho.startsWith(href);
+    const ativo =
+      caminho.startsWith(href) &&
+      !PRINCIPAIS.some(
+        (o) =>
+          o.href.length > href.length &&
+          o.href.startsWith(href) &&
+          caminho.startsWith(o.href),
+      );
     return (
       <li key={href}>
         <Link
@@ -47,11 +79,19 @@ export function BarraLateral({ saldo, nivel, nome }: { saldo: number; nivel: str
           aria-current={ativo ? "page" : undefined}
           title={rotulo}
           className={`flex h-11 items-center gap-3 rounded-xl px-3 text-sm transition ${
-            ativo ? "degrade-ativo font-semibold text-white" : "font-medium text-suave hover:bg-superficie-2 hover:text-texto"
+            ativo
+              ? "degrade-ativo font-semibold text-white"
+              : "font-medium text-suave hover:bg-superficie-2 hover:text-texto"
           }`}
         >
-          <Icone className="h-5 w-5 shrink-0" strokeWidth={ativo ? 2.25 : 1.75} aria-hidden="true" />
-          <span className="hidden whitespace-nowrap menu-aberto:inline">{rotulo}</span>
+          <Icone
+            className="h-5 w-5 shrink-0"
+            strokeWidth={ativo ? 2.25 : 1.75}
+            aria-hidden="true"
+          />
+          <span className="hidden whitespace-nowrap menu-aberto:inline">
+            {rotulo}
+          </span>
         </Link>
       </li>
     );
@@ -88,17 +128,26 @@ export function BarraLateral({ saldo, nivel, nome }: { saldo: number; nivel: str
         <PanelLeftOpen className="h-[18px] w-[18px]" aria-hidden="true" />
       </button>
 
-      <nav aria-label="Navegação principal" className="mt-5 flex flex-1 flex-col justify-between overflow-y-auto">
+      <nav
+        aria-label="Navegação principal"
+        className="mt-5 flex flex-1 flex-col justify-between overflow-y-auto"
+      >
         <ul className="flex flex-col gap-1">{PRINCIPAIS.map(item)}</ul>
         <ul className="mt-4 flex flex-col gap-1">{CONTA.map(item)}</ul>
       </nav>
 
       <div className="mt-3 flex flex-col gap-1 border-t border-linha pt-3">
         <div className="flex flex-col items-center gap-1 menu-aberto:flex-row menu-aberto:px-1">
-          <Link href="/conta" title={nome} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-superficie-2 font-display text-sm font-semibold text-texto">
+          <Link
+            href="/conta"
+            title={nome}
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-superficie-2 font-display text-sm font-semibold text-texto"
+          >
             {(nome || "?").charAt(0).toUpperCase()}
           </Link>
-          <span className="hidden min-w-0 flex-1 truncate text-sm font-semibold text-texto menu-aberto:block">{nome || "Sua conta"}</span>
+          <span className="hidden min-w-0 flex-1 truncate text-sm font-semibold text-texto menu-aberto:block">
+            {nome || "Sua conta"}
+          </span>
           <AlternarTema />
           <BotaoSair />
         </div>

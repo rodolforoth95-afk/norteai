@@ -20,7 +20,6 @@ import { aportesPorMes, carregarFinancas } from "@/lib/servidor/financas";
 import { RECOMPENSAS } from "@/lib/dominio/moedas";
 import { PainelFinancas } from "./PainelFinancas";
 import { VazioFinancas } from "./VazioFinancas";
-import { EscolherPlano } from "./EscolherPlano";
 
 export const metadata = { title: "Finanças" };
 
@@ -29,7 +28,7 @@ export const metadata = { title: "Finanças" };
 export default async function PaginaFinancas({
   searchParams,
 }: {
-  searchParams: Promise<{ mes?: string; p?: string }>;
+  searchParams: Promise<{ mes?: string }>;
 }) {
   const { uid, repo, primeiroNome } = await exigirUsuario();
   const [dados, aportes] = await Promise.all([
@@ -38,7 +37,7 @@ export default async function PaginaFinancas({
   ]);
   const hoje = hojeBR();
   const mesAtual = mesDe(hoje);
-  const { mes: pedido, p: planoPedido } = await searchParams;
+  const { mes: pedido } = await searchParams;
   const mes =
     pedido &&
     /^\d{4}-(0[1-9]|1[0-2])$/.test(pedido) &&
@@ -49,41 +48,9 @@ export default async function PaginaFinancas({
 
   if (!dados.lancamentos.length) return <VazioFinancas />;
 
-  // Toda entrada em Finanças começa pela escolha do plano.
+  // O controle financeiro abre direto; o plano em foco aparece como um resumo ligado a ele.
   const planos = planosDe(dados);
-  const meta =
-    planoPedido && planoPedido !== "sem"
-      ? (planos.find((m) => m.id === planoPedido) ?? null)
-      : null;
-  if (!planoPedido || (planoPedido !== "sem" && !meta)) {
-    return (
-      <EscolherPlano
-        primeiroNome={primeiroNome}
-        rendaAtual={rendaGuardadaAtual(dados, mesAtual)}
-        planos={planos.map((m) => {
-          const pr = progressoMeta(dados, m, mesAtual, aportes);
-          const esc = m.guardar
-            ? escadaGuardar(dados, m.guardar, mesAtual)
-            : null;
-          return {
-            id: m.id,
-            nome: m.nome,
-            destino: m.destino,
-            valorMensal: m.valorMensal,
-            meses: m.meses,
-            ativo: m.ativa,
-            alvoPct: m.guardar?.alvoPct ?? null,
-            ritmo: m.guardar?.ritmo ?? null,
-            degrauPct: esc?.atual?.alvoPct ?? null,
-            guardadoPct: esc?.atual?.guardadoPct ?? null,
-            pct: pr.pct,
-            economizado: pr.economizado,
-            objetivo: pr.objetivo,
-          };
-        })}
-      />
-    );
-  }
+  const meta = planos.find((m) => m.ativa) ?? null;
   const metaGuardar = meta?.guardar ?? null;
 
   const resumo = resumoDoMes(dados, mes);
@@ -163,7 +130,7 @@ export default async function PaginaFinancas({
       diagnostico={diagnosticar(dados, mesAtual, 90)}
       metaGuardar={metaGuardar}
       planoId={meta?.id ?? null}
-      planoParam={planoPedido}
+      totalPlanos={planos.length}
       escada={escada}
       rendaAtual={rendaGuardadaAtual(dados, mesAtual)}
       primeiroNome={primeiroNome}

@@ -539,7 +539,7 @@ export function insights(params: { resumo: ResumoMes; anterior: ResumoMes; orcam
         tom: "alerta",
         titulo: `${nome(o.categoriaId)} passou do combinado`,
         texto: `Foram ${brl(o.gasto)} de ${brl(o.limite)} planejados. Compensar em outra categoria até o fim do mês mantém o aporte de ${meta ? brl(meta.valorMensal) : "este mês"}.`,
-        acao: { rotulo: "Ver plano", href: meta ? `/financas/jornada?plano=${meta.id}` : "/financas/jornada" },
+        acao: { rotulo: "Ver plano", href: meta ? `/financas/planos/${meta.id}` : "/financas/planos/novo" },
       });
     } else {
       lista.push({
@@ -575,7 +575,7 @@ export function insights(params: { resumo: ResumoMes; anterior: ResumoMes; orcam
       tom: "alerta",
       titulo: `Saídas maiores que entradas em ${brl(Math.abs(resumo.saldo))}`,
       texto: "Antes de pensar em aportes, o primeiro passo é zerar essa diferença. O seu plano mostra onde dá para cortar.",
-      acao: { rotulo: "Ver diagnóstico", href: meta ? `/financas/jornada?plano=${meta.id}` : "/financas/jornada" },
+      acao: { rotulo: "Ver diagnóstico", href: meta ? `/financas/planos/${meta.id}` : "/financas/planos/novo" },
     });
   }
   return lista.slice(0, 3);
