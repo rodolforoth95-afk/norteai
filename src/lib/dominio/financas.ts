@@ -533,7 +533,7 @@ export function insights(params: { resumo: ResumoMes; anterior: ResumoMes; orcam
         tom: "alerta",
         titulo: `${nome(o.categoriaId)} passou do combinado`,
         texto: `Foram ${brl(o.gasto)} de ${brl(o.limite)} planejados. Compensar em outra categoria até o fim do mês mantém o aporte de ${meta ? brl(meta.valorMensal) : "este mês"}.`,
-        acao: { rotulo: "Ver plano", href: "/financas/plano" },
+        acao: { rotulo: "Ver plano", href: "/financas/jornada" },
       });
     } else {
       lista.push({
@@ -563,22 +563,13 @@ export function insights(params: { resumo: ResumoMes; anterior: ResumoMes; orcam
       texto: `Foram ${brl(top.total)} contra ${brl(topAntes)}. Vale olhar os lançamentos dessa categoria.`,
     });
   }
-  if (!meta && resumo.saldo > 0) {
-    lista.push({
-      id: "sem-meta",
-      tom: "neutro",
-      titulo: `Este mês sobraram ${brl(resumo.saldo)}`,
-      texto: "Com uma meta de aporte, eu separo um valor fixo todo mês e mostro onde ajustar para chegar lá.",
-      acao: { rotulo: "Criar plano", href: "/financas/plano" },
-    });
-  }
   if (resumo.saldo < 0) {
     lista.push({
       id: "negativo",
       tom: "alerta",
       titulo: `Saídas maiores que entradas em ${brl(Math.abs(resumo.saldo))}`,
-      texto: "Antes de pensar em aportes, o primeiro passo é zerar essa diferença. O plano do Mordomo mostra onde dá para cortar.",
-      acao: { rotulo: "Ver diagnóstico", href: "/financas/plano" },
+      texto: "Antes de pensar em aportes, o primeiro passo é zerar essa diferença. O seu plano mostra onde dá para cortar.",
+      acao: { rotulo: "Ver diagnóstico", href: "/financas/jornada" },
     });
   }
   return lista.slice(0, 3);

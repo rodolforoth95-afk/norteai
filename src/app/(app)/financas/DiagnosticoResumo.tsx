@@ -20,7 +20,7 @@ export function DiagnosticoResumo({ diag, categorias }: { diag: Diagnostico; cat
             <p className="text-xs text-suave">Média dos últimos {diag.meses.length || 1} {diag.meses.length === 1 ? "mês" : "meses"}</p>
           </div>
         </div>
-        <Link href="/financas/plano" className="flex shrink-0 items-center gap-1 text-xs font-semibold text-ciano hover:underline">
+        <Link href="/financas/jornada" className="flex shrink-0 items-center gap-1 text-xs font-semibold text-ciano hover:underline">
           Detalhes <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
         </Link>
       </div>

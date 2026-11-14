@@ -4,8 +4,13 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import {
   ArrowDownRight,
+  ArrowRight,
   ArrowUpRight,
+  CheckCircle2,
   ChevronLeft,
+  Compass,
+  Minus,
+  Plus,
   ChevronRight,
   Layers,
   PiggyBank,
@@ -34,7 +39,11 @@ import {
   type Categoria,
   type Insight,
   type ItemOrcamento,
-  type Diagnostico, type EscadaGuardar, type Evolucao as DadosEvolucao, type LinhaDRE, type MetaGuardar,
+  type Diagnostico,
+  type EscadaGuardar,
+  type Evolucao as DadosEvolucao,
+  type LinhaDRE,
+  type MetaGuardar,
   type Ocorrencia,
   type ResumoMes,
 } from "@/lib/dominio/financas";
@@ -105,6 +114,7 @@ function variacao(atual: number, antes: number) {
 
 export function PainelFinancas(p: Props) {
   const { abrir } = useLancador();
+  const temPlano = Boolean(p.meta || p.metaGuardar);
   const tema = useCoresTema();
   const [filtroCategoria, setFiltroCategoria] = useState<string | null>(null);
   const [filtroTipo, setFiltroTipo] = useState<"todos" | "despesa" | "receita">(
@@ -217,47 +227,128 @@ export function PainelFinancas(p: Props) {
             Receitas, despesas e quanto sobra para investir.
           </p>
         </div>
-        <div className="flex w-full items-center justify-between gap-2 sm:w-auto">
-          <nav
-            className="flex items-center rounded-xl border border-linha bg-superficie p-0.5"
-            aria-label="Mês"
+        <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto">
+          <button
+            type="button"
+            onClick={() => abrir("texto", { tipo: "receita" })}
+            className="flex h-11 items-center justify-center gap-2 rounded-xl border border-menta/40 bg-menta/10 px-4 text-sm font-semibold text-texto transition hover:bg-menta/20"
           >
-            <Link
-              href={`/financas?mes=${somarMeses(p.mes, -1)}`}
-              className="flex h-9 w-9 items-center justify-center rounded-lg text-suave hover:bg-superficie-2 hover:text-texto"
-              aria-label="Mês anterior"
-            >
-              <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-            </Link>
-            <span className="min-w-[7.75rem] text-center text-[13px] font-semibold text-texto sm:min-w-[9.5rem] sm:text-sm">
-              {nomeMes(p.mes)}
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-menta text-white">
+              <Plus
+                className="h-3.5 w-3.5"
+                aria-hidden="true"
+                strokeWidth={3}
+              />
             </span>
-            <Link
-              href={`/financas?mes=${somarMeses(p.mes, 1)}`}
-              className={`flex h-9 w-9 items-center justify-center rounded-lg text-suave hover:bg-superficie-2 hover:text-texto ${p.mes >= somarMeses(p.mesAtual, 12) ? "pointer-events-none opacity-30" : ""}`}
-              aria-label="Próximo mês"
-            >
-              <ChevronRight className="h-4 w-4" aria-hidden="true" />
-            </Link>
-          </nav>
-          <div className="flex gap-1.5">
-            <Link
-              href="/financas/plano"
-              className="flex h-10 items-center gap-1.5 rounded-xl border border-linha bg-superficie px-2.5 text-sm font-semibold text-texto hover:bg-superficie-2 sm:px-3"
-            >
-              <Target className="h-4 w-4 text-gravata" aria-hidden="true" />
-              Plano
-            </Link>
-            <Link
-              href="/financas/categorias"
-              className="flex h-10 w-10 items-center justify-center rounded-xl border border-linha bg-superficie text-suave hover:bg-superficie-2 hover:text-texto"
-              aria-label="Categorias"
-            >
-              <Layers className="h-4 w-4" aria-hidden="true" />
-            </Link>
-          </div>
+            Nova receita
+          </button>
+          <button
+            type="button"
+            onClick={() => abrir("texto", { tipo: "despesa" })}
+            className="flex h-11 items-center justify-center gap-2 rounded-xl border border-erro/40 bg-erro/10 px-4 text-sm font-semibold text-texto transition hover:bg-erro/20"
+          >
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-erro text-white">
+              <Minus
+                className="h-3.5 w-3.5"
+                aria-hidden="true"
+                strokeWidth={3}
+              />
+            </span>
+            Nova despesa
+          </button>
         </div>
       </header>
+
+      <div className="-mt-1 flex w-full flex-wrap items-center justify-between gap-2">
+        <nav
+          className="flex items-center rounded-xl border border-linha bg-superficie p-0.5"
+          aria-label="Mês"
+        >
+          <Link
+            href={`/financas?mes=${somarMeses(p.mes, -1)}`}
+            className="flex h-9 w-9 items-center justify-center rounded-lg text-suave hover:bg-superficie-2 hover:text-texto"
+            aria-label="Mês anterior"
+          >
+            <ChevronLeft className="h-4 w-4" aria-hidden="true" />
+          </Link>
+          <span className="min-w-[7.75rem] text-center text-[13px] font-semibold text-texto sm:min-w-[9.5rem] sm:text-sm">
+            {nomeMes(p.mes)}
+          </span>
+          <Link
+            href={`/financas?mes=${somarMeses(p.mes, 1)}`}
+            className={`flex h-9 w-9 items-center justify-center rounded-lg text-suave hover:bg-superficie-2 hover:text-texto ${p.mes >= somarMeses(p.mesAtual, 12) ? "pointer-events-none opacity-30" : ""}`}
+            aria-label="Próximo mês"
+          >
+            <ChevronRight className="h-4 w-4" aria-hidden="true" />
+          </Link>
+        </nav>
+        <div className="flex gap-1.5">
+          <Link
+            href={temPlano ? "#meu-plano" : "/financas/jornada"}
+            className="flex h-10 items-center gap-1.5 rounded-xl border border-linha bg-superficie px-2.5 text-sm font-semibold text-texto hover:bg-superficie-2 sm:px-3"
+          >
+            <Target className="h-4 w-4 text-gravata" aria-hidden="true" />
+            <span className="hidden sm:inline">Meu plano</span>
+            <span className="sm:hidden">Plano</span>
+          </Link>
+          <Link
+            href="/financas/categorias"
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-linha bg-superficie text-suave hover:bg-superficie-2 hover:text-texto"
+            aria-label="Categorias"
+          >
+            <Layers className="h-4 w-4" aria-hidden="true" />
+          </Link>
+        </div>
+      </div>
+
+      {!temPlano ? (
+        <div className="painel relative overflow-hidden p-0">
+          <div className="grid gap-5 p-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.3fr)] lg:items-center lg:p-7">
+            <div className="flex flex-col gap-3">
+              <span className="degrade-ativo flex h-11 w-11 items-center justify-center rounded-xl text-white">
+                <Compass className="h-5 w-5" aria-hidden="true" />
+              </span>
+              <h2 className="font-display text-xl font-semibold text-texto lg:text-2xl">
+                Comece pela sua jornada
+              </h2>
+              <p className="text-sm text-suave">
+                Em 4 passos você define quanto da renda quer guardar e quanto
+                vai investir por mês. Depois é só acompanhar aqui.
+              </p>
+              <Link
+                href="/financas/jornada"
+                className="gradiente-marca mt-1 flex h-11 w-fit items-center gap-2 rounded-full px-6 text-sm font-semibold text-white hover:brightness-110"
+              >
+                Montar meu plano{" "}
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </Link>
+            </div>
+            <ol className="grid grid-cols-2 gap-2">
+              {[
+                ["Ponto de partida", "Quanto entra, sai e sobra"],
+                ["Quanto guardar", "% da renda e o ritmo"],
+                ["Plano de aporte", "Valor, prazo e objetivo"],
+                ["Revisão", "Ativar e acompanhar"],
+              ].map(([t, d], i) => (
+                <li
+                  key={t}
+                  className="flex items-start gap-2.5 rounded-xl bg-superficie-2/60 p-3"
+                >
+                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-ciano/15 text-xs font-bold text-ciano">
+                    {i + 1}
+                  </span>
+                  <span>
+                    <span className="block text-sm font-semibold text-texto">
+                      {t}
+                    </span>
+                    <span className="block text-xs text-suave">{d}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </div>
+        </div>
+      ) : null}
 
       {/* Diagnóstico logo no início e a assistente ao lado */}
       <div className="grid gap-4 lg:grid-cols-2 lg:gap-6">
@@ -359,76 +450,124 @@ export function PainelFinancas(p: Props) {
         ))}
       </div>
 
-      <DesafioGuardar meta={p.metaGuardar} escada={p.escada} rendaAtual={p.rendaAtual} categorias={p.categorias} />
-
-      {/* Plano de aporte: orçamento por categoria e dinheiro livre no mesmo card */}
-      <div className="painel grid gap-6 p-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)]">
-        <div className="flex flex-col gap-4">
-          <div>
-            <h2 className="font-display text-base font-semibold text-texto">{p.meta ? p.meta.nome : "Plano de aporte"}</h2>
-            <p className="text-xs text-suave">
-              {p.meta ? `${brl0(p.meta.valorMensal)} por mês para ${p.meta.destino}, durante ${p.meta.meses} meses` : "Diga quanto quer investir por mês e eu monto os limites por categoria"}
+      {temPlano ? (
+        <div
+          id="meu-plano"
+          className="painel flex scroll-mt-6 flex-col gap-6 p-5 lg:p-6"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-ciano">
+              <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" /> Meu
+              plano
             </p>
-          </div>
-          {p.progresso && p.meta ? (
-            <>
-              <div>
-                <div className="flex items-baseline justify-between gap-2">
-                  <span className="font-display text-2xl font-semibold tabular-nums text-texto">{brl0(p.progresso.economizado)}</span>
-                  <span className="text-xs tabular-nums text-suave">de {brl0(p.progresso.objetivo)}</span>
-                </div>
-                <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-superficie-2">
-                  <div className="degrade-ativo h-full rounded-full" style={{ width: `${Math.max(2, p.progresso.pct)}%` }} />
-                </div>
-                <p className="mt-1.5 text-xs text-suave">
-                  {Math.round(p.progresso.pct)}% · mês {p.progresso.mesesPassados} de {p.meta.meses}
-                </p>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="rounded-xl bg-superficie-2/60 p-3">
-                  <p className="text-[11px] text-suave">Já aportado</p>
-                  <p className="font-display text-base font-semibold tabular-nums text-texto">{brl0(p.progresso.aportado)}</p>
-                </div>
-                <div className="rounded-xl bg-gravata/10 p-3">
-                  <p className="text-[11px] text-suave">Livre para investir</p>
-                  <p className="font-display text-base font-semibold tabular-nums text-gravata">{brl0(p.progresso.livreParaAportar)}</p>
-                </div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {p.progresso.livreParaAportar >= 50 ? (
-                  <Link href="/carteira/adicionar" className="gradiente-marca flex h-10 items-center justify-center rounded-full px-4 text-sm font-semibold text-white hover:brightness-110">
-                    Registrar aporte
-                  </Link>
-                ) : null}
-                <Link href="/financas/plano" className="flex h-10 items-center rounded-full border border-linha px-4 text-sm font-semibold text-texto hover:bg-superficie-2">
-                  Ver plano
-                </Link>
-              </div>
-            </>
-          ) : (
-            <Link href="/financas/plano" className="gradiente-marca flex h-11 w-fit items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold text-white hover:brightness-110">
-              <Target className="h-4 w-4" aria-hidden="true" />
-              Montar meu plano de aporte
+            <Link
+              href="/financas/jornada"
+              className="flex h-9 items-center gap-1.5 rounded-full border border-linha px-3.5 text-xs font-semibold text-texto hover:bg-superficie-2"
+            >
+              Refazer plano
             </Link>
-          )}
+          </div>
+          {p.metaGuardar && p.escada ? (
+            <DesafioGuardar
+              meta={p.metaGuardar}
+              escada={p.escada}
+              categorias={p.categorias}
+            />
+          ) : null}
+          {p.metaGuardar && p.escada && p.meta ? (
+            <hr className="border-linha" />
+          ) : null}
+          {p.meta ? (
+            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)]">
+              <div className="flex flex-col gap-4">
+                <div>
+                  <h2 className="font-display text-base font-semibold text-texto">
+                    {p.meta ? p.meta.nome : "Plano de aporte"}
+                  </h2>
+                  <p className="text-xs text-suave">
+                    {p.meta
+                      ? `${brl0(p.meta.valorMensal)} por mês para ${p.meta.destino}, durante ${p.meta.meses} meses`
+                      : "Diga quanto quer investir por mês e eu monto os limites por categoria"}
+                  </p>
+                </div>
+                {p.progresso && p.meta ? (
+                  <>
+                    <div>
+                      <div className="flex items-baseline justify-between gap-2">
+                        <span className="font-display text-2xl font-semibold tabular-nums text-texto">
+                          {brl0(p.progresso.economizado)}
+                        </span>
+                        <span className="text-xs tabular-nums text-suave">
+                          de {brl0(p.progresso.objetivo)}
+                        </span>
+                      </div>
+                      <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-superficie-2">
+                        <div
+                          className="degrade-ativo h-full rounded-full"
+                          style={{ width: `${Math.max(2, p.progresso.pct)}%` }}
+                        />
+                      </div>
+                      <p className="mt-1.5 text-xs text-suave">
+                        {Math.round(p.progresso.pct)}% · mês{" "}
+                        {p.progresso.mesesPassados} de {p.meta.meses}
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div className="rounded-xl bg-superficie-2/60 p-3">
+                        <p className="text-[11px] text-suave">Já aportado</p>
+                        <p className="font-display text-base font-semibold tabular-nums text-texto">
+                          {brl0(p.progresso.aportado)}
+                        </p>
+                      </div>
+                      <div className="rounded-xl bg-gravata/10 p-3">
+                        <p className="text-[11px] text-suave">
+                          Livre para investir
+                        </p>
+                        <p className="font-display text-base font-semibold tabular-nums text-gravata">
+                          {brl0(p.progresso.livreParaAportar)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {p.progresso.livreParaAportar >= 50 ? (
+                        <Link
+                          href="/carteira/adicionar"
+                          className="gradiente-marca flex h-10 items-center justify-center rounded-full px-4 text-sm font-semibold text-white hover:brightness-110"
+                        >
+                          Registrar aporte
+                        </Link>
+                      ) : null}
+                    </div>
+                  </>
+                ) : null}
+              </div>
+              <div className="flex flex-col gap-3 lg:border-l lg:border-linha lg:pl-6">
+                <p className="text-xs font-semibold text-suave">
+                  Limites do mês por categoria
+                </p>
+                {p.orcamento.length ? (
+                  <ul className="grid grid-cols-3 gap-x-2 gap-y-5">
+                    {p.orcamento.map((o) => (
+                      <li key={o.categoriaId}>
+                        <AnelOrcamento
+                          item={o}
+                          categoria={cat(o.categoriaId)}
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="rounded-xl border border-dashed border-linha p-4 text-sm text-suave">
+                    {p.meta
+                      ? "Seu plano não precisou de cortes: a sobra já cobre a meta."
+                      : "Os limites aparecem aqui quando você ativar um plano."}
+                  </p>
+                )}
+              </div>
+            </div>
+          ) : null}
         </div>
-        <div className="flex flex-col gap-3 lg:border-l lg:border-linha lg:pl-6">
-          <p className="text-xs font-semibold text-suave">Limites do mês por categoria</p>
-          {p.orcamento.length ? (
-            <ul className="grid grid-cols-3 gap-x-2 gap-y-5">
-              {p.orcamento.map((o) => (
-                <li key={o.categoriaId}>
-                  <AnelOrcamento item={o} categoria={cat(o.categoriaId)} />
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="rounded-xl border border-dashed border-linha p-4 text-sm text-suave">
-              {p.meta ? "Seu plano não precisou de cortes: a sobra já cobre a meta." : "Os limites aparecem aqui quando você ativar um plano."}
-            </p>
-          )}
-        </div>
-      </div>
+      ) : null}
 
       <Evolucao dados={p.evolucao} />
 
@@ -732,7 +871,11 @@ export function PainelFinancas(p: Props) {
                   <span>{dataCurta(dia, p.hoje)}</span>
                   <span className="tabular-nums normal-case tracking-normal">
                     {(() => {
-                      const t = itens.reduce((s, o) => s + (o.tipo === "receita" ? o.valor : -o.valor), 0);
+                      const t = itens.reduce(
+                        (s, o) =>
+                          s + (o.tipo === "receita" ? o.valor : -o.valor),
+                        0,
+                      );
                       return `${t >= 0 ? "+" : "−"}${brl(Math.abs(t))}`;
                     })()}
                   </span>
@@ -749,18 +892,33 @@ export function PainelFinancas(p: Props) {
                           className={`flex h-11 w-full items-center gap-2.5 rounded-lg px-3 text-left transition hover:bg-superficie-2/70 ${previsto ? "opacity-60" : ""}`}
                           title={`${o.descricao} · ${c?.nome ?? "Outros"}${previsto ? " · previsto" : ""}${o.origem === "exemplo" ? " · exemplo" : ""}`}
                         >
-                          <IconeCategoria icone={c?.icone ?? "Tag"} cor={c?.cor ?? "#94A3B8"} tamanho={24} />
+                          <IconeCategoria
+                            icone={c?.icone ?? "Tag"}
+                            cor={c?.cor ?? "#94A3B8"}
+                            tamanho={24}
+                          />
                           <span className="flex min-w-0 flex-1 items-baseline gap-2">
-                            <span className="truncate text-[13px] font-medium text-texto">{o.descricao}</span>
-                            <span className="hidden shrink-0 truncate text-xs text-suave sm:inline">{c?.nome ?? "Outros"}</span>
+                            <span className="truncate text-[13px] font-medium text-texto">
+                              {o.descricao}
+                            </span>
+                            <span className="hidden shrink-0 truncate text-xs text-suave sm:inline">
+                              {c?.nome ?? "Outros"}
+                            </span>
                             {o.parcela ? (
                               <span className="shrink-0 font-mono text-[10px] text-suave">
                                 {o.parcela.atual}/{o.parcela.total}
                               </span>
                             ) : null}
-                            {o.recorrente ? <Repeat className="h-3 w-3 shrink-0 self-center text-suave" aria-label="Recorrente" /> : null}
+                            {o.recorrente ? (
+                              <Repeat
+                                className="h-3 w-3 shrink-0 self-center text-suave"
+                                aria-label="Recorrente"
+                              />
+                            ) : null}
                           </span>
-                          <span className={`shrink-0 text-[13px] font-semibold tabular-nums ${o.tipo === "receita" ? "text-menta" : "text-texto"}`}>
+                          <span
+                            className={`shrink-0 text-[13px] font-semibold tabular-nums ${o.tipo === "receita" ? "text-menta" : "text-texto"}`}
+                          >
                             {o.tipo === "receita" ? "+" : "−"}
                             {brl(o.valor)}
                           </span>
@@ -803,11 +961,22 @@ export function PainelFinancas(p: Props) {
 }
 
 // Termômetro em anel: a volta enche com o gasto e muda de cor (verde, laranja, vermelho).
-function AnelOrcamento({ item, categoria }: { item: ItemOrcamento; categoria?: Categoria }) {
+function AnelOrcamento({
+  item,
+  categoria,
+}: {
+  item: ItemOrcamento;
+  categoria?: Categoria;
+}) {
   const raio = 26;
   const volta = 2 * Math.PI * raio;
   const fracao = Math.min(1, item.pct / 100);
-  const cor = item.estado === "estourou" ? "var(--baixa)" : item.estado === "atencao" ? "var(--gravata)" : "var(--alta)";
+  const cor =
+    item.estado === "estourou"
+      ? "var(--baixa)"
+      : item.estado === "atencao"
+        ? "var(--gravata)"
+        : "var(--alta)";
   const resta = item.limite - item.gasto;
   return (
     <div
@@ -819,13 +988,43 @@ function AnelOrcamento({ item, categoria }: { item: ItemOrcamento; categoria?: C
       aria-label={`${categoria?.nome ?? "Outros"}: ${brl0(item.gasto)} de ${brl0(item.limite)}`}
     >
       <span className="relative flex h-[68px] w-[68px] items-center justify-center">
-        <svg viewBox="0 0 64 64" className="absolute inset-0 h-full w-full -rotate-90" aria-hidden="true">
-          <circle cx="32" cy="32" r={raio} fill="none" stroke="var(--superficie-2)" strokeWidth="5" />
-          <circle cx="32" cy="32" r={raio} fill="none" stroke={cor} strokeWidth="5" strokeLinecap="round" strokeDasharray={volta} strokeDashoffset={volta * (1 - fracao)} className="transition-[stroke-dashoffset] duration-700" />
+        <svg
+          viewBox="0 0 64 64"
+          className="absolute inset-0 h-full w-full -rotate-90"
+          aria-hidden="true"
+        >
+          <circle
+            cx="32"
+            cy="32"
+            r={raio}
+            fill="none"
+            stroke="var(--superficie-2)"
+            strokeWidth="5"
+          />
+          <circle
+            cx="32"
+            cy="32"
+            r={raio}
+            fill="none"
+            stroke={cor}
+            strokeWidth="5"
+            strokeLinecap="round"
+            strokeDasharray={volta}
+            strokeDashoffset={volta * (1 - fracao)}
+            className="transition-[stroke-dashoffset] duration-700"
+          />
         </svg>
-        <IconeCategoria icone={categoria?.icone ?? "Tag"} cor={categoria?.cor ?? "#94A3B8"} tamanho={36} />
+        <IconeCategoria
+          icone={categoria?.icone ?? "Tag"}
+          cor={categoria?.cor ?? "#94A3B8"}
+          tamanho={36}
+        />
       </span>
-      <span className={`text-sm font-semibold tabular-nums ${resta < 0 ? "text-erro" : "text-texto"}`}>{resta < 0 ? `−${brl0(-resta)}` : brl0(resta)}</span>
+      <span
+        className={`text-sm font-semibold tabular-nums ${resta < 0 ? "text-erro" : "text-texto"}`}
+      >
+        {resta < 0 ? `−${brl0(-resta)}` : brl0(resta)}
+      </span>
       <span className="-mt-1 text-[11px] leading-tight text-suave">
         {resta < 0 ? "acima" : "restam"} · {categoria?.nome ?? "Outros"}
       </span>
