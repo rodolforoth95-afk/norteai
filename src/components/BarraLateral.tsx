@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { BookOpen, CandlestickChart, Coins, FlaskConical, Home, PanelLeftClose, PanelLeftOpen, PieChart, User, UserRound, Wallet } from "lucide-react";
+import { BookOpen, CandlestickChart, FlaskConical, Home, PanelLeftClose, PanelLeftOpen, PieChart, Radar, User, UserRound, Wallet } from "lucide-react";
 import { IconeApp, Logo } from "./Logo";
 import { AlternarTema } from "./AlternarTema";
 import { BotaoSair } from "./BotaoSair";
@@ -15,6 +15,7 @@ const PRINCIPAIS = [
   { href: "/mercado", rotulo: "Mercado", Icone: CandlestickChart },
   { href: "/simulador", rotulo: "Simulador", Icone: FlaskConical },
   { href: "/aprender", rotulo: "Aprender", Icone: BookOpen },
+  { href: "/radar", rotulo: "Radar Findomo", Icone: Radar },
 ];
 const CONTA = [
   { href: "/perfil", rotulo: "Meu perfil", Icone: UserRound },
@@ -93,13 +94,6 @@ export function BarraLateral({ saldo, nivel, nome }: { saldo: number; nivel: str
       </nav>
 
       <div className="mt-3 flex flex-col gap-1 border-t border-linha pt-3">
-        <Link href="/aprender#coins" title={`${saldo} coins · nível ${nivel}`} className="flex h-11 items-center gap-3 rounded-xl px-3 text-sm hover:bg-superficie-2">
-          <Coins className="h-5 w-5 shrink-0 text-gravata" aria-hidden="true" />
-          <span className="hidden min-w-0 flex-1 items-baseline justify-between gap-2 whitespace-nowrap menu-aberto:flex">
-            <span className="font-semibold tabular-nums text-texto">{saldo.toLocaleString("pt-BR")}</span>
-            <span className="text-xs text-suave">nível {nivel}</span>
-          </span>
-        </Link>
         <div className="flex flex-col items-center gap-1 menu-aberto:flex-row menu-aberto:px-1">
           <Link href="/conta" title={nome} className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-superficie-2 font-display text-sm font-semibold text-texto">
             {(nome || "?").charAt(0).toUpperCase()}

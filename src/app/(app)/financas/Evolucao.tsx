@@ -14,7 +14,7 @@ const NIVEL = {
   atencao: { rotulo: "Atenção", texto: "As saídas estão perto ou acima das entradas. O plano do Mordomo mostra onde ajustar.", cor: COR.laranja },
 } as const;
 
-// Painéis de evolução: pontuação de saúde financeira, taxa de poupança, sobra acumulada
+// Painéis de evolução: pontuação de saúde financeira, renda guardada, sobra acumulada
 // e a composição das despesas, para mostrar se a pessoa está avançando mês a mês.
 export function Evolucao({ dados }: { dados: DadosEvolucao }) {
   const tema = useCoresTema();
@@ -39,7 +39,7 @@ export function Evolucao({ dados }: { dados: DadosEvolucao }) {
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
         <Indicador
           Icone={PiggyBank}
-          rotulo="Taxa de poupança"
+          rotulo="Renda guardada"
           valor={dados.taxaMedia === null ? "—" : `${Math.round(dados.taxaMedia)}%`}
           detalhe="média dos meses"
           tendencia={dados.variacaoTaxa === null ? null : { valor: `${dados.variacaoTaxa >= 0 ? "+" : "−"}${Math.abs(Math.round(dados.variacaoTaxa))} p.p.`, bom: dados.variacaoTaxa >= 0 }}
@@ -83,13 +83,13 @@ export function Evolucao({ dados }: { dados: DadosEvolucao }) {
         </div>
 
         <div className="flex min-w-0 flex-col gap-4 lg:gap-6">
-          {/* Taxa de poupança */}
+          {/* Renda guardada */}
           <div className="painel flex min-w-0 flex-col gap-3 p-5">
             <div>
-              <h3 className="font-display text-base font-semibold text-texto">Taxa de poupança</h3>
+              <h3 className="font-display text-base font-semibold text-texto">Renda guardada</h3>
               <p className="text-xs text-suave">Quanto das receitas sobrou em cada mês · referência de 20%</p>
             </div>
-            <div className="h-48 w-full" role="img" aria-label={`Taxa de poupança: média de ${Math.round(dados.taxaMedia ?? 0)}%`}>
+            <div className="h-48 w-full" role="img" aria-label={`Renda guardada: média de ${Math.round(dados.taxaMedia ?? 0)}%`}>
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={dados.meses} margin={{ top: 8, right: 8, left: -12, bottom: 0 }}>
                   <defs>
@@ -102,7 +102,7 @@ export function Evolucao({ dados }: { dados: DadosEvolucao }) {
                   <XAxis dataKey="mes" tickFormatter={(m) => nomeMes(String(m), true)} tick={eixo} axisLine={false} tickLine={false} />
                   <YAxis tickFormatter={(v) => `${v}%`} tick={eixo} axisLine={false} tickLine={false} width={44} />
                   <ReferenceLine y={20} stroke={COR.laranja} strokeDasharray="5 5" label={{ value: "20%", position: "insideTopRight", fill: COR.laranja, fontSize: 11 }} />
-                  <Tooltip labelFormatter={(m) => nomeMes(String(m))} formatter={(v) => [v === null ? "—" : `${Number(v).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%`, "Taxa de poupança"]} contentStyle={dicaTooltip} />
+                  <Tooltip labelFormatter={(m) => nomeMes(String(m))} formatter={(v) => [v === null ? "—" : `${Number(v).toLocaleString("pt-BR", { maximumFractionDigits: 1 })}%`, "Renda guardada"]} contentStyle={dicaTooltip} />
                   <Area type="monotone" dataKey="taxaPoupanca" stroke={COR.azul} strokeWidth={2.5} fill="url(#area-poupanca)" connectNulls dot={{ r: 3, fill: COR.azul, strokeWidth: 0 }} animationDuration={500} />
                 </AreaChart>
               </ResponsiveContainer>

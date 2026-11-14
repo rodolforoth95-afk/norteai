@@ -361,3 +361,44 @@ export function deVersaoAnterior(posicoes: Posicao[], dataPadrao: string): Carte
       }),
   };
 }
+
+// --- Projeção pelo histórico --------------------------------------------------------------
+
+export type Projecao = {
+  taxaMensal: number; // % ao mês (média geométrica do histórico)
+  desvioMensal: number;
+  aporteMensal: number; // média dos aportes líquidos recentes
+  mesesHistorico: number;
+  pontos: { mes: string; base: number; pessimista: number; otimista: number; aplicado: number }[];
+};
+
+// Projeta o patrimônio repetindo o ritmo dos últimos 12 meses (rentabilidade média e aporte
+// médio), com uma faixa de meio desvio para cima e para baixo. É uma estimativa, não promessa.
+export function projetarCarteira(serie: PontoMensal[], horizonte = 24): Projecao | null {
+  const recentes = serie.slice(-13);
+  const taxas = recentes.map((p) => p.rentabilidade).filter((r): r is number => r !== null && Number.isFinite(r));
+  const ultimo = serie.at(-1);
+  if (taxas.length < 2 || !ultimo || ultimo.saldo <= 0) return null;
+  const geometrica = (Math.pow(taxas.reduce((acc, t) => acc * (1 + t / 100), 1), 1 / taxas.length) - 1) * 100;
+  const media = taxas.reduce((s, t) => s + t, 0) / taxas.length;
+  const desvio = Math.sqrt(taxas.reduce((s, t) => s + (t - media) ** 2, 0) / Math.max(1, taxas.length - 1));
+  const fluxos = serie.slice(-7, -1).map((p) => p.fluxo);
+  const aporte = fluxos.length ? Math.max(0, fluxos.reduce((s, f) => s + f, 0) / fluxos.length) : 0;
+  const taxaBase = Math.max(-3, Math.min(3, geometrica));
+  const meia = Math.min(2, desvio / 2);
+  let base = ultimo.saldo;
+  let pess = ultimo.saldo;
+  let otim = ultimo.saldo;
+  let aplicado = ultimo.aplicado;
+  const pontos = [{ mes: ultimo.mes, base, pessimista: pess, otimista: otim, aplicado }];
+  let mes = ultimo.mes;
+  for (let i = 0; i < horizonte; i++) {
+    mes = proximoMes(mes);
+    base = base * (1 + taxaBase / 100) + aporte;
+    pess = pess * (1 + (taxaBase - meia) / 100) + aporte;
+    otim = otim * (1 + (taxaBase + meia) / 100) + aporte;
+    aplicado += aporte;
+    pontos.push({ mes, base: arred(base), pessimista: arred(pess), otimista: arred(otim), aplicado: arred(aplicado) });
+  }
+  return { taxaMensal: arred(taxaBase), desvioMensal: arred(desvio), aporteMensal: arred(aporte), mesesHistorico: taxas.length, pontos };
+}

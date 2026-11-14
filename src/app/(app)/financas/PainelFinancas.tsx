@@ -34,7 +34,7 @@ import {
   type Categoria,
   type Insight,
   type ItemOrcamento,
-  type Evolucao as DadosEvolucao, type LinhaDRE,
+  type Diagnostico, type EscadaGuardar, type Evolucao as DadosEvolucao, type LinhaDRE, type MetaGuardar,
   type Ocorrencia,
   type ResumoMes,
 } from "@/lib/dominio/financas";
@@ -46,6 +46,9 @@ import { brl, brl0, dataCurta } from "@/components/financas/formato";
 import { BotaoExemploFinancas } from "./BotoesExemplo";
 import { DRE } from "./DRE";
 import { Evolucao } from "./Evolucao";
+import { ChatFinancas } from "./ChatFinancas";
+import { DesafioGuardar } from "./DesafioGuardar";
+import { DiagnosticoResumo } from "./DiagnosticoResumo";
 import { COR } from "@/components/paleta";
 
 type Props = {
@@ -81,6 +84,11 @@ type Props = {
   avisos: Insight[];
   dre: LinhaDRE[];
   evolucao: DadosEvolucao;
+  diagnostico: Diagnostico;
+  metaGuardar: MetaGuardar | null;
+  escada: EscadaGuardar | null;
+  rendaAtual: number;
+  primeiroNome: string;
   mesesDre: string[];
   temExemplo: boolean;
 };
@@ -251,6 +259,12 @@ export function PainelFinancas(p: Props) {
         </div>
       </header>
 
+      {/* Diagnóstico logo no início e a assistente ao lado */}
+      <div className="grid gap-4 lg:grid-cols-2 lg:gap-6">
+        <DiagnosticoResumo diag={p.diagnostico} categorias={p.categorias} />
+        <ChatFinancas primeiroNome={p.primeiroNome} />
+      </div>
+
       {/* Mordomo: insights proativos */}
       {p.avisos.length ? (
         <div className="painel flex flex-col gap-0 overflow-hidden p-0">
@@ -343,6 +357,77 @@ export function PainelFinancas(p: Props) {
             </span>
           </div>
         ))}
+      </div>
+
+      <DesafioGuardar meta={p.metaGuardar} escada={p.escada} rendaAtual={p.rendaAtual} categorias={p.categorias} />
+
+      {/* Plano de aporte: orçamento por categoria e dinheiro livre no mesmo card */}
+      <div className="painel grid gap-6 p-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.25fr)]">
+        <div className="flex flex-col gap-4">
+          <div>
+            <h2 className="font-display text-base font-semibold text-texto">{p.meta ? p.meta.nome : "Plano de aporte"}</h2>
+            <p className="text-xs text-suave">
+              {p.meta ? `${brl0(p.meta.valorMensal)} por mês para ${p.meta.destino}, durante ${p.meta.meses} meses` : "Diga quanto quer investir por mês e eu monto os limites por categoria"}
+            </p>
+          </div>
+          {p.progresso && p.meta ? (
+            <>
+              <div>
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className="font-display text-2xl font-semibold tabular-nums text-texto">{brl0(p.progresso.economizado)}</span>
+                  <span className="text-xs tabular-nums text-suave">de {brl0(p.progresso.objetivo)}</span>
+                </div>
+                <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-superficie-2">
+                  <div className="degrade-ativo h-full rounded-full" style={{ width: `${Math.max(2, p.progresso.pct)}%` }} />
+                </div>
+                <p className="mt-1.5 text-xs text-suave">
+                  {Math.round(p.progresso.pct)}% · mês {p.progresso.mesesPassados} de {p.meta.meses}
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="rounded-xl bg-superficie-2/60 p-3">
+                  <p className="text-[11px] text-suave">Já aportado</p>
+                  <p className="font-display text-base font-semibold tabular-nums text-texto">{brl0(p.progresso.aportado)}</p>
+                </div>
+                <div className="rounded-xl bg-gravata/10 p-3">
+                  <p className="text-[11px] text-suave">Livre para investir</p>
+                  <p className="font-display text-base font-semibold tabular-nums text-gravata">{brl0(p.progresso.livreParaAportar)}</p>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {p.progresso.livreParaAportar >= 50 ? (
+                  <Link href="/carteira/adicionar" className="gradiente-marca flex h-10 items-center justify-center rounded-full px-4 text-sm font-semibold text-white hover:brightness-110">
+                    Registrar aporte
+                  </Link>
+                ) : null}
+                <Link href="/financas/plano" className="flex h-10 items-center rounded-full border border-linha px-4 text-sm font-semibold text-texto hover:bg-superficie-2">
+                  Ver plano
+                </Link>
+              </div>
+            </>
+          ) : (
+            <Link href="/financas/plano" className="gradiente-marca flex h-11 w-fit items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold text-white hover:brightness-110">
+              <Target className="h-4 w-4" aria-hidden="true" />
+              Montar meu plano de aporte
+            </Link>
+          )}
+        </div>
+        <div className="flex flex-col gap-3 lg:border-l lg:border-linha lg:pl-6">
+          <p className="text-xs font-semibold text-suave">Limites do mês por categoria</p>
+          {p.orcamento.length ? (
+            <ul className="grid grid-cols-3 gap-x-2 gap-y-5">
+              {p.orcamento.map((o) => (
+                <li key={o.categoriaId}>
+                  <AnelOrcamento item={o} categoria={cat(o.categoriaId)} />
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="rounded-xl border border-dashed border-linha p-4 text-sm text-suave">
+              {p.meta ? "Seu plano não precisou de cortes: a sobra já cobre a meta." : "Os limites aparecem aqui quando você ativar um plano."}
+            </p>
+          )}
+        </div>
       </div>
 
       <Evolucao dados={p.evolucao} />
@@ -552,113 +637,6 @@ export function PainelFinancas(p: Props) {
             <p className="py-10 text-center text-sm text-suave">
               Nenhuma despesa neste mês.
             </p>
-          )}
-        </div>
-      </div>
-
-      {/* Orçamento do plano + meta */}
-      <div className="grid gap-4 lg:grid-cols-2 lg:gap-6">
-        <div className="painel flex flex-col gap-4 p-5">
-          <div className="flex items-start justify-between gap-2">
-            <div>
-              <h2 className="font-display text-base font-bold text-texto">
-                Orçamento do plano
-              </h2>
-              <p className="text-xs text-suave">
-                {p.meta
-                  ? "Limites combinados para as categorias com corte"
-                  : "Crie uma meta para ganhar limites por categoria"}
-              </p>
-            </div>
-          </div>
-          {p.orcamento.length ? (
-            <ul className="grid grid-cols-3 gap-x-2 gap-y-5 sm:grid-cols-3">
-              {p.orcamento.map((o) => (
-                <li key={o.categoriaId}>
-                  <AnelOrcamento item={o} categoria={cat(o.categoriaId)} />
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <Link
-              href="/financas/plano"
-              className="flex items-center gap-3 rounded-xl border border-dashed border-linha p-4 text-sm text-suave transition hover:border-ciano hover:text-texto"
-            >
-              <Target
-                className="h-5 w-5 shrink-0 text-gravata"
-                aria-hidden="true"
-              />
-              {p.meta
-                ? "Seu plano atual não precisou de cortes: a sobra já cobre a meta."
-                : "Diga quanto quer investir por mês e eu monto os limites e o diagnóstico dos seus gastos."}
-            </Link>
-          )}
-        </div>
-
-        <div className="painel flex flex-col gap-4 p-5">
-          <div>
-            <h2 className="font-display text-base font-bold text-texto">
-              {p.meta ? p.meta.nome : "Dinheiro livre para investir"}
-            </h2>
-            <p className="text-xs text-suave">
-              {p.meta
-                ? `${brl0(p.meta.valorMensal)} por mês para ${p.meta.destino}, durante ${p.meta.meses} meses`
-                : "A sobra de cada mês aparece aqui quando houver uma meta"}
-            </p>
-          </div>
-          {p.progresso && p.meta ? (
-            <>
-              <div>
-                <div className="flex items-baseline justify-between gap-2">
-                  <span className="font-display text-2xl font-bold tabular-nums text-texto">
-                    {brl0(p.progresso.economizado)}
-                  </span>
-                  <span className="text-xs tabular-nums text-suave">
-                    de {brl0(p.progresso.objetivo)}
-                  </span>
-                </div>
-                <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-superficie-2">
-                  <div
-                    className="h-full rounded-full bg-[linear-gradient(90deg,#2D5BFF,#FF8A3D)]"
-                    style={{ width: `${Math.max(2, p.progresso.pct)}%` }}
-                  />
-                </div>
-                <p className="mt-1.5 text-xs text-suave">
-                  {Math.round(p.progresso.pct)}% · mês{" "}
-                  {p.progresso.mesesPassados} de {p.meta.meses}
-                </p>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div className="rounded-xl bg-superficie-2/60 p-3">
-                  <p className="text-[11px] text-suave">Já aportado</p>
-                  <p className="font-display text-base font-bold tabular-nums text-texto">
-                    {brl0(p.progresso.aportado)}
-                  </p>
-                </div>
-                <div className="rounded-xl bg-gravata/10 p-3">
-                  <p className="text-[11px] text-suave">Livre para aportar</p>
-                  <p className="font-display text-base font-bold tabular-nums text-gravata">
-                    {brl0(p.progresso.livreParaAportar)}
-                  </p>
-                </div>
-              </div>
-              {p.progresso.livreParaAportar >= 50 ? (
-                <Link
-                  href="/carteira/adicionar"
-                  className="gradiente-marca flex h-11 items-center justify-center rounded-full text-sm font-bold text-white hover:brightness-110"
-                >
-                  Registrar aporte na carteira
-                </Link>
-              ) : null}
-            </>
-          ) : (
-            <Link
-              href="/financas/plano"
-              className="gradiente-marca flex h-11 items-center justify-center gap-2 rounded-full text-sm font-bold text-white hover:brightness-110"
-            >
-              <Target className="h-4 w-4" aria-hidden="true" />
-              Montar meu plano de aporte
-            </Link>
           )}
         </div>
       </div>

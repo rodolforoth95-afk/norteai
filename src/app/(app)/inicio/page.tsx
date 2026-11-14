@@ -1,12 +1,14 @@
 import Link from "next/link";
-import { ArrowRight, Check, ChevronRight, Clock, FileText, Keyboard, Plus, Search } from "lucide-react";
+import { ArrowRight, Check, ChevronRight, Clock, FileText, Keyboard, PiggyBank, PlayCircle, Plus, Radar, Search, UserRound } from "lucide-react";
 import type { ReactNode } from "react";
 import { AvisoEducacional } from "@/components/AvisoEducacional";
 import { Mascote } from "@/components/Logo";
 import { MODULOS, progressoModulo } from "@/lib/conteudo/modulos";
 import { aulaPorSlug } from "@/lib/conteudo/aulas";
 import { VIDEOS } from "@/lib/conteudo/videos";
-import { resumoMoedas } from "@/lib/dominio/moedas";
+import { alvoDoMes, rendaGuardadaAtual, resumoDoMes, somarMeses } from "@/lib/dominio/financas";
+import { videosRecentes } from "@/lib/conteudo/radar";
+import { carregarFinancas } from "@/lib/servidor/financas";
 import { DIAS_DESATUALIZADO, formatarData, hojeBR, resumoCarteira } from "@/lib/dominio/carteira";
 import { FAIXAS, INFO_ESTILO } from "@/lib/dominio/catalogo";
 import { brapiDisponivel, cotacao } from "@/lib/servidor/brapi";
@@ -31,13 +33,14 @@ function saudacao() {
 // Tela inicial: o que mudou no patrimônio, o que falta fazer hoje e o mercado do dia.
 export default async function PaginaInicio() {
   const { uid, repo, primeiroNome } = await exigirUsuario();
-  const [perfil, carteiraDados, moedas, concluidos, ibov, ind] = await Promise.all([
+  const [perfil, carteiraDados, moedas, concluidos, ibov, ind, financas] = await Promise.all([
     repo.obterPerfil(uid),
     repo.obterCarteira(uid),
     repo.listarMoedas(uid),
     repo.listarConcluidos(uid),
     brapiDisponivel() ? cotacao("^BVSP").catch(() => null) : Promise.resolve(null),
     indicadores().catch(() => null),
+    carregarFinancas(repo, uid).catch(() => null),
   ]);
 
   const hoje = hojeBR();
@@ -46,7 +49,20 @@ export default async function PaginaInicio() {
   const ultimoRegistro = carteira ? carteira.linhas.map((l) => l.ultimaData ?? "").sort().at(-1) || null : null;
   const nomeMes = new Date(`${hoje}T12:00:00`).toLocaleDateString("pt-BR", { month: "long" });
 
-  const moedasResumo = resumoMoedas(moedas);
+  // Quanto da renda a pessoa está guardando (Finanças).
+  const mesAtual = hoje.slice(0, 7);
+  const guardar = financas?.lancamentos.length
+    ? (() => {
+        const mes = resumoDoMes(financas, mesAtual);
+        const anterior = resumoDoMes(financas, somarMeses(mesAtual, -1));
+        const media = rendaGuardadaAtual(financas, mesAtual);
+        const pctMes = mes.receitas > 0 ? Math.round((mes.saldo / mes.receitas) * 100) : null;
+        const pctAnterior = anterior.receitas > 0 ? Math.round((anterior.saldo / anterior.receitas) * 100) : null;
+        const alvo = financas.metaGuardar ? alvoDoMes(financas.metaGuardar, mesAtual) : null;
+        return { mes, media, pctMes, pctAnterior, alvo, alvoFinal: financas.metaGuardar?.alvoPct ?? null };
+      })()
+    : null;
+  const radar = videosRecentes(3);
   const trilhas = MODULOS.map((m) => ({ m, ...progressoModulo(m, concluidos) }));
   const totalAulas = MODULOS.reduce((s, m) => s + m.aulas.length, 0);
   const aulasLidas = trilhas.reduce((s, t) => s + t.lidas, 0);
@@ -171,7 +187,7 @@ export default async function PaginaInicio() {
         </div>
       </header>
 
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)] lg:items-start">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)] lg:items-stretch">
         <div className="flex min-w-0 flex-col gap-6">
           {/* Patrimônio */}
           {carteira ? (
@@ -198,6 +214,45 @@ export default async function PaginaInicio() {
               <Link href="/carteira" className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-ciano hover:underline">
                 Abrir carteira <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </Link>
+              <div className="mt-5 flex flex-col gap-3 border-t border-linha pt-4 xl:flex-row xl:items-center xl:justify-between">
+                {perfil ? (
+                  <>
+                    <div className="flex items-start gap-3">
+                      <span className="degrade-ativo flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white">
+                        <UserRound className="h-5 w-5" aria-hidden="true" />
+                      </span>
+                      <div>
+                        <p className="text-xs text-suave">Seu perfil de investidor</p>
+                        <p className="font-display text-base font-semibold text-texto">
+                          {perfil.estilo} <span className="text-sm font-medium text-suave">· {INFO_ESTILO[perfil.estilo].risco.toLowerCase()}</span>
+                        </p>
+                        <p className="mt-0.5 text-xs leading-relaxed text-suave">
+                          Renda fixa entre {FAIXAS[perfil.estilo].renda_fixa.min}% e {FAIXAS[perfil.estilo].renda_fixa.max}%
+                          {FAIXAS[perfil.estilo].acoes_etfs.max > 0 ? `, ações e ETFs até ${FAIXAS[perfil.estilo].acoes_etfs.max}%` : ", sem ações"}.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex shrink-0 gap-4 text-sm font-semibold">
+                      <Link href="/perfil" className="text-ciano hover:underline">
+                        Ver perfil
+                      </Link>
+                      <Link href="/simulador" className="text-ciano hover:underline">
+                        Carteiras de exemplo
+                      </Link>
+                    </div>
+                  </>
+                ) : (
+                  <Link href="/entrevista" className="flex items-center gap-3 text-sm">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-superficie-2 text-ciano">
+                      <UserRound className="h-5 w-5" aria-hidden="true" />
+                    </span>
+                    <span>
+                      <span className="block font-semibold text-texto">Descubra seu perfil de investidor</span>
+                      <span className="block text-xs text-suave">9 perguntas · 3 min</span>
+                    </span>
+                  </Link>
+                )}
+              </div>
             </Painel>
           ) : (
             <Painel>
@@ -223,9 +278,107 @@ export default async function PaginaInicio() {
                   </Link>
                 ))}
               </div>
+              <div className="mt-5 flex flex-col gap-3 border-t border-linha pt-4 xl:flex-row xl:items-center xl:justify-between">
+                {perfil ? (
+                  <>
+                    <div className="flex items-start gap-3">
+                      <span className="degrade-ativo flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-white">
+                        <UserRound className="h-5 w-5" aria-hidden="true" />
+                      </span>
+                      <div>
+                        <p className="text-xs text-suave">Seu perfil de investidor</p>
+                        <p className="font-display text-base font-semibold text-texto">
+                          {perfil.estilo} <span className="text-sm font-medium text-suave">· {INFO_ESTILO[perfil.estilo].risco.toLowerCase()}</span>
+                        </p>
+                        <p className="mt-0.5 text-xs leading-relaxed text-suave">
+                          Renda fixa entre {FAIXAS[perfil.estilo].renda_fixa.min}% e {FAIXAS[perfil.estilo].renda_fixa.max}%
+                          {FAIXAS[perfil.estilo].acoes_etfs.max > 0 ? `, ações e ETFs até ${FAIXAS[perfil.estilo].acoes_etfs.max}%` : ", sem ações"}.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex shrink-0 gap-4 text-sm font-semibold">
+                      <Link href="/perfil" className="text-ciano hover:underline">
+                        Ver perfil
+                      </Link>
+                      <Link href="/simulador" className="text-ciano hover:underline">
+                        Carteiras de exemplo
+                      </Link>
+                    </div>
+                  </>
+                ) : (
+                  <Link href="/entrevista" className="flex items-center gap-3 text-sm">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-superficie-2 text-ciano">
+                      <UserRound className="h-5 w-5" aria-hidden="true" />
+                    </span>
+                    <span>
+                      <span className="block font-semibold text-texto">Descubra seu perfil de investidor</span>
+                      <span className="block text-xs text-suave">9 perguntas · 3 min</span>
+                    </span>
+                  </Link>
+                )}
+              </div>
             </Painel>
           )}
 
+        </div>
+        <div className="flex min-w-0 flex-col gap-6">
+          {/* Quanto guarda da renda */}
+          <Painel>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-sm text-suave">Quanto você guarda</p>
+                <p className="text-xs text-suave">da sua renda mensal</p>
+              </div>
+              <span className="degrade-ativo flex h-10 w-10 items-center justify-center rounded-xl text-white">
+                <PiggyBank className="h-5 w-5" aria-hidden="true" />
+              </span>
+            </div>
+            {guardar ? (
+              <>
+                <p className="mt-3 font-display text-[2.6rem] font-bold leading-none tabular-nums tracking-[-0.02em] text-texto">
+                  {guardar.pctMes ?? guardar.media}%
+                </p>
+                <p className="mt-2 text-sm text-suave">
+                  {brl(Math.max(0, guardar.mes.saldo))} de {brl(guardar.mes.receitas)} em {nomeMes}
+                </p>
+                {guardar.alvo !== null ? (
+                  <div className="mt-4">
+                    <div className="flex justify-between text-xs text-suave">
+                      <span>Meta do mês: {guardar.alvo}%</span>
+                      <span>alvo final {guardar.alvoFinal}%</span>
+                    </div>
+                    <div className="mt-1.5 h-2 overflow-hidden rounded-full bg-superficie-2">
+                      <div className="degrade-ativo h-full rounded-full" style={{ width: `${Math.min(100, Math.max(3, ((guardar.pctMes ?? 0) / Math.max(1, guardar.alvo)) * 100))}%` }} />
+                    </div>
+                  </div>
+                ) : null}
+                <p className="mt-3 text-xs text-suave">
+                  Média dos últimos meses: <span className="font-semibold text-texto">{guardar.media}%</span>
+                  {guardar.pctAnterior !== null ? (
+                    <>
+                      {" "}· mês passado <span className="font-semibold text-texto">{guardar.pctAnterior}%</span>
+                    </>
+                  ) : null}
+                </p>
+                <Link href="/financas" className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-ciano hover:underline">
+                  {guardar.alvo !== null ? "Ver minha meta" : "Criar meta de guardar"} <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
+              </>
+            ) : (
+              <>
+                <p className="mt-3 font-display text-xl font-semibold text-texto">Ainda sem lançamentos</p>
+                <p className="mt-1 text-sm text-suave">Lance receitas e despesas em Finanças e eu mostro quanto da sua renda sobra para investir.</p>
+                <Link href="/financas" className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-ciano hover:underline">
+                  Abrir Finanças <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                </Link>
+              </>
+            )}
+          </Painel>
+        </div>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)] lg:items-start">
+        <div className="flex min-w-0 flex-col gap-6">
           {/* Para fazer */}
           <Painel semPadding>
             <div className="flex items-baseline justify-between px-5 pt-5">
@@ -281,39 +434,7 @@ export default async function PaginaInicio() {
             ) : null}
           </Painel>
 
-          {/* Trilhas */}
-          <Painel semPadding>
-            <div className="flex items-baseline justify-between px-5 pt-5">
-              <h2 className="font-display text-[17px] font-semibold text-texto">Estudos</h2>
-              <Link href="/aprender" className="text-sm font-semibold text-ciano hover:underline">
-                Ver trilhas
-              </Link>
-            </div>
-            <p className="px-5 text-xs text-suave">
-              {aulasLidas} de {totalAulas} aulas · {quizzes} de {MODULOS.length} quizzes · {videosVistos} de {videosLivres.length} vídeos
-            </p>
-            <ul className="mt-3 divide-y divide-linha">
-              {trilhas.slice(0, 6).map((t) => (
-                <li key={t.m.slug}>
-                  <Link href={`/aprender/modulo/${t.m.slug}`} className="flex items-center gap-4 px-5 py-3 transition hover:bg-superficie-2/60">
-                    <span className="min-w-0 flex-1">
-                      <span className="block truncate text-sm font-semibold text-texto">{t.m.titulo}</span>
-                      <span className="block text-xs text-suave">
-                        {t.lidas} de {t.m.aulas.length} aulas{t.quiz ? " · quiz feito" : ""}
-                      </span>
-                    </span>
-                    <span className="hidden h-1.5 w-28 overflow-hidden rounded-full bg-superficie-2 sm:block" aria-hidden="true">
-                      <span className="block h-full rounded-full bg-[#2D5BFF]" style={{ width: `${t.pct}%` }} />
-                    </span>
-                    <span className="w-10 text-right text-xs font-semibold tabular-nums text-texto">{t.pct}%</span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </Painel>
         </div>
-
-        {/* Coluna lateral */}
         <aside className="flex min-w-0 flex-col gap-6">
           <Painel semPadding>
             <div className="flex items-baseline justify-between px-5 pt-5">
@@ -337,52 +458,76 @@ export default async function PaginaInicio() {
             <p className="px-5 pb-4 pt-2 text-[11px] text-suave">Banco Central e B3, com atraso de até 30 minutos.</p>
           </Painel>
 
-          {perfil ? (
-            <Painel>
-              <p className="text-sm text-suave">Seu perfil</p>
-              <p className="mt-0.5 font-display text-xl font-semibold text-texto">
-                {perfil.estilo} <span className="text-sm font-semibold text-suave">· {INFO_ESTILO[perfil.estilo].risco.toLowerCase()}</span>
-              </p>
-              <p className="mt-2 text-[13px] leading-relaxed text-suave">
-                Referência para a sua carteira: renda fixa entre {FAIXAS[perfil.estilo].renda_fixa.min}% e {FAIXAS[perfil.estilo].renda_fixa.max}%
-                {FAIXAS[perfil.estilo].acoes_etfs.max > 0 ? `, ações e ETFs até ${FAIXAS[perfil.estilo].acoes_etfs.max}%` : ", sem ações"}.
-              </p>
-              <div className="mt-3 flex gap-4 text-sm font-semibold">
-                <Link href="/perfil" className="text-ciano hover:underline">
-                  Ver detalhes
-                </Link>
-                <Link href="/simulador" className="text-ciano hover:underline">
-                  Carteiras de exemplo
-                </Link>
-              </div>
-            </Painel>
-          ) : null}
-
-          <Painel>
-            <div className="flex items-baseline justify-between">
-              <p className="text-sm text-suave">Coins</p>
-              <Link href="/aprender#coins" className="text-sm font-semibold text-ciano hover:underline">
-                Usar
+          <Painel semPadding>
+            <div className="flex items-baseline justify-between px-5 pt-5">
+              <h2 className="flex items-center gap-2 font-display text-[17px] font-semibold text-texto">
+                <Radar className="h-4 w-4 text-ciano" aria-hidden="true" /> Radar Findomo
+              </h2>
+              <Link href="/radar" className="text-sm font-semibold text-ciano hover:underline">
+                Abrir
               </Link>
             </div>
-            <p className="mt-0.5 font-display text-xl font-semibold tabular-nums text-texto">
-              {moedasResumo.saldo.toLocaleString("pt-BR")} <span className="text-sm font-semibold text-suave">· nível {moedasResumo.nivel}</span>
-            </p>
-            {moedasResumo.proximo ? (
-              <>
-                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-superficie-2" aria-hidden="true">
-                  <div className="h-full rounded-full bg-gravata" style={{ width: `${Math.round(moedasResumo.progresso * 100)}%` }} />
-                </div>
-                <p className="mt-1.5 text-xs text-suave">
-                  Faltam {moedasResumo.proximo.minimo - moedasResumo.ganhas} coins para o nível {moedasResumo.proximo.nome}.
-                </p>
-              </>
+            {radar.length ? (
+              <ul className="mt-2 divide-y divide-linha">
+                {radar.map((v) => (
+                  <li key={v.slug}>
+                    <Link href="/radar" className="flex items-center gap-3 px-5 py-3 hover:bg-superficie-2/60">
+                      <PlayCircle className="h-8 w-8 shrink-0 text-ciano" aria-hidden="true" />
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm font-semibold text-texto">{v.titulo}</span>
+                        <span className="block text-xs text-suave">
+                          {v.publicado_em.split("-").reverse().slice(0, 2).join("/")} · {v.duracao}
+                        </span>
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             ) : (
-              <p className="mt-1 text-xs text-suave">Nível máximo. Use as coins para liberar treinamentos.</p>
+              <Link href="/radar" className="m-5 mt-3 flex items-center gap-3 rounded-xl border border-dashed border-linha p-3.5 hover:border-ciano">
+                <PlayCircle className="h-8 w-8 shrink-0 text-ciano" aria-hidden="true" />
+                <span className="text-sm">
+                  <span className="block font-semibold text-texto">Vídeo de boas-vindas em breve</span>
+                  <span className="block text-xs text-suave">Expectativas e fechamentos da semana</span>
+                </span>
+              </Link>
             )}
           </Painel>
         </aside>
       </div>
+
+      {/* Estudos */}
+      <Painel>
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <div>
+            <h2 className="font-display text-[17px] font-semibold text-texto">Estudos</h2>
+            <p className="text-xs text-suave">
+              {aulasLidas} de {totalAulas} aulas · {quizzes} de {MODULOS.length} quizzes · {videosVistos} de {videosLivres.length} vídeos
+            </p>
+          </div>
+          <Link href="/aprender" className="text-sm font-semibold text-ciano hover:underline">
+            Ver todas as trilhas
+          </Link>
+        </div>
+        <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {trilhas.map((t) => (
+            <li key={t.m.slug}>
+              <Link href={`/aprender/modulo/${t.m.slug}`} className="flex h-full flex-col gap-2 rounded-2xl border border-linha p-4 transition hover:border-ciano hover:bg-superficie-2/50">
+                <span className="flex items-start justify-between gap-2">
+                  <span className="text-sm font-semibold text-texto">{t.m.titulo}</span>
+                  <span className="shrink-0 font-mono text-xs tabular-nums text-suave">{t.pct}%</span>
+                </span>
+                <span className="text-xs text-suave">
+                  {t.lidas} de {t.m.aulas.length} aulas{t.quiz ? " · quiz feito" : ""}
+                </span>
+                <span className="mt-auto h-1.5 overflow-hidden rounded-full bg-superficie-2" aria-hidden="true">
+                  <span className="degrade-ativo block h-full rounded-full" style={{ width: `${Math.max(2, t.pct)}%` }} />
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </Painel>
 
       <AvisoEducacional />
     </section>

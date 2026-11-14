@@ -3,6 +3,7 @@ import { criarClienteAdmin } from "@/lib/supabase/servidor";
 import type { Perfil, Posicao } from "@/lib/dominio/tipos";
 import { deVersaoAnterior, type CarteiraDados } from "@/lib/dominio/carteira";
 import type { FinancasDados } from "@/lib/dominio/financas";
+import type { ContaSimulada } from "@/lib/dominio/conta-simulada";
 import { ErroCarteira } from "../carteira";
 import type { Repositorio } from "./tipo";
 
@@ -108,6 +109,23 @@ export const repositorioSupabase: Repositorio = {
       throw new ErroCarteira("O banco de dados precisa ser atualizado (migração 0005) antes de salvar receitas e despesas.");
     }
     falhar("salvar finanças", error);
+  },
+
+  async obterContaSimulada(uid) {
+    const { data, error } = await criarClienteAdmin().from("conta_simulada").select("dados").eq("usuario_id", uid).maybeSingle();
+    if (error?.code === TABELA_INEXISTENTE) return null;
+    falhar("ler conta simulada", error);
+    return (data?.dados as ContaSimulada) ?? null;
+  },
+  async salvarContaSimulada(uid, dados) {
+    const cliente = criarClienteAdmin().from("conta_simulada");
+    const { error } = dados
+      ? await cliente.upsert({ usuario_id: uid, dados, atualizada_em: new Date().toISOString() }, { onConflict: "usuario_id" })
+      : await cliente.delete().eq("usuario_id", uid);
+    if (error?.code === TABELA_INEXISTENTE) {
+      throw new ErroCarteira("O banco de dados precisa ser atualizado (migração 0006) antes de usar a conta simulada.");
+    }
+    falhar("salvar conta simulada", error);
   },
 
   async listarMoedas(uid) {

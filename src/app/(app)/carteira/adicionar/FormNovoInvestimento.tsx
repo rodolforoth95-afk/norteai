@@ -46,6 +46,7 @@ export function FormNovoInvestimento() {
   const [quantidade, setQuantidade] = useState("");
   const [data, setData] = useState(hojeBR());
   const [aplicado, setAplicado] = useState("");
+  const [precoPago, setPrecoPago] = useState("");
   const [atual, setAtual] = useState("");
   const [salvo, setSalvo] = useState<string | null>(null);
   const { executar, pendente, erro, setErro, ganhos, limparGanhos } = useAcao();
@@ -66,9 +67,11 @@ export function FormNovoInvestimento() {
   }
 
   function salvar() {
-    const valorAplicado = lerDinheiro(aplicado);
+    const qtd = quantidade.trim() ? lerDinheiro(quantidade) : null;
+    const preco = precoPago.trim() ? lerDinheiro(precoPago) : null;
+    const valorAplicado = porUnidade && qtd && preco ? Math.round(qtd * preco * 100) / 100 : lerDinheiro(aplicado);
     const valorAtual = atual.trim() ? lerDinheiro(atual) : null;
-    if (!valorAplicado || valorAplicado <= 0) return setErro("Informe quanto você aplicou.");
+    if (!valorAplicado || valorAplicado <= 0) return setErro(porUnidade ? "Informe o preço pago por unidade." : "Informe quanto você aplicou.");
     if (data > hojeBR()) return setErro("A data da aplicação não pode ser depois de hoje.");
     executar(
       () =>
@@ -76,10 +79,10 @@ export function FormNovoInvestimento() {
           nome: nome.trim(),
           classe,
           tipo: tipo?.id ?? null,
-          quantidade: quantidade.trim() ? lerDinheiro(quantidade) : null,
+          quantidade: qtd,
           data,
           valorAplicado,
-          valorAtual,
+          valorAtual: porUnidade ? null : valorAtual,
         }),
       (r) => setSalvo(r.id ?? null),
     );
@@ -91,6 +94,7 @@ export function FormNovoInvestimento() {
     setNome("");
     setQuantidade("");
     setAplicado("");
+    setPrecoPago("");
     setAtual("");
     setData(hojeBR());
     setPasso(0);
@@ -118,7 +122,9 @@ export function FormNovoInvestimento() {
     );
   }
 
-  const valorAplicado = lerDinheiro(aplicado);
+  const porUnidade = Boolean(tipo?.bolsa || tipo?.id === "cripto") && Boolean(quantidade.trim());
+  const totalPorUnidade = porUnidade && lerDinheiro(quantidade) && lerDinheiro(precoPago) ? Math.round(lerDinheiro(quantidade)! * lerDinheiro(precoPago)! * 100) / 100 : null;
+  const valorAplicado = porUnidade ? totalPorUnidade : lerDinheiro(aplicado);
   const valorAtual = lerDinheiro(atual);
 
   return (
@@ -229,13 +235,25 @@ export function FormNovoInvestimento() {
         <div className="flex flex-col gap-4">
           <h2 className="font-display text-lg font-bold text-texto">Quanto e quando?</h2>
           <CampoData rotulo="Data da aplicação" valor={data} onChange={setData} ajuda="Quando o dinheiro entrou. Pode ser uma data passada, nunca futura." />
-          <CampoDinheiro rotulo="Valor aplicado" valor={aplicado} onChange={setAplicado} obrigatorio autoFocus ajuda="Quanto você investiu (sem rendimento)." />
-          <CampoDinheiro
-            rotulo="Quanto vale hoje (opcional)"
-            valor={atual}
-            onChange={setAtual}
-            ajuda="Se já rendeu, informe o saldo atual do extrato. Em branco, consideramos o valor aplicado."
-          />
+          {porUnidade ? (
+            <>
+              <CampoDinheiro rotulo="Preço pago por unidade" valor={precoPago} onChange={setPrecoPago} obrigatorio autoFocus ajuda="O preço médio que você pagou em cada ação, cota ou unidade." />
+              <p className="rounded-xl bg-superficie-2 px-3 py-2.5 text-sm text-texto">
+                {quantidade} × {precoPago || "0,00"} = <span className="font-semibold">{totalPorUnidade ? brl(totalPorUnidade) : "—"}</span> aplicados.{" "}
+                <span className="text-suave">Depois de salvar, o Findomo atualiza o saldo pela cotação todo dia útil.</span>
+              </p>
+            </>
+          ) : (
+            <>
+              <CampoDinheiro rotulo="Valor aplicado" valor={aplicado} onChange={setAplicado} obrigatorio autoFocus ajuda="Quanto você investiu (sem rendimento)." />
+              <CampoDinheiro
+                rotulo="Quanto vale hoje (opcional)"
+                valor={atual}
+                onChange={setAtual}
+                ajuda="Se já rendeu, informe o saldo atual do extrato. Em branco, consideramos o valor aplicado."
+              />
+            </>
+          )}
           {valorAplicado && valorAtual ? (
             <p className={`rounded-xl px-3 py-2 text-sm ${valorAtual >= valorAplicado ? "bg-menta/10 text-menta" : "bg-erro/10 text-erro"}`}>
               {valorAtual >= valorAplicado ? "Rendimento" : "Queda"} de {brl(Math.abs(valorAtual - valorAplicado))} (

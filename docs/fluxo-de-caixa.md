@@ -8,6 +8,7 @@ Módulo **Finanças** do Findomo: lançar receitas e despesas por texto, foto ou
 |------|-----------|
 | `/financas` | Cartões (Receitas, Despesas, Saldo livre, Potencial de aporte), gráfico de fluxo de caixa de 6 meses (barras de receitas e despesas + linha "Reinvestido" vinda das aplicações da Carteira), rosca por categoria que filtra a lista, termômetros do orçamento (verde < 80%, laranja 80–99%, vermelho ≥ 100%), meta com "livre para aportar", lista do mês agrupada por dia e insights do Mordomo. Navega por mês (`?mes=AAAA-MM`). |
 | DRE (no painel) | Demonstrativo do mês com os dois anteriores: Receitas por categoria, (−) despesas essenciais, = sobra após o essencial, (−) despesas variáveis, = resultado do mês (lucro), (−) aportes na carteira, = caixa livre, margem (lucro ÷ receitas), % das receitas e variação contra o mês anterior. Tocar numa categoria abre a lista filtrada. Função pura `dreDosMeses`. |
+| Desafio de guardar (no painel) | Alvo de 5% a 60% da renda e ritmo suave (+1 p.p./mês), moderado (+2) ou agressivo (+4). Cada mês é um degrau (`escadaGuardar`); degrau batido em mês fechado vale 40 coins; mostra o que mais pesa nas despesas variáveis contra a média de 3 meses. |
 | `/financas/plano` | Diagnóstico de 30, 60 ou 90 dias (médias, ralos, cobranças recorrentes), simulador de meta (valor/mês, prazo, destino) com cortes por categoria calculados ao vivo, texto do plano (local ou pela IA), ativação e acompanhamento da meta. |
 | `/financas/categorias` | Categorias e subcategorias (cor, ícone, "essencial"), regras aprendidas (estabelecimento → categoria) com opção de esquecer. |
 | Botão `+` (todas as telas do app) | Abre **Falar**, **Foto do comprovante** ou **Digitar**. Foto e voz geram uma prévia no mesmo formulário, que a pessoa confere e salva em um clique. |
@@ -182,6 +183,22 @@ Com os cortes a pessoa não atinge totalmente a meta (sobra R$ 2.196 + cortes R$
 ```
 
 Sem a chave da Anthropic, o app escreve o mesmo plano com um modelo de texto local (`textoLocal` em `PlanoMordomo.tsx`), a leitura de frases usa `interpretarFrase` e a leitura de fotos é feita no próprio aparelho: OCR com tesseract.js (português; o leitor e o idioma são baixados da CDN jsdelivr na primeira vez) e `lerTextoComprovante`, que procura o total (linhas com "valor total", "total a pagar", "total", ignorando subtotal, troco e desconto), a data (nunca futura), o estabelecimento ou o destinatário do Pix e o meio de pagamento. A foto não sai do aparelho.
+
+### 4.3 Assistente de finanças (chat)
+
+Usado por `/api/financas/chat`. O sistema recebe o prompt abaixo mais um resumo montado por `contextoFinancas` (4 meses por categoria, médias de 90 dias, renda guardada, ralos, recorrentes, plano e desafio). Sem a chave, `responderLocal` responde as perguntas comuns (gasto por categoria, maiores gastos, assinaturas, quanto sobra, como bater a meta).
+
+```text
+Você é a assistente pessoal de finanças do Findomo, com a voz do Mordomo: elegante, prática, próxima e sem julgamento.
+Você recebe um resumo dos lançamentos da pessoa (receitas, despesas por categoria, médias, metas) e responde perguntas sobre o dinheiro dela.
+
+Regras:
+- Responda em português do Brasil, em no máximo 5 frases curtas ou uma lista de até 4 itens.
+- Use só os números do resumo; se faltar dado, diga o que lançar para responder.
+- Pode sugerir cortes e hábitos concretos, nunca em moradia, saúde, educação, contas da casa ou dívidas.
+- Não indique ativos, fundos, bancos ou corretoras específicos e não prometa rentabilidade; para investimentos, fale do tipo (renda fixa, ações) e aponte o Simulador.
+- Sem emojis. Valores em reais arredondados.
+```
 
 ## 5. Voz
 

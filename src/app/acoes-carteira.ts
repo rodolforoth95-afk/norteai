@@ -7,6 +7,7 @@ import { estadoEm, hojeBR } from "@/lib/dominio/carteira";
 import { exigirUsuario } from "@/lib/servidor/sessao";
 import { brapiDisponivel, cotacoes, tagAtivo } from "@/lib/servidor/brapi";
 import { carteiraExemplo } from "@/lib/servidor/exemplo";
+import { atualizarCotacoesDoDia, investimentosDeBolsa } from "@/lib/servidor/carteira-mercado";
 import { registrarErro } from "@/lib/servidor/util";
 import {
   ErroCarteira,
@@ -162,31 +163,16 @@ export async function atualizarPelasCotacoes() {
   if (!brapiDisponivel()) return { erro: "Cotações indisponíveis no momento." };
   const { uid, repo } = await exigirUsuario();
   const carteira = await carregarCarteira(repo, uid);
-  const hoje = hojeBR();
-  const elegiveis = carteira.investimentos.filter(
-    (i) => i.quantidade && extrairTicker(i.nome) === i.nome.toUpperCase() && estadoEm(i, hoje).saldo > 0,
-  );
+  const elegiveis = investimentosDeBolsa(carteira);
   if (!elegiveis.length) return { erro: "Nenhum investimento com código de bolsa e quantidade para atualizar." };
-
   for (const i of elegiveis) revalidateTag(tagAtivo(i.nome));
-  let precos: Awaited<ReturnType<typeof cotacoes>>;
   try {
-    precos = await cotacoes(elegiveis.map((i) => i.nome.toUpperCase()));
+    const r = await atualizarCotacoesDoDia(repo, uid, true);
+    revalidatePath("/", "layout");
+    return { ok: true as const, ganhos: r.ganhos ?? [], resumo: { atualizados: r.atualizados, total: r.total } };
   } catch {
     return { erro: "Não foi possível buscar as cotações agora. Tente mais tarde." };
   }
-  const porSimbolo = new Map(precos.map((p) => [p.simbolo, p.preco]));
-  let atualizados = 0;
-  const r = await executar((c) => {
-    for (const inv of c.investimentos) {
-      const preco = porSimbolo.get(inv.nome.toUpperCase());
-      if (!preco || !inv.quantidade || !elegiveis.some((e) => e.id === inv.id)) continue;
-      registrarMovimentacao(c, { investimentoId: inv.id, tipo: "saldo", data: hoje, valor: preco * inv.quantidade, quantidade: inv.quantidade }, "cotacao");
-      atualizados++;
-    }
-    return { resumo: { atualizados, total: elegiveis.length } };
-  });
-  return r;
 }
 
 // --- Modo de teste --------------------------------------------------------------

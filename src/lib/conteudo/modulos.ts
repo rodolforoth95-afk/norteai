@@ -25,11 +25,23 @@ export const MODULOS: Modulo[] = [
     ],
   },
   {
+    slug: "gestao-financeira",
+    titulo: "Gestão financeira pessoal",
+    descricao: "Orçamento, pagar-se primeiro, dívidas e metas.",
+    icone: "base",
+    aulas: ["orcamento-pessoal", "pague-se-primeiro", "dividas-e-credito", "metas-financeiras"],
+    quiz: [
+      { pergunta: "Na divisão de referência 50/30/20, os 20% vão para:", opcoes: ["Lazer", "O futuro: reserva e investimentos", "Moradia"], correta: 1, explicacao: "50% essencial, 30% variável e 20% para o futuro, como ponto de partida." },
+      { pergunta: "\"Pagar-se primeiro\" significa:", opcoes: ["Guardar o que sobrar no fim do mês", "Separar o valor do futuro assim que a renda cai", "Pagar as dívidas por último"], correta: 1, explicacao: "O valor do futuro vira uma conta fixa, separada logo no começo do mês." },
+      { pergunta: "Qual dívida costuma ser prioridade para quitar?", opcoes: ["Rotativo do cartão", "Financiamento imobiliário", "Nenhuma"], correta: 0, explicacao: "O rotativo do cartão e o cheque especial têm alguns dos juros mais altos do mercado." },
+    ],
+  },
+  {
     slug: "tipos-investimentos",
     titulo: "Tipos de investimentos",
-    descricao: "Renda fixa, FIIs, multimercado, exterior e cripto.",
+    descricao: "Renda fixa, ações, ETFs, FIIs, multimercado, exterior e cripto.",
     icone: "carteira",
-    aulas: ["renda_fixa", "fiis", "multimercado", "exterior", "cripto"],
+    aulas: ["renda_fixa", "acoes_etfs", "bdrs-etfs", "fiis", "multimercado", "exterior", "cripto"],
     quiz: [
       { pergunta: "Qual destes tem garantia do FGC (até o limite)?", opcoes: ["CDB", "Debênture", "Ação"], correta: 0, explicacao: "CDB, LCI e LCA têm FGC até R$ 250 mil por CPF e instituição. Debêntures e ações não têm." },
       { pergunta: "Os rendimentos mensais de FIIs para pessoa física, pela regra atual:", opcoes: ["Pagam 15% de IR", "São isentos, com condições", "Não existem"], correta: 1, explicacao: "Hoje são isentos para pessoa física, desde que fundo e investidor cumpram algumas condições." },
@@ -37,15 +49,39 @@ export const MODULOS: Modulo[] = [
     ],
   },
   {
+    slug: "diversificacao",
+    titulo: "Fundamentos da diversificação",
+    descricao: "Correlação, alocação por classe e rebalanceamento.",
+    icone: "escudo",
+    aulas: ["por-que-diversificar", "correlacao", "alocacao-de-ativos", "rebalanceamento"],
+    quiz: [
+      { pergunta: "Dez ações de bancos formam uma carteira diversificada?", opcoes: ["Sim, são dez ativos", "Não, tendem a se mover juntas", "Depende da corretora"], correta: 1, explicacao: "Ativos do mesmo setor costumam ter correlação alta; diversificar é variar classes, setores e países." },
+      { pergunta: "Rebalancear é:", opcoes: ["Vender tudo quando cai", "Voltar às proporções planejadas", "Comprar só o que mais subiu"], correta: 1, explicacao: "Rebalancear devolve a carteira à alocação combinada, controlando o risco." },
+      { pergunta: "O que mais explica a oscilação de uma carteira no longo prazo?", opcoes: ["A alocação entre classes", "O horário das compras", "O número de ativos"], correta: 0, explicacao: "Quanto vai para cada classe pesa mais que a escolha individual de ativos." },
+    ],
+  },
+  {
     slug: "tipos-acoes",
     titulo: "Tipos de ações",
-    descricao: "ON, PN, units, tamanho, dividendos, BDRs e setores.",
+    descricao: "ON, PN, units, tamanho, dividendos e setores.",
     icone: "acoes",
-    aulas: ["acoes_etfs", "on-pn-units", "tamanho-empresas", "dividendos-crescimento", "bdrs-etfs", "setores"],
+    aulas: ["on-pn-units", "tamanho-empresas", "dividendos-crescimento", "setores"],
     quiz: [
       { pergunta: "Uma ação com final 3 é, em geral:", opcoes: ["Preferencial", "Ordinária, com direito a voto", "Um FII"], correta: 1, explicacao: "Final 3 indica ação ordinária (ON), que dá direito a voto." },
       { pergunta: "Um ETF é:", opcoes: ["Uma cesta de ativos negociada como uma ação", "Um título do governo", "Um tipo de CDB"], correta: 0, explicacao: "ETFs replicam índices: uma cota dá exposição a vários ativos." },
       { pergunta: "Setores defensivos costumam:", opcoes: ["Oscilar mais na crise", "Depender muito do ciclo econômico", "Oscilar menos em diferentes cenários"], correta: 2, explicacao: "Energia, saneamento e saúde vendem serviços usados em qualquer cenário e tendem a oscilar menos." },
+    ],
+  },
+  {
+    slug: "acoes-etfs",
+    titulo: "Ações e ETFs na prática",
+    descricao: "Preço, proventos, indicadores, ETFs, custos e IR.",
+    icone: "acoes",
+    aulas: ["como-funciona-acao", "ganhos-com-acoes", "etfs-na-pratica", "custos-e-impostos-bolsa"],
+    quiz: [
+      { pergunta: "Quem recebe um dividendo anunciado?", opcoes: ["Quem tem a ação no fim da data com", "Quem compra no dia do pagamento", "Todos os clientes da corretora"], correta: 0, explicacao: "É preciso ter a ação ao fim da data com." },
+      { pergunta: "Um ETF de ações:", opcoes: ["Tenta superar o índice", "Replica um índice em uma cota", "Tem garantia do FGC"], correta: 1, explicacao: "ETFs acompanham um índice; não têm FGC." },
+      { pergunta: "Vendas de ações até R$ 20 mil no mês (operações comuns) são:", opcoes: ["Isentas de IR", "Tributadas em 20%", "Proibidas"], correta: 0, explicacao: "Há isenção para vendas de até R$ 20 mil no mês em operações comuns; não vale para ETFs." },
     ],
   },
   {

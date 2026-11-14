@@ -77,6 +77,8 @@ export function PainelTecnico({
   // Começa mostrando o suporte e a resistência mais próximos.
   const [selecionados, setSelecionados] = useState<Set<string>>(() => new Set(niveis.filter((n) => n.id.endsWith("-1")).map((n) => n.id)));
   const [foco, setFoco] = useState<number | null>(null);
+  // Abas do gráfico: cada uma mostra só um grupo de informações, para a tela não poluir.
+  const [vista, setVista] = useState<"preco" | "medias" | "niveis" | "pivos">("preco");
 
   const mm9 = useMemo(() => mediaMovel(candles, 9), [candles]);
   const mm21 = useMemo(() => mediaMovel(candles, 21), [candles]);
@@ -95,7 +97,8 @@ export function PainelTecnico({
     mm9: mm9[inicio + k],
     mm21: mm21[inicio + k],
   }));
-  const linhasVisiveis = todos.filter((n) => selecionados.has(n.id));
+  const linhasVisiveis = vista === "niveis" ? niveis.filter((n) => selecionados.has(n.id)) : vista === "pivos" ? pivos.filter((n) => selecionados.has(n.id) || !pivos.some((x) => selecionados.has(x.id))) : [];
+  const verMedias = vista === "medias";
   const precos = [...visiveis.flatMap((c) => [c.minima, c.maxima]), ...linhasVisiveis.map((n) => n.preco)];
   const minY = Math.min(...precos);
   const maxY = Math.max(...precos);
@@ -106,6 +109,7 @@ export function PainelTecnico({
   const varFoco = anterior ? (focado.fechamento / anterior.fechamento - 1) * 100 : null;
 
   function alternar(id: string) {
+    setVista(pivos.some((x) => x.id === id) ? "pivos" : "niveis");
     setSelecionados((s) => {
       const n = new Set(s);
       if (n.has(id)) n.delete(id);
@@ -146,63 +150,71 @@ export function PainelTecnico({
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-1.5">
-          {(
-            [
-              ["mm9", "Média 9 dias", COR_MM9],
-              ["mm21", "Média 21 dias", COR_MM21],
-              ["volume", "Volume", tema.suave],
-            ] as [Camada, string, string][]
-          ).map(([id, rotulo, cor]) => (
-            <Chip key={id} ativo={camadas[id]} cor={cor} onClick={() => setCamadas((c) => ({ ...c, [id]: !c[id] }))}>
-              {rotulo}
-            </Chip>
-          ))}
-          <span className="mx-1 hidden h-8 w-px bg-linha sm:block" aria-hidden="true" />
-          <Chip
-            ativo={niveis.some((n) => n.tipo === "suporte" && selecionados.has(n.id))}
-            cor={COR_SUPORTE}
-            onClick={() => {
-              const ids = niveis.filter((n) => n.tipo === "suporte").map((n) => n.id);
-              const algum = ids.some((id) => selecionados.has(id));
-              setSelecionados((s) => {
-                const n = new Set(s);
-                ids.forEach((id) => (algum ? n.delete(id) : n.add(id)));
-                return n;
-              });
-            }}
-          >
-            Suportes
-          </Chip>
-          <Chip
-            ativo={niveis.some((n) => n.tipo === "resistencia" && selecionados.has(n.id))}
-            cor={COR_RESISTENCIA}
-            onClick={() => {
-              const ids = niveis.filter((n) => n.tipo === "resistencia").map((n) => n.id);
-              const algum = ids.some((id) => selecionados.has(id));
-              setSelecionados((s) => {
-                const n = new Set(s);
-                ids.forEach((id) => (algum ? n.delete(id) : n.add(id)));
-                return n;
-              });
-            }}
-          >
-            Resistências
-          </Chip>
-          <Chip
-            ativo={pivos.some((n) => selecionados.has(n.id))}
-            cor={COR_PIVO}
-            onClick={() => {
-              const algum = pivos.some((n) => selecionados.has(n.id));
-              setSelecionados((s) => {
-                const n = new Set(s);
-                pivos.forEach((x) => (algum ? n.delete(x.id) : n.add(x.id)));
-                return n;
-              });
-            }}
-          >
-            Pivôs
-          </Chip>
+        <div className="flex flex-col gap-2.5 border-y border-linha py-2.5">
+          <div className="-mx-1 flex gap-1 overflow-x-auto px-1 [scrollbar-width:none]" role="tablist" aria-label="O que mostrar no gráfico">
+            {(
+              [
+                ["preco", "Preço"],
+                ["medias", "Médias e volume"],
+                ["niveis", "Suportes e resistências"],
+                ["pivos", "Pivôs"],
+              ] as const
+            ).map(([id, rotulo]) => (
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                aria-selected={vista === id}
+                onClick={() => setVista(id)}
+                className={`min-h-9 shrink-0 rounded-full px-3.5 text-xs font-semibold transition ${vista === id ? "degrade-ativo text-white" : "text-suave hover:bg-superficie-2 hover:text-texto"}`}
+              >
+                {rotulo}
+              </button>
+            ))}
+          </div>
+          {vista === "medias" ? (
+            <div className="flex flex-wrap gap-1.5">
+              {(
+                [
+                  ["mm9", "Média 9 dias", COR_MM9],
+                  ["mm21", "Média 21 dias", COR_MM21],
+                  ["volume", "Volume", tema.suave],
+                ] as [Camada, string, string][]
+              ).map(([id, rotulo, cor]) => (
+                <Chip key={id} ativo={camadas[id]} cor={cor} onClick={() => setCamadas((c) => ({ ...c, [id]: !c[id] }))}>
+                  {rotulo}
+                </Chip>
+              ))}
+            </div>
+          ) : vista === "niveis" ? (
+            <div className="flex flex-wrap items-center gap-1.5">
+              {(["suporte", "resistencia"] as const).map((t) => {
+                const ids = niveis.filter((n) => n.tipo === t).map((n) => n.id);
+                const algum = ids.some((id) => selecionados.has(id));
+                return (
+                  <Chip
+                    key={t}
+                    ativo={algum}
+                    cor={t === "suporte" ? COR_SUPORTE : COR_RESISTENCIA}
+                    onClick={() =>
+                      setSelecionados((s) => {
+                        const n = new Set(s);
+                        ids.forEach((id) => (algum ? n.delete(id) : n.add(id)));
+                        return n;
+                      })
+                    }
+                  >
+                    {t === "suporte" ? "Suportes" : "Resistências"}
+                  </Chip>
+                );
+              })}
+              <span className="text-[11px] text-suave">Escolha níveis específicos na tabela abaixo.</span>
+            </div>
+          ) : vista === "pivos" ? (
+            <p className="text-[11px] text-suave">Pivôs mensais: pontos de referência calculados com a máxima, a mínima e o fechamento do último mês.</p>
+          ) : (
+            <p className="text-[11px] text-suave">Só o preço. Use as abas para ver médias, volume, suportes, resistências ou pivôs.</p>
+          )}
         </div>
 
         <div className="h-80 w-full touch-pan-y lg:h-[26rem]" role="img" aria-label={`Gráfico de ${simbolo}: ${dados.length} pregões, de ${preco(dados[0]?.fechamento)} para ${preco(atual.fechamento)}`}>
@@ -238,7 +250,7 @@ export function PainelTecnico({
               <YAxis yAxisId="volume" hide domain={[0, maxVolume * 4.5]} />
               <Tooltip content={() => null} cursor={{ stroke: tema.suave, strokeWidth: 1, strokeDasharray: "3 3" }} />
 
-              {camadas.volume ? (
+              {verMedias && camadas.volume ? (
                 <Bar yAxisId="volume" dataKey="volume" isAnimationActive={false} maxBarSize={10}>
                   {dados.map((d) => (
                     <Cell key={d.data} fill={d.alta ? VERDE : VERMELHO} fillOpacity={0.25} />
@@ -252,8 +264,8 @@ export function PainelTecnico({
                 <Area yAxisId="preco" type="monotone" dataKey="fechamento" stroke={tema.destaque} strokeWidth={2.5} fill="url(#area-tecnica)" dot={false} isAnimationActive={false} />
               )}
 
-              {camadas.mm9 ? <Line yAxisId="preco" type="monotone" dataKey="mm9" stroke={COR_MM9} strokeWidth={1.6} dot={false} connectNulls isAnimationActive={false} /> : null}
-              {camadas.mm21 ? <Line yAxisId="preco" type="monotone" dataKey="mm21" stroke={COR_MM21} strokeWidth={1.6} dot={false} connectNulls isAnimationActive={false} /> : null}
+              {verMedias && camadas.mm9 ? <Line yAxisId="preco" type="monotone" dataKey="mm9" stroke={COR_MM9} strokeWidth={1.6} dot={false} connectNulls isAnimationActive={false} /> : null}
+              {verMedias && camadas.mm21 ? <Line yAxisId="preco" type="monotone" dataKey="mm21" stroke={COR_MM21} strokeWidth={1.6} dot={false} connectNulls isAnimationActive={false} /> : null}
 
               {linhasVisiveis.map((n) => (
                 <ReferenceLine

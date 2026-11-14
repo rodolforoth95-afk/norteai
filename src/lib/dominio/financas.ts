@@ -53,12 +53,17 @@ export type MetaEconomia = {
   criada_em: string;
 };
 
+// Meta gradual de quanto guardar da renda: sobe alguns pontos por mês até o alvo.
+export type RitmoGuardar = "suave" | "moderado" | "agressivo";
+export type MetaGuardar = { alvoPct: number; ritmo: RitmoGuardar; inicioPct: number; inicio: string; criada_em: string };
+
 export type FinancasDados = {
   versao: 1;
   categorias: Categoria[];
   lancamentos: Lancamento[];
   regras: Regra[];
   metas: MetaEconomia[];
+  metaGuardar?: MetaGuardar | null;
   atualizada_em: string;
 };
 
@@ -775,7 +780,7 @@ export type Evolucao = {
   mesesPositivos: number;
   taxaMedia: number | null;
   variacaoVariaveis: number | null; // % das variáveis (3 últimos meses vs 3 anteriores)
-  variacaoTaxa: number | null; // pontos percentuais da taxa de poupança (mês atual vs média anterior)
+  variacaoTaxa: number | null; // pontos percentuais da renda guardada (mês atual vs média anterior)
 };
 
 // Seis meses de receitas, despesas e sobra, com uma pontuação simples de saúde financeira:
@@ -842,5 +847,84 @@ export function evolucaoFinanceira(dados: Pick<FinancasDados, "lancamentos" | "c
     taxaMedia: taxas.length ? arred(taxas.reduce((s, t) => s + t, 0) / taxas.length) : null,
     variacaoVariaveis: variacaoVariaveis === null ? null : arred(variacaoVariaveis),
     variacaoTaxa: atual !== null && antes.length ? arred(atual - antes.reduce((s, t) => s + t, 0) / antes.length) : null,
+  };
+}
+
+// --- Meta gradual de guardar (gamificação) -------------------------------------------------
+
+export const PASSO_RITMO: Record<RitmoGuardar, { passo: number; rotulo: string; texto: string }> = {
+  suave: { passo: 1, rotulo: "Suave", texto: "+1 ponto por mês" },
+  moderado: { passo: 2, rotulo: "Moderado", texto: "+2 pontos por mês" },
+  agressivo: { passo: 4, rotulo: "Agressivo", texto: "+4 pontos por mês" },
+};
+
+export type Degrau = { mes: string; alvoPct: number; guardadoPct: number | null; valorAlvo: number; guardado: number; estado: "batido" | "faltou" | "andamento" | "futuro" };
+
+export type EscadaGuardar = {
+  degraus: Degrau[];
+  atual: Degrau | null;
+  batidos: number;
+  faltaNoMes: number;
+  mesAlvo: string; // mês em que chega ao alvo
+  impedimentos: { categoriaId: string; gasto: number; media: number; excesso: number }[];
+};
+
+// Quanto da renda a pessoa guarda hoje (média dos últimos 3 meses com receita).
+export function rendaGuardadaAtual(dados: Pick<FinancasDados, "lancamentos" | "categorias">, mesAtual: string) {
+  const meses = [1, 2, 3].map((i) => resumoDoMes(dados, somarMeses(mesAtual, -i))).filter((r) => r.receitas > 0);
+  const base = meses.length ? meses : [resumoDoMes(dados, mesAtual)].filter((r) => r.receitas > 0);
+  const rec = base.reduce((s, r) => s + r.receitas, 0);
+  return rec > 0 ? Math.max(0, Math.round((base.reduce((s, r) => s + r.saldo, 0) / rec) * 100)) : 0;
+}
+
+export function alvoDoMes(meta: MetaGuardar, mes: string) {
+  const [a1, m1] = meta.inicio.split("-").map(Number);
+  const [a2, m2] = mes.split("-").map(Number);
+  const indice = (a2 - a1) * 12 + (m2 - m1);
+  return Math.min(meta.alvoPct, meta.inicioPct + PASSO_RITMO[meta.ritmo].passo * (indice + 1));
+}
+
+// Degraus mês a mês, do início até o alvo (no máximo 12 à frente), o mês atual e o que
+// mais está pesando nas despesas variáveis em relação à média dos 3 meses anteriores.
+export function escadaGuardar(dados: Pick<FinancasDados, "lancamentos" | "categorias">, meta: MetaGuardar, mesAtual: string): EscadaGuardar {
+  const degraus: Degrau[] = [];
+  let mes = meta.inicio;
+  for (let i = 0; i < 36; i++) {
+    const alvoPct = alvoDoMes(meta, mes);
+    const r = resumoDoMes(dados, mes);
+    const futuro = mes > mesAtual;
+    const guardadoPct = !futuro && r.receitas > 0 ? Math.round((r.saldo / r.receitas) * 1000) / 10 : null;
+    degraus.push({
+      mes,
+      alvoPct,
+      guardadoPct,
+      valorAlvo: arred((r.receitas * alvoPct) / 100),
+      guardado: futuro ? 0 : r.saldo,
+      estado: futuro ? "futuro" : mes === mesAtual ? "andamento" : guardadoPct !== null && guardadoPct >= alvoPct ? "batido" : "faltou",
+    });
+    if (alvoPct >= meta.alvoPct && mes >= mesAtual) break;
+    mes = somarMeses(mes, 1);
+  }
+  const atual = degraus.find((d) => d.mes === mesAtual) ?? null;
+  const mesAlvo = degraus.find((d) => d.alvoPct >= meta.alvoPct)?.mes ?? degraus.at(-1)!.mes;
+
+  const agora = resumoDoMes(dados, mesAtual);
+  const anteriores = [1, 2, 3].map((i) => resumoDoMes(dados, somarMeses(mesAtual, -i)));
+  const impedimentos = agora.porCategoria
+    .filter((p) => !dados.categorias.find((c) => c.id === p.categoriaId)?.essencial)
+    .map((p) => {
+      const media = arred(anteriores.reduce((s, r) => s + (r.porCategoria.find((x) => x.categoriaId === p.categoriaId)?.total ?? 0), 0) / anteriores.length);
+      return { categoriaId: p.categoriaId, gasto: p.total, media, excesso: arred(p.total - media) };
+    })
+    .sort((a, b) => Math.max(0, b.excesso) - Math.max(0, a.excesso) || b.gasto - a.gasto)
+    .slice(0, 4);
+
+  return {
+    degraus,
+    atual,
+    batidos: degraus.filter((d) => d.estado === "batido").length,
+    faltaNoMes: atual ? Math.max(0, arred(atual.valorAlvo - atual.guardado)) : 0,
+    mesAlvo,
+    impedimentos,
   };
 }

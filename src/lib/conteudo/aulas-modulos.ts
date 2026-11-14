@@ -57,6 +57,156 @@ export const AULAS_MODULOS: Aula[] = [
     formas: [],
   },
 
+  // --- Gestão financeira ------------------------------------------------------------------
+  {
+    slug: "orcamento-pessoal",
+    titulo: "Orçamento: para onde vai o seu dinheiro",
+    categoria: "Gestão financeira",
+    minutos: 4,
+    secoes: [
+      { titulo: "O primeiro passo é enxergar", paragrafos: ["Antes de cortar qualquer coisa, anote tudo o que entra e sai por um mês. A maioria das pessoas se surpreende com o peso dos gastos pequenos e frequentes, como delivery, transporte por aplicativo e assinaturas."] },
+      { titulo: "Uma divisão de referência", paragrafos: ["Uma regra simples para começar: cerca de 50% da renda para o essencial (moradia, contas, mercado, saúde), 30% para o variável (lazer, restaurantes, compras) e 20% para o futuro (reserva e investimentos). Não é lei: serve para você comparar onde está."] },
+      { titulo: "Revise todo mês", passos: ["Compare o mês com a média dos três anteriores.", "Escolha uma ou duas categorias para ajustar, não todas.", "Defina um limite em reais, não só uma intenção."] },
+    ],
+    formas: [],
+  },
+  {
+    slug: "pague-se-primeiro",
+    titulo: "Pague-se primeiro",
+    categoria: "Gestão financeira",
+    minutos: 3,
+    secoes: [
+      { titulo: "Inverta a ordem", paragrafos: ["O jeito mais comum de guardar dinheiro é esperar o fim do mês e ver o que sobrou. Quase nunca sobra. \"Pagar-se primeiro\" é separar o valor do futuro assim que a renda cai, como se fosse uma conta fixa."] },
+      { titulo: "Comece pequeno e suba aos poucos", paragrafos: ["Guardar 5% hoje e subir um ou dois pontos por mês costuma funcionar melhor do que tentar 30% de uma vez. O hábito importa mais que o valor no começo."] },
+      { titulo: "Automatize", paragrafos: ["Programar uma transferência para o dia seguinte ao pagamento tira a decisão do caminho. O que não está na conta do dia a dia é menos gasto sem perceber."] },
+    ],
+    formas: [],
+  },
+  {
+    slug: "dividas-e-credito",
+    titulo: "Dívidas, cartão e crédito",
+    categoria: "Gestão financeira",
+    minutos: 4,
+    secoes: [
+      { titulo: "Nem toda dívida é igual", paragrafos: ["Financiamentos com juros baixos para algo durável são diferentes do rotativo do cartão e do cheque especial, que estão entre os juros mais altos do país. Dívida cara come qualquer rendimento que você consiga investindo."] },
+      { titulo: "A ordem certa", passos: ["Liste as dívidas com o valor e os juros de cada uma.", "Quite primeiro as de juros mais altos (cartão rotativo, cheque especial).", "Negocie: trocar uma dívida cara por uma mais barata já é um ganho.", "Só depois aumente os investimentos de risco."] },
+      { titulo: "Cartão de crédito como ferramenta", paragrafos: ["Usado com fatura paga integralmente, o cartão organiza os gastos e pode render pontos. O problema começa quando a fatura vira parcelamento ou pagamento mínimo."] },
+    ],
+    formas: [],
+  },
+  {
+    slug: "metas-financeiras",
+    titulo: "Metas que funcionam",
+    categoria: "Gestão financeira",
+    minutos: 3,
+    secoes: [
+      { titulo: "Específica, medível e com prazo", paragrafos: ["\"Juntar dinheiro\" é vago. \"R$ 12 mil para a reserva em 12 meses\" mostra quanto guardar por mês (R$ 1.000) e permite acompanhar se está no caminho."] },
+      { titulo: "Acompanhe o progresso", paragrafos: ["Ver a barra andando motiva. Revisar uma vez por mês ajuda a corrigir rota antes que a meta pareça impossível."] },
+      { titulo: "Ajuste sem culpa", paragrafos: ["Imprevistos acontecem. Mudar o prazo ou o valor é melhor do que abandonar a meta."] },
+    ],
+    formas: [],
+  },
+
+  // --- Diversificação ---------------------------------------------------------------------
+  {
+    slug: "por-que-diversificar",
+    titulo: "Por que diversificar",
+    categoria: "Diversificação",
+    minutos: 3,
+    secoes: [
+      { titulo: "Não colocar todos os ovos na mesma cesta", paragrafos: ["Diversificar é distribuir o dinheiro entre investimentos que reagem de forma diferente aos mesmos acontecimentos. Assim, uma queda forte em um deles pesa menos no total."] },
+      { titulo: "Diversificar não é ter muitos ativos", paragrafos: ["Dez ações do mesmo setor não são uma carteira diversificada: costumam subir e cair juntas. O que conta é a variedade de classes, setores, países e prazos."] },
+      { titulo: "O objetivo", paragrafos: ["A diversificação não elimina o risco nem garante ganho. Ela busca um caminho mais estável, que você consiga manter nos momentos ruins."] },
+    ],
+    formas: [],
+  },
+  {
+    slug: "correlacao",
+    titulo: "Correlação: quando os ativos andam juntos",
+    categoria: "Diversificação",
+    minutos: 4,
+    secoes: [
+      { titulo: "O que é", paragrafos: ["Correlação mede o quanto dois investimentos costumam se mover na mesma direção. Correlação alta: sobem e caem juntos. Baixa ou negativa: um pode compensar o outro."] },
+      { titulo: "Exemplos didáticos", paragrafos: ["Ações de bancos tendem a se mover parecido entre si. Já a renda fixa pós-fixada e o dólar costumam ter comportamento diferente da bolsa brasileira em crises locais."] },
+      { titulo: "Cuidado", paragrafos: ["Correlações mudam com o tempo e em crises fortes muitos ativos caem juntos. Por isso a reserva de emergência fica fora da parte de risco."] },
+    ],
+    formas: [],
+  },
+  {
+    slug: "alocacao-de-ativos",
+    titulo: "Alocação: a parte de cada classe",
+    categoria: "Diversificação",
+    minutos: 4,
+    secoes: [
+      { titulo: "A decisão mais importante", paragrafos: ["Mais do que escolher qual ativo comprar, definir quanto vai para renda fixa, ações, FIIs e exterior explica boa parte do resultado e da oscilação de uma carteira ao longo do tempo."] },
+      { titulo: "Depende de você", passos: ["Prazo: quanto mais longo, mais espaço para oscilação.", "Perfil: quanto de queda você aguenta sem vender.", "Objetivos: cada meta pode ter uma alocação."] },
+      { titulo: "No Findomo", paragrafos: ["O seu perfil de investidor mostra faixas de referência por classe, e a Carteira compara a sua distribuição com elas."] },
+    ],
+    formas: [],
+  },
+  {
+    slug: "rebalanceamento",
+    titulo: "Rebalanceamento",
+    categoria: "Diversificação",
+    minutos: 3,
+    secoes: [
+      { titulo: "A carteira sai do lugar sozinha", paragrafos: ["Se as ações sobem muito, passam a ocupar uma fatia maior do que a planejada, e o risco da carteira aumenta sem você perceber."] },
+      { titulo: "Como funciona", paragrafos: ["Rebalancear é voltar às proporções combinadas: usar os novos aportes na classe que ficou para trás ou, se preciso, vender um pouco da que passou do limite."] },
+      { titulo: "Com que frequência", paragrafos: ["Uma revisão a cada seis meses, ou quando uma classe se afastar alguns pontos da meta, costuma bastar. Mexer demais gera custos e impostos."] },
+    ],
+    formas: [],
+  },
+
+  // --- Ações e ETFs na prática ------------------------------------------------------------
+  {
+    slug: "como-funciona-acao",
+    titulo: "O que é uma ação e como o preço se forma",
+    categoria: "Ações e ETFs",
+    minutos: 4,
+    secoes: [
+      { titulo: "Um pedaço da empresa", paragrafos: ["Ao comprar uma ação, você vira sócio de uma pequena parte da empresa. Se ela lucra e cresce, a tendência no longo prazo é que a ação acompanhe; se vai mal, também."] },
+      { titulo: "O preço do dia a dia", paragrafos: ["Na bolsa, o preço sobe e desce conforme compradores e vendedores negociam. No curto prazo, notícias e humor do mercado pesam muito; no longo, os resultados da empresa tendem a pesar mais."] },
+      { titulo: "Lote e fracionário", paragrafos: ["As ações são negociadas em lotes de 100, mas o mercado fracionário (código com F no final) permite comprar a partir de uma unidade."] },
+    ],
+    formas: [],
+  },
+  {
+    slug: "ganhos-com-acoes",
+    titulo: "Como se ganha com ações: valorização e proventos",
+    categoria: "Ações e ETFs",
+    minutos: 4,
+    secoes: [
+      { titulo: "Duas fontes", paragrafos: ["Valorização é a diferença entre o preço de venda e o de compra. Proventos são a parte do lucro distribuída aos acionistas, como dividendos e juros sobre capital próprio (JCP)."] },
+      { titulo: "Dividendos e JCP", paragrafos: ["Pela regra atual, dividendos são isentos de IR para pessoa física; o JCP tem 15% retido na fonte. A data com define quem recebe: é preciso ter a ação no fim desse dia."] },
+      { titulo: "Indicadores para comparar", paragrafos: ["P/L (preço sobre lucro), P/VP (preço sobre valor patrimonial) e dividend yield ajudam a comparar empresas do mesmo setor. Nenhum deles sozinho diz se uma ação está cara ou barata."] },
+    ],
+    formas: [],
+  },
+  {
+    slug: "etfs-na-pratica",
+    titulo: "ETFs na prática",
+    categoria: "Ações e ETFs",
+    minutos: 4,
+    secoes: [
+      { titulo: "Uma cesta em uma cota", paragrafos: ["Um ETF é um fundo negociado na bolsa que replica um índice. Com uma cota, você tem exposição a todas as empresas do índice, na mesma proporção."] },
+      { titulo: "Vantagens e limites", passos: ["Diversificação imediata com pouco dinheiro.", "Taxa de administração geralmente menor que a de fundos ativos.", "Não tenta superar o índice: acompanha, para o bem e para o mal.", "Há ETFs de bolsa brasileira, exterior, renda fixa e outros temas."] },
+      { titulo: "Impostos", paragrafos: ["ETFs de ações pagam 15% de IR sobre o lucro na venda, sem a isenção de R$ 20 mil mensais que vale para ações. ETFs de renda fixa seguem uma tabela própria."] },
+    ],
+    formas: [],
+  },
+  {
+    slug: "custos-e-impostos-bolsa",
+    titulo: "Custos e impostos na bolsa",
+    categoria: "Ações e ETFs",
+    minutos: 3,
+    secoes: [
+      { titulo: "Custos", paragrafos: ["Corretagem (muitas corretoras zeram), emolumentos da B3 e, em fundos e ETFs, a taxa de administração. Pequenos custos repetidos muitas vezes fazem diferença."] },
+      { titulo: "Imposto de renda", paragrafos: ["Em ações, vendas de até R$ 20 mil no mês são isentas para operações comuns. Acima disso, o lucro paga 15% (day trade: 20%), recolhido pelo próprio investidor via DARF até o último dia útil do mês seguinte."] },
+      { titulo: "Organize-se", paragrafos: ["Guarde as notas de corretagem e registre preço médio, quantidade e data. A Carteira do Findomo ajuda a manter esse histórico."] },
+    ],
+    formas: [],
+  },
+
   // --- Tipos de ações -------------------------------------------------------------------
   {
     slug: "on-pn-units",

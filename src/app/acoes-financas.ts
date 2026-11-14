@@ -11,6 +11,7 @@ import {
   mesDe,
   nomeMes,
   planejar,
+  rendaGuardadaAtual,
   somarMeses,
   type FinancasDados,
   type Lancamento,
@@ -273,4 +274,27 @@ export async function gerarPlanoIA(entrada: { valorMensal: number; meses: number
     registrarErro("plano ia", e instanceof Error ? e.name : undefined);
     return { erro: "O Mordomo não conseguiu escrever o plano agora." };
   }
+}
+
+// --- Meta gradual de guardar --------------------------------------------------------------
+
+const EsquemaMetaGuardar = z.object({
+  alvoPct: z.number().int().min(5, "O alvo mínimo é 5%.").max(60, "O alvo máximo é 60% da renda."),
+  ritmo: z.enum(["suave", "moderado", "agressivo"]),
+});
+
+export async function salvarMetaGuardar(entrada: z.input<typeof EsquemaMetaGuardar>) {
+  const lido = EsquemaMetaGuardar.safeParse(entrada);
+  if (!lido.success) return erroDe(lido);
+  return executar((d, hoje) => {
+    const mes = mesDe(hoje);
+    const atual = rendaGuardadaAtual(d, mes);
+    d.metaGuardar = { alvoPct: lido.data.alvoPct, ritmo: lido.data.ritmo, inicioPct: Math.min(atual, lido.data.alvoPct), inicio: mes, criada_em: new Date().toISOString() };
+  });
+}
+
+export async function encerrarMetaGuardar() {
+  return executar((d) => {
+    d.metaGuardar = null;
+  });
 }

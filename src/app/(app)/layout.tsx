@@ -67,7 +67,21 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
       </header>
 
       <main id="conteudo" className="transition-[padding] duration-200 lg:pl-[4.5rem] lg:menu-aberto:pl-60">
-        <div className="mx-auto w-full max-w-[76rem] px-4 pb-32 pt-6 sm:px-6 lg:px-10 lg:pb-16 lg:pt-10">{children}</div>
+        <div className="mx-auto hidden w-full max-w-[76rem] items-center justify-end gap-2 px-10 pt-5 lg:flex">
+          <Link
+            href="/aprender#coins"
+            title={`Nível ${nivel}`}
+            className="flex h-9 items-center gap-2 rounded-full border border-linha bg-superficie pl-2 pr-3.5 text-sm font-semibold tabular-nums text-texto shadow-[0_1px_2px_rgb(20_51_82/0.05)] transition hover:border-ciano"
+            aria-label={`${saldo} coins, nível ${nivel}`}
+          >
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-gravata/15">
+              <Coins className="h-3.5 w-3.5 text-gravata" aria-hidden="true" />
+            </span>
+            {saldo.toLocaleString("pt-BR")}
+            <span className="text-xs font-medium text-suave">coins</span>
+          </Link>
+        </div>
+        <div className="mx-auto w-full max-w-[76rem] px-4 pb-32 pt-6 sm:px-6 lg:px-10 lg:pb-16 lg:pt-3">{children}</div>
       </main>
 
       <TabBar />

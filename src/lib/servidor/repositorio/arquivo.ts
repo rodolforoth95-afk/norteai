@@ -4,6 +4,7 @@ import path from "node:path";
 import type { Carteira, EstadoEntrevista, LancamentoMoedas, Perfil, Snapshot } from "@/lib/dominio/tipos";
 import { deVersaoAnterior, type CarteiraDados } from "@/lib/dominio/carteira";
 import type { FinancasDados } from "@/lib/dominio/financas";
+import type { ContaSimulada } from "@/lib/dominio/conta-simulada";
 import type { Repositorio } from "./tipo";
 
 // Armazenamento em arquivo JSON, só para o modo de teste local.
@@ -14,6 +15,7 @@ type DadosUsuario = {
   snapshots: Snapshot[]; // versão anterior
   carteira2?: CarteiraDados;
   financas?: FinancasDados;
+  contaSimulada?: ContaSimulada | null;
   moedas: LancamentoMoedas[];
   concluidos: string[];
   auditoria?: { tipo: string; criado_em: string }[];
@@ -87,6 +89,12 @@ export const repositorioArquivo: Repositorio = {
   },
   async salvarFinancas(uid, dados) {
     await alterar(uid, (d) => void (d.financas = dados));
+  },
+  async obterContaSimulada(uid) {
+    return (await de(uid))?.contaSimulada ?? null;
+  },
+  async salvarContaSimulada(uid, dados) {
+    await alterar(uid, (d) => void (d.contaSimulada = dados));
   },
 
   async listarMoedas(uid) {

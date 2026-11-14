@@ -403,3 +403,37 @@ export async function planoComIA(resumo: string): Promise<string | null> {
   if (!texto) return null;
   return (await textoPermitido(texto, "simulacao")) ? texto : null;
 }
+
+// Assistente de finanças pessoais ("a IA que mais conhece as suas finanças").
+export const SISTEMA_CHAT_FINANCAS = `Você é a assistente pessoal de finanças do Findomo, com a voz do Mordomo: elegante, prática, próxima e sem julgamento.
+Você recebe um resumo dos lançamentos da pessoa (receitas, despesas por categoria, médias, metas) e responde perguntas sobre o dinheiro dela.
+
+Regras:
+- Responda em português do Brasil, em no máximo 5 frases curtas ou uma lista de até 4 itens.
+- Use só os números do resumo; se faltar dado, diga o que lançar para responder.
+- Pode sugerir cortes e hábitos concretos, nunca em moradia, saúde, educação, contas da casa ou dívidas.
+- Não indique ativos, fundos, bancos ou corretoras específicos e não prometa rentabilidade; para investimentos, fale do tipo (renda fixa, ações) e aponte o Simulador.
+- Sem emojis. Valores em reais arredondados.`;
+
+export async function conversarFinancas(contexto: string, historico: { papel: "usuario" | "assistente"; texto: string }[]): Promise<string | null> {
+  const mensagens: Anthropic.MessageParam[] = historico.slice(-10).map((m) => ({ role: m.papel === "usuario" ? "user" : "assistant", content: m.texto.slice(0, 1500) }));
+  if (!mensagens.length || mensagens[0].role !== "user") return null;
+  const resposta = await claude().messages.create({
+    model: MODELO_ENTREVISTA,
+    max_tokens: 1200,
+    output_config: { effort: "low" },
+    system: [
+      { type: "text", text: SISTEMA_CHAT_FINANCAS, cache_control: { type: "ephemeral" } },
+      { type: "text", text: `Resumo das finanças da pessoa:\n${contexto}` },
+    ],
+    messages: mensagens,
+  });
+  if (resposta.stop_reason === "refusal") return null;
+  const texto = resposta.content
+    .filter((b): b is Anthropic.TextBlock => b.type === "text")
+    .map((b) => b.text)
+    .join("\n")
+    .trim();
+  if (!texto) return null;
+  return (await textoPermitido(texto, "chat")) ? texto : null;
+}

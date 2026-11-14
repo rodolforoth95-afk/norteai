@@ -2,7 +2,11 @@ import Link from "next/link";
 import { FileText, Keyboard, Plus } from "lucide-react";
 import { AvisoEducacional } from "@/components/AvisoEducacional";
 import { calcularAderencia, percentuais, pontosDeAtencao, totalPorClasse } from "@/lib/dominio/motor";
-import { posicoesAtuais, resumoCarteira } from "@/lib/dominio/carteira";
+import { posicoesAtuais, projetarCarteira, resumoCarteira } from "@/lib/dominio/carteira";
+import { Suspense } from "react";
+import { atualizarCotacoesDoDia } from "@/lib/servidor/carteira-mercado";
+import { Proventos } from "./Proventos";
+import { ProjecaoCarteira } from "./ProjecaoCarteira";
 import { exigirUsuario } from "@/lib/servidor/sessao";
 import { carregarCarteira } from "@/lib/servidor/carteira";
 import { taxasMensais } from "@/lib/servidor/indicadores";
@@ -16,6 +20,8 @@ export const metadata = { title: "Carteira" };
 // com comparativos (CDI, poupança, inflação), composição e cada investimento.
 export default async function PaginaCarteira() {
   const { uid, repo, teste } = await exigirUsuario();
+  // A curva anda sozinha: uma vez por dia útil, os ativos de bolsa recebem o saldo pela cotação.
+  await atualizarCotacoesDoDia(repo, uid).catch(() => null);
   const [carteira, perfil, taxas] = await Promise.all([carregarCarteira(repo, uid), repo.obterPerfil(uid), taxasMensais()]);
   const resumo = resumoCarteira(carteira);
 
@@ -83,6 +89,13 @@ export default async function PaginaCarteira() {
         cotacoes={brapiDisponivel()}
         teste={teste}
       />
+      {(() => {
+        const projecao = projetarCarteira(resumo.serie);
+        return projecao ? <ProjecaoCarteira projecao={projecao} /> : null;
+      })()}
+      <Suspense fallback={<div className="painel h-40 animate-pulse p-5" aria-label="Carregando proventos" />}>
+        <Proventos carteira={carteira} />
+      </Suspense>
       <AvisoEducacional extra="A rentabilidade usa os saldos que você informa. Rentabilidade passada não garante resultado futuro." />
     </section>
   );

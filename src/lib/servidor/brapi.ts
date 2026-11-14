@@ -430,3 +430,72 @@ export async function futuros(ativo: "WIN" | "WDO"): Promise<ContratoFuturo | nu
     return null;
   }
 }
+
+// --- Proventos e indicadores --------------------------------------------------------------
+// No plano gratuito a brapi só libera dividendos e indicadores para os ativos de teste
+// (PETR4, VALE3, ITUB4, MGLU3); para os demais responde FEATURE_NOT_AVAILABLE ou
+// MODULE_NOT_AVAILABLE. Nesses casos devolvemos "indisponivel" em vez de erro.
+
+export type Provento = { data: string; dataCom: string | null; valor: number; tipo: string };
+export type Proventos = { disponivel: true; pagamentos: Provento[] } | { disponivel: false; motivo: "plano" | "erro" };
+
+const ehBloqueioDePlano = (e: unknown) => e instanceof ErroBrapi && (e.status === 402 || e.status === 403 || /NOT_AVAILABLE|FEATURE|MODULE|PLAN/i.test(e.codigo ?? ""));
+
+export async function proventos(simbolo: string): Promise<Proventos> {
+  try {
+    const r = await chamar<{ results: { dividendsData?: { cashDividends?: { paymentDate: string | null; lastDatePrior: string | null; rate: number; label: string }[] } }[] }>(
+      `/quote/${encodeURIComponent(simbolo)}?dividends=true`,
+      12 * 60 * 60,
+      [tagAtivo(simbolo)],
+    );
+    const lista = r.results[0]?.dividendsData?.cashDividends ?? [];
+    return {
+      disponivel: true,
+      pagamentos: lista
+        .filter((d) => d.paymentDate && d.rate > 0)
+        .map((d) => ({ data: d.paymentDate!.slice(0, 10), dataCom: d.lastDatePrior?.slice(0, 10) ?? null, valor: d.rate, tipo: d.label === "JCP" ? "JCP" : d.label === "RENDIMENTO" ? "Rendimento" : "Dividendo" }))
+        .sort((a, b) => b.data.localeCompare(a.data)),
+    };
+  } catch (e) {
+    return { disponivel: false, motivo: ehBloqueioDePlano(e) ? "plano" : "erro" };
+  }
+}
+
+export type Indicadores = {
+  disponivel: boolean;
+  precoLucro: number | null;
+  lucroPorAcao: number | null;
+  precoValorPatrimonial: number | null;
+  valorPatrimonialPorAcao: number | null;
+  dividendYield: number | null; // %
+};
+
+export async function indicadoresAtivo(simbolo: string): Promise<Indicadores> {
+  const base: Indicadores = { disponivel: false, precoLucro: null, lucroPorAcao: null, precoValorPatrimonial: null, valorPatrimonialPorAcao: null, dividendYield: null };
+  try {
+    const r = await chamar<{ results: { priceEarnings?: number | null; earningsPerShare?: number | null; defaultKeyStatistics?: { priceToBook?: number | null; bookValue?: number | null; dividendYield?: number | null } }[] }>(
+      `/quote/${encodeURIComponent(simbolo)}?modules=defaultKeyStatistics`,
+      12 * 60 * 60,
+      [tagAtivo(simbolo)],
+    );
+    const x = r.results[0];
+    const k = x?.defaultKeyStatistics;
+    return {
+      disponivel: true,
+      precoLucro: x?.priceEarnings ?? null,
+      lucroPorAcao: x?.earningsPerShare ?? null,
+      precoValorPatrimonial: k?.priceToBook ?? null,
+      valorPatrimonialPorAcao: k?.bookValue ?? null,
+      dividendYield: k?.dividendYield != null ? k.dividendYield * (k.dividendYield < 1 ? 100 : 1) : null,
+    };
+  } catch (e) {
+    if (!ehBloqueioDePlano(e)) return base;
+    // Sem o módulo, a cotação simples ainda traz P/L e LPA.
+    try {
+      const r = await chamar<{ results: { priceEarnings?: number | null; earningsPerShare?: number | null }[] }>(`/quote/${encodeURIComponent(simbolo)}`, 30 * 60, [tagAtivo(simbolo)]);
+      return { ...base, precoLucro: r.results[0]?.priceEarnings ?? null, lucroPorAcao: r.results[0]?.earningsPerShare ?? null };
+    } catch {
+      return base;
+    }
+  }
+}

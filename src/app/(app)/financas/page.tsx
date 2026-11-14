@@ -1,7 +1,8 @@
 import { hojeBR } from "@/lib/dominio/carteira";
-import { dreDosMeses, evolucaoFinanceira, insights, mesDe, ocorrenciasDoMes, orcamentoDoMes, progressoMeta, resumoDoMes, serieDeMeses, somarMeses } from "@/lib/dominio/financas";
+import { diagnosticar, dreDosMeses, escadaGuardar, evolucaoFinanceira, insights, rendaGuardadaAtual, mesDe, ocorrenciasDoMes, orcamentoDoMes, progressoMeta, resumoDoMes, serieDeMeses, somarMeses } from "@/lib/dominio/financas";
 import { exigirUsuario } from "@/lib/servidor/sessao";
 import { aportesPorMes, carregarFinancas } from "@/lib/servidor/financas";
+import { RECOMPENSAS } from "@/lib/dominio/moedas";
 import { PainelFinancas } from "./PainelFinancas";
 import { VazioFinancas } from "./VazioFinancas";
 
@@ -10,7 +11,7 @@ export const metadata = { title: "Finanças" };
 // Receitas e despesas do mês: cartões, fluxo de caixa com o que foi reinvestido,
 // gastos por categoria (o gráfico filtra a lista), orçamento do plano e o Mordomo.
 export default async function PaginaFinancas({ searchParams }: { searchParams: Promise<{ mes?: string }> }) {
-  const { uid, repo } = await exigirUsuario();
+  const { uid, repo, primeiroNome } = await exigirUsuario();
   const [dados, aportes] = await Promise.all([carregarFinancas(repo, uid), aportesPorMes(repo, uid)]);
   const hoje = hojeBR();
   const mesAtual = mesDe(hoje);
@@ -27,6 +28,13 @@ export default async function PaginaFinancas({ searchParams }: { searchParams: P
   const orcamento = orcamentoDoMes(resumo, meta);
   const aportadoNoMes = aportes[mes] ?? 0;
   const mesesDre = [somarMeses(mes, -2), somarMeses(mes, -1), mes];
+  const escada = dados.metaGuardar ? escadaGuardar(dados, dados.metaGuardar, mesAtual) : null;
+  // Cada degrau batido em mês já fechado vale coins (uma vez por mês).
+  if (escada) {
+    for (const d of escada.degraus.filter((x) => x.estado === "batido")) {
+      await repo.lancarMoedas(uid, "meta_guardar", d.mes, RECOMPENSAS.meta_guardar.valor).catch(() => false);
+    }
+  }
 
   return (
     <PainelFinancas
@@ -45,6 +53,11 @@ export default async function PaginaFinancas({ searchParams }: { searchParams: P
       avisos={insights({ resumo, anterior, orcamento, meta, livreParaAportar: progresso?.livreParaAportar ?? 0, categorias: dados.categorias, hoje })}
       dre={dreDosMeses(dados, mesesDre, aportes)}
       evolucao={evolucaoFinanceira(dados, mes, aportes)}
+      diagnostico={diagnosticar(dados, mesAtual, 90)}
+      metaGuardar={dados.metaGuardar ?? null}
+      escada={escada}
+      rendaAtual={rendaGuardadaAtual(dados, mesAtual)}
+      primeiroNome={primeiroNome}
       mesesDre={mesesDre}
       temExemplo={dados.lancamentos.some((l) => l.origem === "exemplo")}
     />

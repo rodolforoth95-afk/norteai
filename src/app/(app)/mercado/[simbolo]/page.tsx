@@ -6,7 +6,8 @@ import { Cartao, TituloSecao } from "@/components/ui";
 import { AVISO_MERCADO, LogoAtivo, SeloVariacao, formatarCompacto, formatarPreco } from "@/components/mercado";
 import { CLASSES } from "@/lib/dominio/catalogo";
 import { classificar } from "@/lib/dominio/classificar";
-import { PERIODO_ANALISE, candles as buscarCandles, cotacao, perfilEmpresa } from "@/lib/servidor/brapi";
+import { PERIODO_ANALISE, candles as buscarCandles, cotacao, indicadoresAtivo, perfilEmpresa } from "@/lib/servidor/brapi";
+import { HolofoteIndicadores } from "./HolofoteIndicadores";
 import { leiturasEducativas, niveisDePreco, pivosMensais } from "@/lib/dominio/tecnica";
 import { exigirUsuario } from "@/lib/servidor/sessao";
 import { PainelTecnico } from "./PainelTecnico";
@@ -25,7 +26,7 @@ export default async function PaginaAtivo({ params }: { params: Promise<{ simbol
   const c = await cotacao(simbolo).catch(() => null);
   if (!c) notFound();
   const indice = simbolo.startsWith("^");
-  const [velas, perfil] = await Promise.all([buscarCandles(simbolo).catch(() => []), indice ? null : perfilEmpresa(simbolo)]);
+  const [velas, perfil, ind] = await Promise.all([buscarCandles(simbolo).catch(() => []), indice ? null : perfilEmpresa(simbolo), indice ? null : indicadoresAtivo(simbolo)]);
   const classe = indice ? null : classificar(simbolo);
   // O histórico e a cotação atualizam em momentos diferentes: o candle de hoje usa a cotação atual.
   const hoje = new Date().toISOString().slice(0, 10);
@@ -93,6 +94,8 @@ export default async function PaginaAtivo({ params }: { params: Promise<{ simbol
           </div>
         </div>
       </header>
+
+      {ind ? <HolofoteIndicadores ind={ind} simbolo={simbolo} /> : null}
 
       {velas.length >= 10 ? (
         <PainelTecnico simbolo={simbolo} indice={indice} candles={velas} niveis={niveis} pivos={pivos} leituras={leituras} periodoAnalise={periodoTexto} />

@@ -1,5 +1,6 @@
 // Confere a leitura de frases, o aprendizado e o plano de economia. Rodar: npm run testar:financas
-import { aprender, diagnosticar, dreDosMeses, evolucaoFinanceira, exemploFinancas, financasVazias, interpretarFrase, lerTextoComprovante, planejar, resumoDoMes, sugerirCategoria } from "../src/lib/dominio/financas";
+import { responderLocal } from "../src/lib/dominio/assistente-financas";
+import { alvoDoMes, aprender, diagnosticar, dreDosMeses, escadaGuardar, evolucaoFinanceira, rendaGuardadaAtual, exemploFinancas, financasVazias, interpretarFrase, lerTextoComprovante, planejar, resumoDoMes, sugerirCategoria } from "../src/lib/dominio/financas";
 
 let falhas = 0;
 const ok = (nome: string, cond: boolean, info: unknown = "") => {
@@ -86,6 +87,25 @@ ok("data futura ignorada", futuro.data === hoje && futuro.valor === 10, futuro);
   const vazio = evolucaoFinanceira(financasVazias(), "2026-11", {});
   ok("evolução sem dados", vazio.pontuacao <= 8 && vazio.taxaMedia === null, vazio);
   console.log(`pontuação exemplo ${ev.pontuacao} (${ev.nivel}) · taxa média ${ev.taxaMedia}% · variáveis ${ev.variacaoVariaveis}%`);
+}
+
+// Desafio de guardar e chat local
+{
+  const dados = { ...financasVazias(), lancamentos: exemploFinancas(hoje, () => Math.random().toString(36).slice(2)) };
+  const atual = rendaGuardadaAtual(dados, "2026-11");
+  ok("renda guardada atual entre 0 e 100", atual >= 0 && atual <= 100, atual);
+  const meta = { alvoPct: 45, ritmo: "agressivo" as const, inicioPct: 30, inicio: "2026-11", criada_em: "" };
+  ok("alvo do primeiro mês = início + passo", alvoDoMes(meta, "2026-11") === 34, alvoDoMes(meta, "2026-11"));
+  ok("alvo nunca passa do final", alvoDoMes(meta, "2027-12") === 45);
+  const esc = escadaGuardar(dados, meta, "2026-11");
+  ok("escada termina no alvo", esc.degraus.at(-1)!.alvoPct === 45 && esc.atual?.estado === "andamento", esc.degraus.map((d) => d.alvoPct));
+  ok("escada tem impedimentos só variáveis", esc.impedimentos.every((i) => !["moradia", "saude", "contas"].includes(i.categoriaId)), esc.impedimentos);
+  const r1 = responderLocal("quanto gastei com delivery?", dados, "2026-11", {});
+  ok("chat: delivery", r1.includes("Delivery"), r1);
+  const r2 = responderLocal("quais minhas assinaturas", dados, "2026-11", {});
+  ok("chat: assinaturas", r2.includes("Netflix"), r2);
+  const r3 = responderLocal("como estou este mês?", dados, "2026-11", {});
+  ok("chat: resumo", r3.includes("sobraram"), r3);
 }
 
 if (falhas) {

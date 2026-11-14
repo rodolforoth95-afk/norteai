@@ -9,6 +9,7 @@ export const RECOMPENSAS = {
   primeira_carteira: { valor: 50, rotulo: "Primeira carteira importada" },
   mes_positivo: { valor: 100, rotulo: "Mês positivo na carteira" },
   simulacao: { valor: 25, rotulo: "Primeira simulação de carteira" },
+  meta_guardar: { valor: 40, rotulo: "Degrau da meta de guardar alcançado" },
 } as const;
 
 export type TipoRecompensa = keyof typeof RECOMPENSAS;

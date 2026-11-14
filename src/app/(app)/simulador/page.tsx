@@ -4,6 +4,7 @@ import { CARTEIRAS } from "@/lib/dominio/simulador";
 import { exigirUsuario } from "@/lib/servidor/sessao";
 import { indicadores } from "@/lib/servidor/indicadores";
 import { Simulador } from "./Simulador";
+import { AbasSimulador } from "./AbasSimulador";
 
 export const metadata = { title: "Simulador de carteiras" };
 
@@ -16,6 +17,7 @@ export default async function PaginaSimulador() {
   if (!perfil) {
     return (
       <section className="mx-auto flex w-full max-w-2xl flex-col gap-5">
+        <AbasSimulador />
         <h1 className="font-display text-[1.75rem] font-bold tracking-[-0.01em] text-texto">Simulador de carteiras</h1>
         <Link href="/entrevista" className="borda-gradiente flex items-center gap-4 rounded-2xl p-5">
           <FlaskConical className="h-8 w-8 shrink-0 text-ciano" aria-hidden="true" />
@@ -30,5 +32,10 @@ export default async function PaginaSimulador() {
   }
 
   const ind = await indicadores();
-  return <Simulador estilo={perfil.estilo} carteiras={CARTEIRAS[perfil.estilo]} ind={ind} />;
+  return (
+    <div className="flex flex-col gap-5">
+      <AbasSimulador />
+      <Simulador estilo={perfil.estilo} carteiras={CARTEIRAS[perfil.estilo]} ind={ind} />
+    </div>
+  );
 }
