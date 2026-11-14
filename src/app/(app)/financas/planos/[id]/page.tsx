@@ -30,7 +30,7 @@ import { BotaoFoco } from "./BotaoFoco";
 
 export const metadata = { title: "Plano" };
 
-// Um plano: metas (guardar e investir) acompanhadas com os números do controle financeiro.
+// Um plano: metas (guardar e investir) acompanhadas com os números do Acompanhamento.
 export default async function PaginaPlano({
   params,
 }: {
@@ -108,7 +108,7 @@ export default async function PaginaPlano({
             {meta.ativa ? (
               <p className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-ciano">
                 <Sparkles className="h-3.5 w-3.5" aria-hidden="true" /> Em foco
-                no controle financeiro
+                no Acompanhamento
               </p>
             ) : null}
             <h1 className="font-display text-[1.75rem] font-bold tracking-[-0.025em] text-texto lg:text-[2.25rem]">
@@ -273,7 +273,7 @@ export default async function PaginaPlano({
           </span>
           <div>
             <h2 className="font-display text-base font-semibold text-texto">
-              Ligado ao seu controle financeiro
+              Ligado ao seu Acompanhamento
             </h2>
             <p className="text-sm text-suave">
               Em {nomeMes(mesAtual).toLowerCase()}: entraram{" "}
@@ -298,7 +298,7 @@ export default async function PaginaPlano({
           href="/financas"
           className="flex h-10 shrink-0 items-center gap-1.5 self-start rounded-full border border-linha px-4 text-sm font-semibold text-texto hover:bg-superficie-2 lg:self-auto"
         >
-          <Wallet className="h-4 w-4" aria-hidden="true" /> Abrir controle{" "}
+          <Wallet className="h-4 w-4" aria-hidden="true" /> Abrir Acompanhamento{" "}
           <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </Link>
       </div>

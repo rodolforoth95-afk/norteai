@@ -220,7 +220,7 @@ export function PainelFinancas(p: Props) {
             Finanças
           </h1>
           <p className="mt-0.5 text-sm text-suave">
-            Controle financeiro: tudo o que entra e sai, mês a mês.
+            Acompanhamento: tudo o que entra e sai, mês a mês.
           </p>
         </div>
         <AbasFinancas ativa="controle" planos={p.totalPlanos} />

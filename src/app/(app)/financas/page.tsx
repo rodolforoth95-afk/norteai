@@ -48,7 +48,7 @@ export default async function PaginaFinancas({
 
   if (!dados.lancamentos.length) return <VazioFinancas />;
 
-  // O controle financeiro abre direto; o plano em foco aparece como um resumo ligado a ele.
+  // O Acompanhamento abre direto; o plano em foco aparece como um resumo ligado a ele.
   const planos = planosDe(dados);
   const meta = planos.find((m) => m.ativa) ?? null;
   const metaGuardar = meta?.guardar ?? null;

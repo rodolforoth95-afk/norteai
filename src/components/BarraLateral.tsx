@@ -13,6 +13,7 @@ import {
   PieChart,
   Radar,
   Target,
+  ArrowLeftRight,
   User,
   UserRound,
   Wallet,
@@ -21,10 +22,22 @@ import { IconeApp, Logo } from "./Logo";
 import { AlternarTema } from "./AlternarTema";
 import { BotaoSair } from "./BotaoSair";
 
-const PRINCIPAIS = [
+const PRINCIPAIS: {
+  href: string;
+  rotulo: string;
+  Icone: typeof Home;
+  filhos?: { href: string; rotulo: string; Icone: typeof Home }[];
+}[] = [
   { href: "/inicio", rotulo: "Início", Icone: Home },
-  { href: "/financas", rotulo: "Finanças", Icone: Wallet },
-  { href: "/financas/planos", rotulo: "Planos", Icone: Target },
+  {
+    href: "/financas",
+    rotulo: "Finanças",
+    Icone: Wallet,
+    filhos: [
+      { href: "/financas", rotulo: "Acompanhamento", Icone: ArrowLeftRight },
+      { href: "/financas/planos", rotulo: "Planos", Icone: Target },
+    ],
+  },
   { href: "/carteira", rotulo: "Carteira", Icone: PieChart },
   { href: "/mercado", rotulo: "Mercado", Icone: CandlestickChart },
   { href: "/simulador", rotulo: "Simulador", Icone: FlaskConical },
@@ -63,15 +76,25 @@ export function BarraLateral({
     setAberto(novo);
   }
 
-  const item = ({ href, rotulo, Icone }: (typeof PRINCIPAIS)[number]) => {
-    const ativo =
-      caminho.startsWith(href) &&
-      !PRINCIPAIS.some(
-        (o) =>
-          o.href.length > href.length &&
-          o.href.startsWith(href) &&
-          caminho.startsWith(o.href),
-      );
+  type Item = {
+    href: string;
+    rotulo: string;
+    Icone: typeof Home;
+    filhos?: { href: string; rotulo: string; Icone: typeof Home }[];
+  };
+
+  const filhoAtivo = (filhos: NonNullable<Item["filhos"]>, href: string) =>
+    caminho.startsWith(href) &&
+    !filhos.some(
+      (o) =>
+        o.href.length > href.length &&
+        o.href.startsWith(href) &&
+        caminho.startsWith(o.href),
+    );
+
+  const item = ({ href, rotulo, Icone, filhos }: Item) => {
+    const dentro = caminho.startsWith(href);
+    const ativo = dentro && !filhos;
     return (
       <li key={href}>
         <Link
@@ -81,18 +104,50 @@ export function BarraLateral({
           className={`flex h-11 items-center gap-3 rounded-xl px-3 text-sm transition ${
             ativo
               ? "degrade-ativo font-semibold text-white"
-              : "font-medium text-suave hover:bg-superficie-2 hover:text-texto"
+              : dentro
+                ? "bg-superficie-2 font-semibold text-texto"
+                : "font-medium text-suave hover:bg-superficie-2 hover:text-texto"
           }`}
         >
           <Icone
             className="h-5 w-5 shrink-0"
-            strokeWidth={ativo ? 2.25 : 1.75}
+            strokeWidth={ativo || dentro ? 2.25 : 1.75}
             aria-hidden="true"
           />
           <span className="hidden whitespace-nowrap menu-aberto:inline">
             {rotulo}
           </span>
         </Link>
+        {filhos ? (
+          <ul className="mt-1 flex flex-col gap-1 menu-aberto:ml-5 menu-aberto:border-l menu-aberto:border-linha menu-aberto:pl-2">
+            {filhos.map((f) => {
+              const a = filhoAtivo(filhos, f.href);
+              return (
+                <li key={f.href + f.rotulo}>
+                  <Link
+                    href={f.href}
+                    aria-current={a ? "page" : undefined}
+                    title={f.rotulo}
+                    className={`flex h-9 items-center justify-center gap-2.5 rounded-lg px-3 text-[13px] transition menu-aberto:justify-start menu-aberto:px-2.5 ${
+                      a
+                        ? "degrade-ativo font-semibold text-white"
+                        : "font-medium text-suave hover:bg-superficie-2 hover:text-texto"
+                    }`}
+                  >
+                    <f.Icone
+                      className="h-4 w-4 shrink-0"
+                      strokeWidth={a ? 2.25 : 1.75}
+                      aria-hidden="true"
+                    />
+                    <span className="hidden whitespace-nowrap menu-aberto:inline">
+                      {f.rotulo}
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        ) : null}
       </li>
     );
   };

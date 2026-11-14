@@ -25,7 +25,7 @@ import { AbasFinancas } from "../AbasFinancas";
 
 export const metadata = { title: "Planos" };
 
-// Planos: metas de guardar e de investir que acompanham o controle financeiro.
+// Planos: metas de guardar e de investir que acompanham o Acompanhamento.
 export default async function PaginaPlanos() {
   const { uid, repo } = await exigirUsuario();
   const [dados, aportes] = await Promise.all([
@@ -45,8 +45,8 @@ export default async function PaginaPlanos() {
             Finanças
           </h1>
           <p className="mt-0.5 text-sm text-suave">
-            Seus planos usam o controle financeiro para mostrar se você está
-            chegando lá.
+            Seus planos usam o Acompanhamento para mostrar se você está chegando
+            lá.
           </p>
         </div>
         <AbasFinancas ativa="planos" planos={planos.length} />
@@ -59,13 +59,13 @@ export default async function PaginaPlanos() {
               <Target className="h-6 w-6" aria-hidden="true" />
             </span>
             <h2 className="font-display text-2xl font-semibold text-texto">
-              Transforme o seu controle em um plano
+              Transforme o seu Acompanhamento em um plano
             </h2>
             <p className="text-sm leading-relaxed text-suave">
-              O controle financeiro mostra o que já aconteceu. O plano diz aonde
-              você quer chegar: quanto da renda guardar, quanto investir por mês
-              e com qual objetivo. Depois, cada lançamento que você faz atualiza
-              o progresso.
+              O Acompanhamento mostra o que já aconteceu. O plano diz aonde você
+              quer chegar: quanto da renda guardar, quanto investir por mês e
+              com qual objetivo. Depois, cada lançamento que você faz atualiza o
+              progresso.
             </p>
             {temControle ? (
               <Link
@@ -81,7 +81,7 @@ export default async function PaginaPlanos() {
                 className="mt-1 flex h-11 w-fit items-center gap-2 rounded-full border border-linha px-5 text-sm font-semibold text-texto hover:bg-superficie-2"
               >
                 <Wallet className="h-4 w-4" aria-hidden="true" /> Começar pelo
-                controle financeiro
+                Acompanhamento
               </Link>
             )}
             {!temControle ? (
@@ -95,7 +95,7 @@ export default async function PaginaPlanos() {
             {[
               [
                 "Ponto de partida",
-                "A média do que entra, sai e sobra, vinda do seu controle",
+                "A média do que entra, sai e sobra, vinda do seu Acompanhamento",
               ],
               [
                 "Quanto guardar",
@@ -105,7 +105,10 @@ export default async function PaginaPlanos() {
                 "Plano de aporte",
                 "Valor por mês, prazo, objetivo e limites por categoria",
               ],
-              ["Acompanhar", "Cada lançamento no controle atualiza o plano"],
+              [
+                "Acompanhar",
+                "Cada lançamento no Acompanhamento atualiza o plano",
+              ],
             ].map(([t, d], i) => (
               <li
                 key={t}
@@ -147,7 +150,7 @@ export default async function PaginaPlanos() {
                       {m.ativa ? (
                         <p className="flex items-center gap-1 text-[11px] font-semibold uppercase tracking-wider text-ciano">
                           <Sparkles className="h-3 w-3" aria-hidden="true" /> Em
-                          foco no controle
+                          foco no Acompanhamento
                         </p>
                       ) : null}
                       <h2 className="truncate font-display text-lg font-semibold text-texto">
@@ -239,7 +242,7 @@ export default async function PaginaPlanos() {
               </span>
               <span className="max-w-xs text-sm text-suave">
                 Uma meta diferente, como reserva de emergência ou uma viagem,
-                usando o mesmo controle financeiro.
+                usando o mesmo Acompanhamento.
               </span>
             </Link>
           </li>

@@ -159,7 +159,7 @@ export function JornadaPlano({
       <div className="painel flex flex-col items-center gap-3 p-8 text-center">
         <Mascote className="h-12 w-12" />
         <p className="font-semibold text-texto">
-          Um plano começa pelo seu controle financeiro
+          Um plano começa pelo seu Acompanhamento
         </p>
         <p className="max-w-sm text-sm text-suave">
           Lance suas receitas e despesas (ou carregue o exemplo em Finanças).
@@ -169,7 +169,7 @@ export function JornadaPlano({
           href="/financas"
           className="mt-1 flex h-11 items-center rounded-full border border-linha px-5 text-sm font-semibold text-texto hover:bg-superficie-2"
         >
-          Ir para o controle financeiro
+          Ir para o Acompanhamento
         </Link>
       </div>
     );
@@ -272,7 +272,7 @@ export function JornadaPlano({
           <>
             <Cabecalho
               titulo="Seu ponto de partida"
-              texto="Estes números vêm do seu controle financeiro: a média do que entrou, saiu e sobrou. É a base para uma meta realista."
+              texto="Estes números vêm do seu Acompanhamento: a média do que entrou, saiu e sobrou. É a base para uma meta realista."
             />
             <div
               className="flex rounded-full border border-linha bg-superficie-2 p-1 sm:w-fit"
@@ -659,7 +659,7 @@ export function JornadaPlano({
           <>
             <Cabecalho
               titulo="Revise o seu plano"
-              texto="O plano fica salvo em Planos e acompanha o seu controle financeiro mês a mês. Ao salvar, ele passa a ser o plano em foco no controle. Dá para editar quando quiser."
+              texto="O plano fica salvo em Planos e acompanha o seu Acompanhamento mês a mês. Ao salvar, ele passa a ser o plano em foco no Acompanhamento. Dá para editar quando quiser."
             />
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="flex flex-col gap-1 rounded-2xl border border-linha p-4">

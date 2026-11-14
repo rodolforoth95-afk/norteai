@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Loader2, Sparkles } from "lucide-react";
 import { selecionarPlano } from "@/app/acoes-financas";
 
-// Define este plano como o que aparece em destaque no controle financeiro.
+// Define este plano como o que aparece em destaque no Acompanhamento.
 export function BotaoFoco({ id }: { id: string }) {
   const router = useRouter();
   const [pendente, iniciar] = useTransition();
@@ -26,7 +26,7 @@ export function BotaoFoco({ id }: { id: string }) {
       ) : (
         <Sparkles className="h-4 w-4" aria-hidden="true" />
       )}
-      Usar no controle
+      Usar no Acompanhamento
     </button>
   );
 }

@@ -14,7 +14,7 @@ import { iaDisponivel } from "@/lib/servidor/ia";
 import { AvisoEducacional } from "@/components/AvisoEducacional";
 import { JornadaPlano } from "./JornadaPlano";
 
-// Criação e edição de um plano: os mesmos 4 passos, a partir do controle financeiro.
+// Criação e edição de um plano: os mesmos 4 passos, a partir do Acompanhamento.
 export async function TelaJornada({ planoId }: { planoId: string | null }) {
   const { uid, repo } = await exigirUsuario();
   const dados = await carregarFinancas(repo, uid);
@@ -37,7 +37,7 @@ export async function TelaJornada({ planoId }: { planoId: string | null }) {
           {meta ? "Editar plano" : "Novo plano"}
         </h1>
         <p className="mt-0.5 max-w-2xl text-sm text-suave">
-          Quatro passos a partir do seu controle financeiro: o ponto de partida,
+          Quatro passos a partir do seu Acompanhamento: o ponto de partida,
           quanto guardar, quanto investir e a revisão.
         </p>
       </div>

@@ -17,7 +17,7 @@ type Props = {
   totalPlanos: number;
 };
 
-// A ponte entre o controle e os planos: um resumo do plano em foco, calculado com os lançamentos do controle.
+// A ponte entre o Acompanhamento e os Planos: um resumo do plano em foco, calculado com os lançamentos.
 export function PlanoEmFoco({
   meta,
   planoId,
@@ -41,8 +41,8 @@ export function PlanoEmFoco({
             </p>
             <p className="text-sm text-suave">
               {totalPlanos
-                ? "Escolha um dos seus planos para acompanhar aqui, junto com o controle."
-                : "Com um plano, este controle passa a mostrar se você está guardando e investindo o que quer."}
+                ? "Escolha um dos seus planos para acompanhar aqui, junto com o Acompanhamento."
+                : "Com um plano, o Acompanhamento passa a mostrar se você está guardando e investindo o que quer."}
             </p>
           </div>
         </div>

@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { Target, Wallet } from "lucide-react";
+import { ArrowLeftRight, Target } from "lucide-react";
 
-// Duas áreas ligadas: o controle financeiro (o que entra e sai) e os planos (metas que usam esse controle).
+// Duas áreas de Finanças: o Acompanhamento (o que entra e sai) e os Planos (metas que usam esse acompanhamento).
 export function AbasFinancas({
   ativa,
   planos,
@@ -13,9 +13,9 @@ export function AbasFinancas({
     {
       id: "controle",
       href: "/financas",
-      rotulo: "Controle financeiro",
-      curto: "Controle",
-      Icone: Wallet,
+      rotulo: "Acompanhamento",
+      curto: "Acompanhamento",
+      Icone: ArrowLeftRight,
       extra: null,
     },
     {
@@ -37,7 +37,7 @@ export function AbasFinancas({
           key={id}
           href={href}
           aria-current={ativa === id ? "page" : undefined}
-          className={`flex h-10 flex-1 items-center justify-center gap-2 rounded-xl px-4 text-sm font-semibold transition sm:flex-none ${ativa === id ? "degrade-ativo text-white" : "text-suave hover:bg-superficie-2 hover:text-texto"}`}
+          className={`flex h-10 flex-1 items-center justify-center gap-2 rounded-xl px-2.5 text-sm sm:px-4 font-semibold transition sm:flex-none ${ativa === id ? "degrade-ativo text-white" : "text-suave hover:bg-superficie-2 hover:text-texto"}`}
         >
           <Icone className="h-4 w-4" aria-hidden="true" />
           <span className="sm:hidden">{curto}</span>
