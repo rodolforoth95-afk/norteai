@@ -377,9 +377,9 @@ export async function lerLancamentoComIA(entrada: { texto?: string; imagem?: { m
     });
   let resposta: Anthropic.Message;
   try {
-    resposta = await pedir(true);
+    resposta = await pedir(!entrada.imagem);
   } catch (e) {
-    if (!(e instanceof Anthropic.APIError && e.status === 400)) throw e;
+    if (entrada.imagem || !(e instanceof Anthropic.APIError && e.status === 400)) throw e;
     registrarErro("ler lançamento estruturado", e.message.slice(0, 120));
     resposta = await pedir(false);
   }

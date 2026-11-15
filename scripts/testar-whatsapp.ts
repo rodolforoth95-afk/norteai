@@ -237,7 +237,9 @@ async function principal() {
   const segunda = await processarMensagem(repetida, deps);
   ok(
     "mensagem repetida não processa de novo",
-    segunda.repetida && segunda.respostas[0] === primeira.respostas[0] && segunda.respostas.join().includes("1️⃣ ✅ Confirmar"),
+    segunda.repetida &&
+      segunda.respostas.join() === primeira.respostas.join() &&
+      segunda.enquete?.pergunta === "Posso salvar?",
     segunda,
   );
   r = await enviar("não");

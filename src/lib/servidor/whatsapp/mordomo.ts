@@ -93,6 +93,18 @@ const VALIDADE_PENDENTE_MS = 10 * 60 * 1000;
 const HISTORICO_MS = 3 * 60 * 60 * 1000;
 const TRAVADA_MS = 2 * 60 * 1000;
 
+export function enqueteDe(acao: AcaoPendente): EnqueteSaida {
+  if (acao.tipo === "apagar")
+    return enqueteSimNao(`Posso apagar a ${acao.resumo}?`, "🗑️ Apagar", "↩️ Manter");
+  if (acao.tipo === "desvincular")
+    return enqueteSimNao(
+      "Desconectar este WhatsApp da sua conta Findomo?",
+      "Desconectar",
+      "Continuar conectado",
+    );
+  return enqueteConfirmar();
+}
+
 export type Resultado = {
   respostas: string[];
   enquete?: EnqueteSaida | null;
@@ -121,12 +133,21 @@ export async function processarMensagem(
   });
 
   if (!entrada.novo) {
-    if (entrada.status === "respondida")
+    if (entrada.status === "respondida") {
+      const pendente = vinculo
+        ? await deps.armazem.obterPendente(vinculo.usuarioId, agora.toISOString())
+        : null;
+      const enquete = pendente ? enqueteDe(pendente) : null;
+      const textos = await deps.armazem.respostasDe(entrada.id);
       return {
-        respostas: await deps.armazem.respostasDe(entrada.id),
+        respostas: enquete
+          ? textos.filter((t) => !t.startsWith(enquete.pergunta))
+          : textos,
+        enquete,
         repetida: true,
         usuarioId: vinculo?.usuarioId ?? null,
       };
+    }
     const travada = agora.getTime() - Date.parse(entrada.criadoEm) > TRAVADA_MS;
     if (entrada.status === "processando" && !travada)
       return {
@@ -271,12 +292,7 @@ async function responder(
       prefixo,
     );
   const proporApagar = (acao: AcaoPendente & { tipo: "apagar" }) =>
-    propor(
-      acao,
-      "",
-      undefined,
-      enqueteSimNao(`Posso apagar a ${acao.resumo}?`, "🗑️ Apagar", "↩️ Manter"),
-    );
+    propor(acao, "", undefined, enqueteDe(acao));
 
   switch (comando.tipo) {
     case "sim":
@@ -318,11 +334,7 @@ async function responder(
         { tipo: "desvincular" },
         "Seus dados continuam guardados no app, mesmo se desconectar.",
         undefined,
-        enqueteSimNao(
-          "Desconectar este WhatsApp da sua conta Findomo?",
-          "Desconectar",
-          "Continuar conectado",
-        ),
+        enqueteDe({ tipo: "desvincular" }),
       );
     case "apagar_ultimo": {
       const ultimo = [...dados.lancamentos]
