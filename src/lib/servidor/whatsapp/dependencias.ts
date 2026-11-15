@@ -17,6 +17,9 @@ import { conversarNoWhatsApp } from "./agente";
 import { armazemWhatsApp } from "./armazem";
 import type { Dependencias } from "./mordomo";
 import { transcrever, transcricaoDisponivel } from "./transcricao";
+import { responderMercado } from "./mercado";
+import { executarFerramenta } from "./ferramentas";
+import { textoCarteira } from "./textos";
 
 // As dependências de verdade do Mordomo: Supabase (ou arquivo no modo de teste),
 // Claude, transcrição e brapi.
@@ -82,12 +85,14 @@ export function dependenciasReais(): Dependencias {
     },
     transcrever: (midia) => transcrever(midia),
     transcricaoDisponivel: transcricaoDisponivel(),
-    async cotacao(simbolo) {
-      if (!brapiDisponivel()) return null;
-      const c = await cotacao(simbolo);
-      return c
-        ? { preco: c.preco, variacaoPct: c.variacaoPct, nome: c.nome }
-        : null;
+    consultarMercado: (texto, hoje) => responderMercado(texto, hoje),
+    async consultarCarteira(uid, hoje) {
+      const r = await executarFerramenta(
+        "carteira",
+        {},
+        { uid, repo, hoje, dados: await carregarFinancas(repo, uid), aportes: {} },
+      );
+      return r.tipo === "dados" ? textoCarteira(r.conteudo) : null;
     },
     auditarBloqueio: (uid) =>
       repo.registrarAuditoriaIA(uid, "bloqueio_regulatorio"),

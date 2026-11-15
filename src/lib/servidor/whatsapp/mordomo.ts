@@ -77,9 +77,8 @@ export type Dependencias = {
   };
   transcrever: (midia: MidiaCanal) => Promise<string | null>;
   transcricaoDisponivel: boolean;
-  cotacao: (
-    simbolo: string,
-  ) => Promise<{ preco: number; variacaoPct: number; nome: string } | null>;
+  consultarMercado: (texto: string, hoje: string) => Promise<string | null>;
+  consultarCarteira: (uid: string, hoje: string) => Promise<string | null>;
   auditarBloqueio: (uid: string) => Promise<void>;
 };
 
@@ -513,20 +512,17 @@ async function responderSemIA(
   | { tipo: "proposta"; lancamento: LancamentoProposto }
   | { tipo: "texto"; texto: string }
 > {
-  const ticker = extrairTicker(texto.toUpperCase());
-  const pareceLancamento =
-    /\b(gastei|paguei|recebi|comprei|vendi|ganhei|transferi|r\$|reais)\b/i.test(
+  const mercado = await deps.consultarMercado(texto, hoje).catch(() => null);
+  if (mercado) return { tipo: "texto", texto: mercado };
+  if (
+    /\b(minha|meu|meus|minhas) (carteira|investimentos?|a[cç](?:oe|õe)s|patrim[oô]nio|aplica[cç](?:oe|õe)s)\b/i.test(
       texto,
-    );
-  if (ticker && !pareceLancamento) {
-    const c = await deps.cotacao(ticker).catch(() => null);
-    return {
-      tipo: "texto",
-      texto: c
-        ? `*${ticker}* (${c.nome}) está em ${brl(c.preco)}, ${c.variacaoPct >= 0 ? "alta" : "queda"} de ${Math.abs(c.variacaoPct).toFixed(2).replace(".", ",")}% hoje. Eu não indico compra ou venda; para estudar o ativo, veja ${site()}/mercado/${ticker}.`
-        : `Não consegui a cotação de ${ticker} agora. Veja em ${site()}/mercado/${ticker}.`,
-    };
+    )
+  ) {
+    const carteira = await deps.consultarCarteira(uid, hoje).catch(() => null);
+    if (carteira) return { tipo: "texto", texto: carteira };
   }
+  const ticker = extrairTicker(texto.toUpperCase());
   const frase = ticker ? texto.replace(new RegExp(ticker, "gi"), " ") : texto;
   const p = interpretarFrase(frase, hoje);
   const categoria = sugerirCategoria(

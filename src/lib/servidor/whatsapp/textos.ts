@@ -166,3 +166,34 @@ export const MUITAS_MENSAGENS =
   "Recebi muitas mensagens em pouco tempo. Dê uma pausa de alguns minutos e me chame de novo.";
 export const ERRO_GERAL =
   "Tive um problema para responder agora. Pode mandar de novo em instantes?";
+
+type ConteudoCarteira = {
+  vazia?: boolean;
+  link: string;
+  patrimonio?: number;
+  rendimento?: number;
+  rentabilidadeAcumuladaPct?: number | null;
+  porClasse?: { classe: string; total: number; pct: number }[];
+  maiores?: { nome: string; saldo: number; pctCarteira: number }[];
+};
+
+export function textoCarteira(conteudo: unknown) {
+  const c = conteudo as ConteudoCarteira;
+  if (c.vazia || c.patrimonio == null)
+    return `Sua carteira ainda está vazia no Findomo. Cadastre seus investimentos em ${c.link} e eu acompanho por aqui.`;
+  const pctTxt =
+    c.rentabilidadeAcumuladaPct != null
+      ? ` (${c.rentabilidadeAcumuladaPct >= 0 ? "+" : "−"}${Math.abs(c.rentabilidadeAcumuladaPct).toFixed(1).replace(".", ",")}%)`
+      : "";
+  return [
+    `*Sua carteira*: ${brl(c.patrimonio)}`,
+    c.rendimento != null ? `Rendimento: ${brl(c.rendimento)}${pctTxt}` : null,
+    ...(c.porClasse ?? []).map((x) => `• ${x.classe}: ${brl(x.total)} (${x.pct}%)`),
+    c.maiores?.length
+      ? `Maiores posições: ${c.maiores.slice(0, 3).map((m) => m.nome).join(", ")}`
+      : null,
+    `Detalhes em ${c.link}`,
+  ]
+    .filter(Boolean)
+    .join("\n");
+}

@@ -20,6 +20,7 @@ import {
   aplicarLancamento,
 } from "../src/lib/servidor/lancamentos";
 import type { MensagemCanal } from "../src/lib/servidor/whatsapp/tipos";
+import { intencaoMercado } from "../src/lib/servidor/whatsapp/intencao-mercado";
 import {
   telefoneBrasileiroValido,
   telefoneCanonico,
@@ -39,6 +40,18 @@ ok("telefone do WhatsApp sem o 9", telefoneCanonico("551199998888") === "5511999
 ok("fixo sem 9 não ganha 9", telefoneCanonico("551133334444") === "551133334444");
 ok("celular válido", telefoneBrasileiroValido("11 99999-8888"));
 ok("fixo não vale para WhatsApp", !telefoneBrasileiroValido("(11) 3333-4444"));
+const im = (t: string) => JSON.stringify(intencaoMercado(t));
+ok("Petrobras pelo nome", im("como estão as ações da petrobras") === '{"tipo":"ativos","simbolos":["PETR4"]}', im("como estão as ações da petrobras"));
+ok("código e nome juntos", im("compare VALE3 e Itaú").includes("VALE3") && im("compare VALE3 e Itaú").includes("ITUB4"));
+ok("vale a pena não é a Vale", intencaoMercado("vale a pena investir em CDB?") === null);
+ok("minha carteira não é mercado", intencaoMercado("como estão minhas ações?") === null);
+ok("bolsa hoje", intencaoMercado("como está a bolsa hoje?")?.tipo === "mercado_hoje");
+ok("maiores altas", intencaoMercado("quais as maiores altas?")?.tipo === "mercado_hoje");
+ok("bitcoin", intencaoMercado("quanto tá o bitcoin")?.tipo === "cripto");
+ok("tesouro", intencaoMercado("taxa do tesouro selic")?.tipo === "tesouro");
+ok("agenda", intencaoMercado("qual a agenda da semana?")?.tipo === "radar");
+ok("empresa desconhecida vira busca", intencaoMercado("como estão as ações da Petz?")?.tipo === "buscar", im("como estão as ações da Petz?"));
+ok("lançamento não é mercado", intencaoMercado("paguei 50 na Renner") === null);
 ok(
   "código com FINDOMO",
   JSON.stringify(lerComando("FINDOMO 482913")) ===
@@ -127,10 +140,13 @@ async function principal() {
     },
     transcrever: async () => null,
     transcricaoDisponivel: false,
-    cotacao: async (s) =>
-      s === "PETR4"
-        ? { preco: 38.12, variacaoPct: 1.4, nome: "Petrobras" }
-        : null,
+    consultarMercado: async (t) => {
+      const i = intencaoMercado(t);
+      if (i?.tipo === "ativos" && i.simbolos.includes("PETR4"))
+        return "*PETR4* · Petrobras\nR$ 38,12 · +1,40% hoje\n\nEu não indico compra ou venda.";
+      return i ? "mercado" : null;
+    },
+    consultarCarteira: async () => "*Sua carteira*: R$ 10.000,00",
     auditarBloqueio: async () => {},
   };
 
@@ -249,6 +265,10 @@ async function principal() {
   r = await enviar("sim");
   ok("apaga", banco[UID].lancamentos.length === 1 && r.includes("Apaguei"), r);
 
+  r = await enviar("como estão minhas ações?");
+  ok("minhas ações mostra a carteira", r.includes("Sua carteira"), r);
+  r = await enviar("como estão as ações da Petrobras?");
+  ok("empresa pelo nome vira PETR4", r.includes("PETR4") && r.includes("R$ 38,12"), r);
   r = await enviar("como está a PETR4?");
   ok(
     "cotação sem IA",

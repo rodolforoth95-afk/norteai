@@ -15,6 +15,14 @@ import {
 } from "@/lib/dominio/financas";
 import { AULAS } from "@/lib/conteudo/aulas";
 import { brapiDisponivel, cotacoes } from "../brapi";
+import {
+  agendaRadar,
+  buscarAtivos,
+  criptosPrincipais,
+  detalheAtivos,
+  mercadoHoje,
+  tesouroDireto,
+} from "./mercado";
 import { carregarCarteira } from "../carteira";
 import { indicadores } from "../indicadores";
 import { previaDaIA } from "../leitura-financas";
@@ -344,6 +352,38 @@ export async function executarFerramenta(
           dataIpca: i.dataIpca,
         },
       };
+    }
+
+    case "buscar_ativo":
+    case "detalhe_ativo":
+    case "mercado_hoje":
+    case "cripto":
+    case "tesouro_direto":
+    case "agenda_radar": {
+      if (nome === "agenda_radar")
+        return { tipo: "dados", conteudo: agendaRadar(ctx.hoje) };
+      if (nome !== "cripto" && !brapiDisponivel())
+        return { tipo: "erro", mensagem: "Dados de mercado indisponíveis no momento." };
+      try {
+        if (nome === "buscar_ativo") {
+          const termo = typeof entrada.nome === "string" ? entrada.nome : "";
+          return { tipo: "dados", conteudo: { encontrados: await buscarAtivos(termo) } };
+        }
+        if (nome === "detalhe_ativo") {
+          const lista = (Array.isArray(entrada.simbolos) ? entrada.simbolos : [])
+            .map((s) => String(s).toUpperCase().replace(/[^A-Z0-9^]/g, ""))
+            .filter((s) => s.length >= 4 && s.length <= 7)
+            .slice(0, 3);
+          if (!lista.length)
+            return { tipo: "erro", mensagem: "Informe o código, ex.: PETR4. Use buscar_ativo pelo nome." };
+          return { tipo: "dados", conteudo: { ativos: await detalheAtivos(lista) } };
+        }
+        if (nome === "mercado_hoje") return { tipo: "dados", conteudo: await mercadoHoje() };
+        if (nome === "cripto") return { tipo: "dados", conteudo: await criptosPrincipais() };
+        return { tipo: "dados", conteudo: await tesouroDireto() };
+      } catch {
+        return { tipo: "erro", mensagem: "Não consegui os dados de mercado agora." };
+      }
     }
 
     case "buscar_conteudo": {

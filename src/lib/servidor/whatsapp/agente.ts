@@ -19,7 +19,9 @@ const SISTEMA = `Você é o Mordomo do Findomo, um app educacional de finanças 
 - Se houver um lançamento aguardando confirmação e a pessoa pedir uma correção ("na verdade foi 90", "era no pix"), chame propor_lancamento de novo com todos os campos já corrigidos.
 - Apaga lançamentos: chame propor_apagar (sem id = o último). Para achar outro, use ultimos_lancamentos antes.
 - Responde sobre o dinheiro dela com o resumo recebido e as ferramentas resumo_do_mes, ultimos_lancamentos e plano_em_foco.
-- Mostra a carteira (carteira), cotações (cotacoes, códigos da B3 como PETR4, HGLG11, BOVA11; Ibovespa é ^BVSP) e juros e inflação (indicadores).
+- Mercado, como na tela Mercado do app: pergunta sobre uma empresa, ação, FII ou ETF ("como estão as ações da Petrobras?") é sobre o ATIVO, não sobre a carteira da pessoa. Se ela disse o nome e não o código, chame buscar_ativo; depois detalhe_ativo (cotação, variação, P/L, dividendos, faixa de 52 semanas, setor). Bolsa no dia, Ibovespa, maiores altas e baixas: mercado_hoje. Bitcoin e outras: cripto. Taxas do Tesouro Direto: tesouro_direto. Juros e inflação: indicadores. Agenda e notícias da semana: agenda_radar.
+- Carteira da pessoa: chame carteira só quando ela falar da carteira, dos investimentos ou das ações DELA ("minha carteira", "como estão meus investimentos").
+- Sempre que der dados de um ativo, termine lembrando, em poucas palavras, que você não indica compra ou venda, e mande o link do ativo no app.
 - Explica conceitos de investimento em linguagem simples e, quando houver, manda o link da aula do app (buscar_conteudo).
 
 ## Limites que você nunca cruza
@@ -35,7 +37,56 @@ const SISTEMA = `Você é o Mordomo do Findomo, um app educacional de finanças 
 - Respostas curtas: no máximo 6 linhas. Negrito com *asteriscos simples*. Listas com "• ". Sem títulos com #, sem tabelas, sem links em colchetes (escreva o endereço puro).
 - Valores em reais no formato R$ 1.234,56. No máximo um emoji por mensagem.`;
 
+const FERRAMENTAS_MERCADO: Anthropic.Beta.BetaTool[] = [
+  {
+    name: "buscar_ativo",
+    description:
+      "Acha o código da B3 a partir do nome de uma empresa, FII ou ETF (ex.: Petrobras → PETR4, PETR3).",
+    input_schema: {
+      type: "object",
+      properties: { nome: { type: "string" } },
+      required: ["nome"],
+    },
+  },
+  {
+    name: "detalhe_ativo",
+    description:
+      "Dados de até 3 ativos da B3 pelo código: preço, variação do dia, mínima e máxima, faixa de 52 semanas, P/L, P/VP, dividend yield, setor e link da página no app. Ibovespa é ^BVSP.",
+    input_schema: {
+      type: "object",
+      properties: {
+        simbolos: { type: "array", items: { type: "string" }, maxItems: 3 },
+      },
+      required: ["simbolos"],
+    },
+  },
+  {
+    name: "mercado_hoje",
+    description:
+      "A bolsa no dia: Ibovespa, maiores altas, maiores baixas e ações mais negociadas.",
+    input_schema: { type: "object", properties: {} },
+  },
+  {
+    name: "cripto",
+    description:
+      "Preço em reais e variação das 5 maiores criptomoedas (Bitcoin, Ethereum...).",
+    input_schema: { type: "object", properties: {} },
+  },
+  {
+    name: "tesouro_direto",
+    description: "Taxas e preços de compra dos títulos do Tesouro Direto acompanhados no app.",
+    input_schema: { type: "object", properties: {} },
+  },
+  {
+    name: "agenda_radar",
+    description:
+      "Agenda da semana do Radar Findomo: o que o mercado espera (Copom, inflação, resultados) e os últimos fechamentos.",
+    input_schema: { type: "object", properties: {} },
+  },
+];
+
 const FERRAMENTAS: Anthropic.Beta.BetaTool[] = [
+  ...FERRAMENTAS_MERCADO,
   {
     name: "propor_lancamento",
     description:
@@ -135,7 +186,7 @@ const FERRAMENTAS: Anthropic.Beta.BetaTool[] = [
   {
     name: "carteira",
     description:
-      "Resumo da carteira de investimentos da pessoa: patrimônio, rendimento, divisão por classe e maiores posições.",
+      "Resumo da carteira de investimentos DA PESSOA: patrimônio, rendimento, divisão por classe e maiores posições. Só quando ela perguntar da própria carteira; para empresas e mercado use buscar_ativo, detalhe_ativo ou mercado_hoje.",
     input_schema: {
       type: "object",
       properties: {},
