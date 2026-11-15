@@ -17,6 +17,13 @@ export type MensagemCanal = {
   midia: MidiaCanal | null;
 };
 
+// Pergunta com opções que o canal envia como enquete do WhatsApp. O voto volta ao
+// Findomo como uma mensagem comum com o texto de "valor" (ex.: "sim").
+export type EnqueteSaida = {
+  pergunta: string;
+  opcoes: { rotulo: string; valor: "sim" | "nao" | "corrigir" }[];
+};
+
 export type Vinculo = {
   usuarioId: string;
   telefone: string;

@@ -66,5 +66,8 @@ export async function POST(req: Request) {
   if (resultado.usuarioId && !resultado.repetida) revalidatePath("/", "layout");
   if (Math.random() < 0.02)
     deps.armazem.limpar().catch(() => registrarErro("whatsapp limpeza"));
-  return NextResponse.json({ respostas: resultado.respostas });
+  return NextResponse.json({
+    respostas: resultado.respostas,
+    enquete: resultado.enquete ?? null,
+  });
 }

@@ -40,6 +40,7 @@ async function principal() {
   });
   const json = (await r.json().catch(() => ({}))) as {
     respostas?: string[];
+    enquete?: { pergunta: string; opcoes: { rotulo: string; valor: string }[] } | null;
     erro?: string;
   };
   console.log(`\nVocê: ${texto}`);
@@ -47,6 +48,10 @@ async function principal() {
     return console.log(`(erro ${r.status}: ${json.erro ?? "sem detalhe"})`);
   for (const resposta of json.respostas ?? [])
     console.log(`\nFindomo:\n${resposta}`);
+  if (json.enquete)
+    console.log(
+      `\n[Enquete] ${json.enquete.pergunta}\n${json.enquete.opcoes.map((o) => `  ( ) ${o.rotulo}   → responde "${o.valor}"`).join("\n")}`,
+    );
 }
 
 principal();

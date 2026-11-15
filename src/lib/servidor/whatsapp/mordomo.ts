@@ -26,6 +26,8 @@ import {
   atendimentoPausado,
   boasVindas,
   brl,
+  enqueteConfirmar,
+  enqueteSimNao,
   opcoes,
   ehSaudacao,
   lancamentoSalvo,
@@ -44,6 +46,7 @@ import type {
   MidiaCanal,
   TrocaHistorico,
   Vinculo,
+  EnqueteSaida,
 } from "./tipos";
 
 // Atendimento de uma mensagem do WhatsApp, do vínculo à resposta. Tudo o que fala com
@@ -92,6 +95,7 @@ const TRAVADA_MS = 2 * 60 * 1000;
 
 export type Resultado = {
   respostas: string[];
+  enquete?: EnqueteSaida | null;
   repetida: boolean;
   usuarioId: string | null;
 };
@@ -134,6 +138,7 @@ export async function processarMensagem(
   }
 
   let respostas: string[];
+  let enquete: EnqueteSaida | null = null;
   let usuarioId = vinculo?.usuarioId ?? null;
   let textoGuardado: string | undefined;
   try {
@@ -146,6 +151,7 @@ export async function processarMensagem(
     else {
       const r = await responder(m, vinculo, deps);
       respostas = r.respostas;
+      enquete = r.enquete ?? null;
       usuarioId = r.usuarioId;
       textoGuardado = r.textoEntrada;
     }
@@ -160,20 +166,27 @@ export async function processarMensagem(
       e instanceof Error ? e.message.slice(0, 120) : "",
     );
     respostas = [ERRO_GERAL];
+    enquete = null;
     await deps.armazem.atualizarEntrada(entrada.id, { status: "erro" });
   }
   respostas = respostas.filter((t) => t.trim());
   await deps.armazem.registrarSaidas({
     usuarioId,
     telefone: m.telefone,
-    textos: respostas,
+    textos: enquete
+      ? [
+          ...respostas,
+          `${enquete.pergunta}\n${opcoes(enquete.opcoes.map((o) => o.rotulo))}`,
+        ]
+      : respostas,
     respostaDe: entrada.id,
   });
-  return { respostas, repetida: false, usuarioId };
+  return { respostas, enquete, repetida: false, usuarioId };
 }
 
 type Resposta = {
   respostas: string[];
+  enquete?: EnqueteSaida | null;
   usuarioId: string | null;
   textoEntrada?: string;
 };
@@ -238,6 +251,7 @@ async function responder(
     acao: AcaoPendente,
     texto: string,
     prefixo?: string,
+    enquete: EnqueteSaida = enqueteConfirmar(),
   ): Promise<Resposta> => {
     await deps.armazem.salvarPendente(
       uid,
@@ -247,6 +261,7 @@ async function responder(
     return {
       respostas: [prefixo ? `${prefixo}\n\n${texto}` : texto],
       usuarioId: uid,
+      enquete,
     };
   };
   const proporLancamento = (l: LancamentoProposto, prefixo?: string) =>
@@ -258,7 +273,9 @@ async function responder(
   const proporApagar = (acao: AcaoPendente & { tipo: "apagar" }) =>
     propor(
       acao,
-      `Posso apagar a ${acao.resumo}?\n${opcoes(["Apagar", "Manter"])}`,
+      "",
+      undefined,
+      enqueteSimNao(`Posso apagar a ${acao.resumo}?`, "🗑️ Apagar", "↩️ Manter"),
     );
 
   switch (comando.tipo) {
@@ -299,7 +316,13 @@ async function responder(
     case "sair":
       return propor(
         { tipo: "desvincular" },
-        `Quer desconectar este WhatsApp da sua conta Findomo? Seus dados continuam guardados no app.\n${opcoes(["Desconectar", "Continuar conectado"])}`,
+        "Seus dados continuam guardados no app, mesmo se desconectar.",
+        undefined,
+        enqueteSimNao(
+          "Desconectar este WhatsApp da sua conta Findomo?",
+          "Desconectar",
+          "Continuar conectado",
+        ),
       );
     case "apagar_ultimo": {
       const ultimo = [...dados.lancamentos]

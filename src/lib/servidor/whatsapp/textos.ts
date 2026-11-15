@@ -5,7 +5,7 @@ import {
   type Lancamento,
   type ResumoMes,
 } from "@/lib/dominio/financas";
-import type { LancamentoProposto } from "./tipos";
+import type { EnqueteSaida, LancamentoProposto } from "./tipos";
 
 // Textos do Mordomo no WhatsApp. Negrito do WhatsApp é *assim*; sem títulos nem tabelas.
 
@@ -42,6 +42,31 @@ export function opcoes(itens: string[]) {
 }
 
 export const OPCOES_CONFIRMAR = opcoes(["Confirmar", "Cancelar", "Corrigir"]);
+
+export function enqueteConfirmar(pergunta = "Posso salvar?"): EnqueteSaida {
+  return {
+    pergunta,
+    opcoes: [
+      { rotulo: "✅ Confirmar", valor: "sim" },
+      { rotulo: "❌ Cancelar", valor: "nao" },
+      { rotulo: "✏️ Corrigir", valor: "corrigir" },
+    ],
+  };
+}
+
+export function enqueteSimNao(
+  pergunta: string,
+  sim: string,
+  nao: string,
+): EnqueteSaida {
+  return {
+    pergunta: pergunta.slice(0, 250),
+    opcoes: [
+      { rotulo: sim, valor: "sim" },
+      { rotulo: nao, valor: "nao" },
+    ],
+  };
+}
 
 export function boasVindas(primeiroNome: string) {
   return [
@@ -111,7 +136,7 @@ export function propostaLancamento(
     l.parcelas > 1 ? `em ${l.parcelas}x de ${brl(l.valor / l.parcelas)}` : null,
     quando,
   ].filter(Boolean);
-  return `📝 Entendi assim:\n${partes.join(" · ")}\n\nPosso salvar?\n${OPCOES_CONFIRMAR}\n\nPara ajustar, é só escrever, por exemplo: "valor 90", "foi ontem" ou "no pix".`;
+  return `📝 Entendi assim:\n${partes.join(" · ")}\n\nToque numa opção da enquete abaixo. Para ajustar, também pode escrever, por exemplo: "valor 90", "foi ontem" ou "no pix".`;
 }
 
 export function lancamentoSalvo(

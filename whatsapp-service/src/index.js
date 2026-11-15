@@ -9,11 +9,15 @@ const {
   DisconnectReason,
   fetchLatestBaileysVersion,
   downloadMediaMessage,
+  decryptPollVote,
+  jidNormalizedUser,
 } = require("@whiskeysockets/baileys");
+const crypto = require("node:crypto");
 const { ler } = require("./config");
 const { criarCliente } = require("./findomo");
 const { criarFila } = require("./fila");
 const { criarMapaLid, deveAtender, identificar, conteudo, digitos } = require("./mensagens");
+const { criarEnquetes, opcaoVotada, decifrarVoto, textoAlternativo, enqueteValida } = require("./enquetes");
 
 // Canal WhatsApp do Findomo. Mantém a sessão do número (Baileys), põe cada mensagem
 // recebida numa fila em disco, entrega ao Findomo (webhook assinado) e envia as
@@ -24,6 +28,7 @@ const log = pino({ level: process.env.LOG_NIVEL || "info" });
 const silencioso = pino({ level: "silent" });
 const findomo = criarCliente(config);
 const mapa = criarMapaLid(path.join(config.dados, "lid.json"));
+const enquetes = criarEnquetes(path.join(config.dados, "enquetes.json"));
 const espera = (ms) => new Promise((r) => setTimeout(r, ms));
 
 let sock = null;
@@ -45,15 +50,64 @@ async function enviar(jid, textos) {
   }
 }
 
+async function enviarEnquete(jid, enquete, quem) {
+  if (!sock || estado.status !== "conectado") throw Object.assign(new Error("desconectado"), { repetir: true });
+  const segredo = crypto.randomBytes(32);
+  try {
+    const enviada = await sock.sendMessage(jid, {
+      poll: { name: enquete.pergunta.slice(0, 250), values: enquete.opcoes.map((o) => o.rotulo), selectableCount: 1, messageSecret: segredo },
+    });
+    enquetes.guardar(enviada.key.id, {
+      segredo: segredo.toString("base64"),
+      opcoes: enquete.opcoes,
+      jid,
+      telefone: quem.telefone,
+      lid: quem.lid,
+      nome: quem.nome,
+    });
+  } catch (e) {
+    log.warn(`[canal] enquete não enviada, mando em texto: ${e.message}`);
+    await sock.sendMessage(jid, { text: textoAlternativo(enquete) });
+  }
+  await espera(config.intervaloEnvioMs);
+}
+
+async function receberVoto(m) {
+  const voto = m.message.pollUpdateMessage;
+  const id = voto?.pollCreationMessageKey?.id;
+  const enquete = id ? enquetes.obter(id) : null;
+  if (!enquete || !voto.vote) return;
+  const normalizar = (j) => (j ? jidNormalizedUser(j) : null);
+  const unicos = (lista) => [...new Set(lista.map(normalizar).filter(Boolean))];
+  const decifrado = decifrarVoto({
+    voto: voto.vote,
+    idEnquete: id,
+    segredo: Buffer.from(enquete.segredo, "base64"),
+    criadores: unicos([sock?.user?.id, sock?.user?.lid]),
+    votantes: unicos([m.key.participant, m.key.remoteJid, m.key.remoteJidAlt, m.key.senderPn, m.key.participantAlt, enquete.jid]),
+    decifrar: decryptPollVote,
+  });
+  if (!decifrado) return log.warn("[canal] não consegui decifrar um voto de enquete");
+  const opcao = opcaoVotada(enquete, decifrado.selectedOptions);
+  if (!opcao) return;
+  enquetes.concluir(id);
+  const messageId = `voto-${m.key.id}`;
+  fila.adicionar(messageId, enquete.jid, {
+    jid: enquete.jid,
+    mensagem: { messageId, telefone: enquete.telefone, jid: enquete.jid, lid: enquete.lid, nome: enquete.nome || "", texto: opcao.valor, midia: null },
+  });
+}
+
 const fila = criarFila({
   arquivo: path.join(config.dados, "fila.json"),
   log,
   async processar(item) {
     if (item.respostaLocal) return enviar(item.jid, [item.respostaLocal]);
     await sock?.sendPresenceUpdate("composing", item.jid).catch(() => {});
-    const { respostas } = await findomo.entregarMensagem(item.mensagem);
+    const { respostas, enquete } = await findomo.entregarMensagem(item.mensagem);
     await sock?.sendPresenceUpdate("paused", item.jid).catch(() => {});
     await enviar(item.jid, Array.isArray(respostas) ? respostas.filter((t) => typeof t === "string" && t.trim()) : []);
+    if (enqueteValida(enquete)) await enviarEnquete(item.jid, enquete, item.mensagem);
   },
   aoDesistir(item) {
     if (sock && estado.status === "conectado") sock.sendMessage(item.jid, { text: AVISO_INDISPONIVEL }).catch(() => {});
@@ -87,6 +141,7 @@ async function desconectar() {
 
 async function receber(m) {
   if (!deveAtender(m)) return;
+  if (m.message.pollUpdateMessage) return receberVoto(m);
   const idade = Date.now() / 1000 - Number(m.messageTimestamp || 0);
   if (idade > 24 * 60 * 60) return;
   const { jid, lid, telefone } = identificar(m, mapa);

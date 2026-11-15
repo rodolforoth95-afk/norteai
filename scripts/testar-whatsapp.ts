@@ -164,10 +164,15 @@ async function principal() {
     midia: null,
     ...extra,
   });
+  const comEnquete = (x: Awaited<ReturnType<typeof processarMensagem>>) =>
+    [
+      ...x.respostas,
+      ...(x.enquete
+        ? [`${x.enquete.pergunta} ${x.enquete.opcoes.map((o) => `[${o.rotulo}=${o.valor}]`).join(" ")}`]
+        : []),
+    ].join("\n---\n");
   const enviar = async (texto: string, extra: Partial<MensagemCanal> = {}) =>
-    (await processarMensagem(msg(texto, extra), deps)).respostas.join(
-      "\n---\n",
-    );
+    comEnquete(await processarMensagem(msg(texto, extra), deps));
 
   let r = await enviar("oi");
   ok("sem vínculo pede para conectar", r.includes("/conta/whatsapp"), r);
@@ -200,7 +205,7 @@ async function principal() {
     "propõe a despesa e pede confirmação",
     r.includes("Despesa R$ 85,00") &&
       r.includes("débito") &&
-      r.includes("Posso salvar") && r.includes("1️⃣ Confirmar"),
+      r.includes("Posso salvar") && r.includes("[✅ Confirmar=sim]") && r.includes("[❌ Cancelar=nao]"),
     r,
   );
   ok("nada salvo antes do sim", banco[UID].lancamentos.length === 0);
@@ -232,7 +237,7 @@ async function principal() {
   const segunda = await processarMensagem(repetida, deps);
   ok(
     "mensagem repetida não processa de novo",
-    segunda.repetida && segunda.respostas.join() === primeira.respostas.join(),
+    segunda.repetida && segunda.respostas[0] === primeira.respostas[0] && segunda.respostas.join().includes("1️⃣ ✅ Confirmar"),
     segunda,
   );
   r = await enviar("não");
@@ -343,7 +348,7 @@ async function principal() {
     processarMensagem(
       msg(texto, { telefone: "552188887777", jid: "552188887777@s.whatsapp.net" }),
       deps,
-    ).then((x) => x.respostas.join("\n---\n"));
+    ).then(comEnquete);
   r = await doCadastro("oi");
   ok(
     "primeira conversa reconhece o número sem o 9 e avisa a conta",
