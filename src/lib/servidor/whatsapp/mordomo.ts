@@ -399,7 +399,7 @@ async function responder(
       );
       return {
         respostas: [
-          `Tive um problema para ler essa ${m.midia.tipo === "documento" ? "arquivo" : "foto"} agora. 🙏 Pode tentar de novo em instantes ou escrever o lançamento? (código ${status ?? "IA"})`,
+          `Tive um problema para ler essa ${m.midia.tipo === "documento" ? "arquivo" : "foto"} agora. 🙏 Pode tentar de novo em instantes ou escrever o lançamento? (código ${status ?? "IA"}${status === 400 && e instanceof Error ? `: ${e.message.replace(/\s+/g, " ").slice(0, 160)}` : ""})`,
         ],
         usuarioId: uid,
       };

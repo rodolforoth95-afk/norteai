@@ -336,14 +336,7 @@ export async function lerLancamentoComIA(entrada: { texto?: string; imagem?: { m
     type: "text",
     text: `Data de hoje: ${contexto.hoje}\n\nCategorias disponíveis:\n${lista}\n\nRegras aprendidas com esta pessoa (estabelecimento → categoria):\n${regras}\n\n${entrada.texto ? `Frase: """${entrada.texto.slice(0, 500)}"""` : "Extraia o lançamento da imagem."}`,
   });
-  const resposta = await claude().messages.create({
-    model: MODELO_ENTREVISTA,
-    max_tokens: 16000,
-    output_config: {
-      effort: "low",
-      format: {
-        type: "json_schema",
-        schema: {
+  const esquema = {
           type: "object",
           properties: {
             tipo: { type: "string", enum: ["despesa", "receita"] },
@@ -358,12 +351,38 @@ export async function lerLancamentoComIA(entrada: { texto?: string; imagem?: { m
           },
           required: ["tipo", "valor", "data", "estabelecimento", "descricao", "meio", "parcelas", "categoriaId", "confianca"],
           additionalProperties: false,
+        };
+  const pedir = (estruturado: boolean) =>
+    claude().messages.create({
+      model: MODELO_ENTREVISTA,
+      max_tokens: 16000,
+      output_config: estruturado
+        ? { effort: "low", format: { type: "json_schema", schema: esquema } }
+        : { effort: "low" },
+      system: [{ type: "text", text: SISTEMA_LANCAMENTO, cache_control: { type: "ephemeral" } }],
+      messages: [
+        {
+          role: "user",
+          content: estruturado
+            ? blocos
+            : [
+                ...blocos,
+                {
+                  type: "text",
+                  text: `Responda somente com um objeto JSON, sem texto antes ou depois, com estes campos: ${Object.keys(esquema.properties).join(", ")}.`,
+                },
+              ],
         },
-      },
-    },
-    system: [{ type: "text", text: SISTEMA_LANCAMENTO, cache_control: { type: "ephemeral" } }],
-    messages: [{ role: "user", content: blocos }],
-  });
+      ],
+    });
+  let resposta: Anthropic.Message;
+  try {
+    resposta = await pedir(true);
+  } catch (e) {
+    if (!(e instanceof Anthropic.APIError && e.status === 400)) throw e;
+    registrarErro("ler lançamento estruturado", e.message.slice(0, 120));
+    resposta = await pedir(false);
+  }
   if (resposta.stop_reason === "refusal") return null;
   if (resposta.stop_reason === "max_tokens") {
     registrarErro("ler lançamento", "max_tokens");
@@ -371,8 +390,9 @@ export async function lerLancamentoComIA(entrada: { texto?: string; imagem?: { m
   }
   const bloco = resposta.content.find((b): b is Anthropic.TextBlock => b.type === "text");
   if (!bloco) return null;
+  const json = bloco.text.slice(bloco.text.indexOf("{"), bloco.text.lastIndexOf("}") + 1);
   try {
-    return JSON.parse(bloco.text) as LancamentoIA;
+    return JSON.parse(json) as LancamentoIA;
   } catch {
     registrarErro("ler lançamento", "json");
     return null;
