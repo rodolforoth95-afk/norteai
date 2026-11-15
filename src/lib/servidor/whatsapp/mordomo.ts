@@ -26,6 +26,7 @@ import {
   atendimentoPausado,
   boasVindas,
   brl,
+  opcoes,
   ehSaudacao,
   lancamentoSalvo,
   naoVinculado,
@@ -83,7 +84,7 @@ export type Dependencias = {
 };
 
 export const RESPOSTA_REGULATORIA =
-  "Aqui eu não indico investimentos específicos, mas posso te explicar como esse tipo de investimento funciona.";
+  "Essa decisão é só sua, e eu não indico investimentos específicos. 🙂 Mas posso te explicar como esse tipo de investimento funciona, ou você pode comparar cenários no Simulador do Findomo. O que prefere?";
 
 const VALIDADE_PENDENTE_MS = 10 * 60 * 1000;
 const HISTORICO_MS = 3 * 60 * 60 * 1000;
@@ -196,7 +197,7 @@ async function responder(
     if (vinculo?.usuarioId === dono)
       return {
         respostas: [
-          "Este WhatsApp já está ligado à sua conta. Mande *ajuda* para ver o que eu faço.",
+          "Este WhatsApp já está conectado à sua conta. 😊 Envie *menu* para ver tudo o que posso fazer.",
         ],
         usuarioId: dono,
       };
@@ -255,14 +256,17 @@ async function responder(
       prefixo,
     );
   const proporApagar = (acao: AcaoPendente & { tipo: "apagar" }) =>
-    propor(acao, `Apago a ${acao.resumo}? Responda *sim* ou *não*.`);
+    propor(
+      acao,
+      `Posso apagar a ${acao.resumo}?\n${opcoes(["Apagar", "Manter"])}`,
+    );
 
   switch (comando.tipo) {
     case "sim":
       if (!pendente)
         return {
           respostas: [
-            "Não tenho nada aguardando confirmação. Me mande um lançamento ou uma pergunta.",
+            'Não há nada aguardando confirmação no momento. 🙂 Me envie um lançamento (ex.: "gastei 30 no café") ou uma pergunta.',
           ],
           usuarioId: uid,
         };
@@ -273,20 +277,20 @@ async function responder(
     case "nao":
       if (!pendente)
         return {
-          respostas: ["Tudo bem. Estou por aqui quando precisar."],
+          respostas: ["Combinado! Estou por aqui sempre que precisar. 😊"],
           usuarioId: uid,
         };
       await deps.armazem.limparPendente(uid);
       return {
-        respostas: ["Tudo bem, descartei. Nada foi alterado."],
+        respostas: ["Tudo bem, cancelei. Nada foi alterado. 👍"],
         usuarioId: uid,
       };
     case "corrigir":
       return {
         respostas: [
           pendente?.tipo === "lancar"
-            ? 'Me diga o que corrigir, por exemplo: "valor 90", "foi ontem", "no pix" ou "categoria mercado".'
-            : "Não tenho lançamento aguardando. Para apagar o último, mande *apagar o último*.",
+            ? 'Claro! O que devo ajustar? Por exemplo: "valor 90", "foi ontem", "no pix" ou "categoria mercado".'
+            : "Não há lançamento aguardando. Para apagar o último, envie *apagar o último*.",
         ],
         usuarioId: uid,
       };
@@ -295,7 +299,7 @@ async function responder(
     case "sair":
       return propor(
         { tipo: "desvincular" },
-        "Quer desligar este WhatsApp da sua conta Findomo? Seus dados continuam no app. Responda *sim* para desligar.",
+        `Quer desconectar este WhatsApp da sua conta Findomo? Seus dados continuam guardados no app.\n${opcoes(["Desconectar", "Continuar conectado"])}`,
       );
     case "apagar_ultimo": {
       const ultimo = [...dados.lancamentos]
@@ -303,7 +307,7 @@ async function responder(
         .sort((a, b) => b.criado_em.localeCompare(a.criado_em))[0];
       if (!ultimo)
         return {
-          respostas: ["Você ainda não tem lançamentos para apagar."],
+          respostas: ["Você ainda não tem lançamentos para apagar. 🙂"],
           usuarioId: uid,
         };
       return proporApagar({
@@ -361,7 +365,7 @@ async function responder(
     if (!lido)
       return {
         respostas: [
-          "Não consegui achar um valor nessa imagem. Pode me mandar uma foto mais nítida ou escrever o lançamento?",
+          "Não consegui identificar um valor nessa imagem. 🙂 Pode enviar uma foto mais nítida ou escrever o lançamento?",
         ],
         usuarioId: uid,
       };
@@ -474,7 +478,7 @@ async function executar(
 ): Promise<string> {
   if (pendente.tipo === "desvincular") {
     await deps.armazem.desvincular(uid);
-    return `Pronto, desliguei este WhatsApp da sua conta. Para voltar, gere um novo código em ${site()}/conta/whatsapp.`;
+    return `Pronto, este WhatsApp foi desconectado da sua conta. Foi um prazer te ajudar! 💙 Quando quiser voltar, é só cadastrar o número em ${site()}/conta/whatsapp.`;
   }
   if (pendente.tipo === "apagar") {
     const antes = dados.lancamentos.length;
@@ -483,15 +487,15 @@ async function executar(
     );
     await deps.armazem.limparPendente(uid);
     if (dados.lancamentos.length === antes)
-      return "Esse lançamento já não existe.";
+      return "Esse lançamento já tinha sido removido. 🙂";
     await deps.financas.gravar(uid, dados);
-    return `Apaguei a ${pendente.resumo}. ✅`;
+    return `Pronto, apaguei a ${pendente.resumo}. ✅`;
   }
   try {
     deps.financas.lancar(dados, pendente.lancamento, hoje);
   } catch (e) {
     await deps.armazem.limparPendente(uid);
-    return `Não consegui lançar: ${e instanceof Error ? e.message : "dados inválidos"} Me mande de novo, por favor.`;
+    return `Não consegui salvar esse lançamento (${e instanceof Error ? e.message : "dados inválidos"}). Pode me enviar de novo? 🙏`;
   }
   await deps.financas.gravar(uid, dados);
   await deps.armazem.limparPendente(uid);
@@ -530,7 +534,7 @@ async function responderSemIA(
     p.tipo,
     dados,
   );
-  if (p.valor && p.valor > 0) {
+  if (p.valor && p.valor > 0 && /\d/.test(frase)) {
     return {
       tipo: "proposta",
       lancamento: {

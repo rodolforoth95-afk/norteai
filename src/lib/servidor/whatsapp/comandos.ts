@@ -76,6 +76,10 @@ export function lerComando(texto: string): Comando {
   const bruto = texto.trim();
   const codigo = bruto.match(/^\s*(?:findomo\W*)?(\d{3})\W?(\d{3})\s*$/i);
   if (codigo) return { tipo: "codigo", codigo: codigo[1] + codigo[2] };
+  const atalho = bruto.replace(/\uFE0F|\u20E3/g, "").trim();
+  if (atalho === "1") return { tipo: "sim" };
+  if (atalho === "2") return { tipo: "nao" };
+  if (atalho === "3") return { tipo: "corrigir" };
   const t = normalizar(bruto)
     .replace(/[!.?,;]+$/g, "")
     .trim();

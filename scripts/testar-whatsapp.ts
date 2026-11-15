@@ -174,7 +174,7 @@ async function principal() {
   r = await enviar("gastei 50 no mercado");
   ok(
     "sem vínculo nada é lançado",
-    banco[UID].lancamentos.length === 0 && r.includes("Não encontrei"),
+    banco[UID].lancamentos.length === 0 && r.includes("/cadastro"),
     r,
   );
 
@@ -184,23 +184,23 @@ async function principal() {
     new Date(agora.getTime() + 15 * 60 * 1000).toISOString(),
   );
   r = await enviar("999999");
-  ok("código errado recusado", r.includes("não vale"), r);
+  ok("código errado recusado", r.includes("expirou"), r);
   r = await enviar("FINDOMO 123456");
   ok(
     "código certo liga a conta",
-    r.includes("Pronto, Ana") &&
+    r.includes("Tudo certo, Ana") &&
       (await armazem.vinculoPorTelefone("5511999998888"))?.usuarioId === UID,
     r,
   );
   r = await enviar("FINDOMO 123456");
-  ok("código não vale duas vezes", r.includes("não vale"), r);
+  ok("código não vale duas vezes", r.includes("expirou"), r);
 
   r = await enviar("gastei 85 no almoço no débito");
   ok(
     "propõe a despesa e pede confirmação",
     r.includes("Despesa R$ 85,00") &&
       r.includes("débito") &&
-      r.includes("Confirma"),
+      r.includes("Posso salvar") && r.includes("1️⃣ Confirmar"),
     r,
   );
   ok("nada salvo antes do sim", banco[UID].lancamentos.length === 0);
@@ -219,11 +219,11 @@ async function principal() {
       l.origem === "whatsapp",
     l,
   );
-  ok("responde com o mês", r.includes("Feito"), r);
+  ok("responde com o mês", r.includes("salva!"), r);
   r = await enviar("sim");
   ok(
     "sim sem pendência não duplica",
-    banco[UID].lancamentos.length === 1 && r.includes("Não tenho nada"),
+    banco[UID].lancamentos.length === 1 && r.includes("Não há nada aguardando"),
     r,
   );
 
@@ -238,7 +238,7 @@ async function principal() {
   r = await enviar("não");
   ok(
     "não descarta",
-    r.includes("descartei") && banco[UID].lancamentos.length === 1,
+    r.includes("cancelei") && banco[UID].lancamentos.length === 1,
     r,
   );
 
@@ -260,11 +260,15 @@ async function principal() {
     r,
   );
 
+  ok("atalho 1 confirma", lerComando("1️⃣").tipo === "sim" && lerComando("1").tipo === "sim");
+  ok("atalho 2 cancela", lerComando("2").tipo === "nao");
   r = await enviar("apagar o último");
-  ok("propõe apagar o último", r.includes("Apago a receita de R$ 3.200,00"), r);
-  r = await enviar("sim");
-  ok("apaga", banco[UID].lancamentos.length === 1 && r.includes("Apaguei"), r);
+  ok("propõe apagar o último", r.includes("Posso apagar a receita de R$ 3.200,00"), r);
+  r = await enviar("1");
+  ok("apaga", banco[UID].lancamentos.length === 1 && r.includes("apaguei"), r);
 
+  r = await enviar("me passa uma receita de bolo de cenoura");
+  ok("receita de bolo não vira lançamento", !r.includes("Posso salvar"), r);
   r = await enviar("como estão minhas ações?");
   ok("minhas ações mostra a carteira", r.includes("Sua carteira"), r);
   r = await enviar("como estão as ações da Petrobras?");
@@ -307,7 +311,7 @@ async function principal() {
   r = await enviar("sim");
   ok(
     "proposta vence em 10 min",
-    r.includes("Não tenho nada") && banco[UID].lancamentos.length === 1,
+    r.includes("Não há nada aguardando") && banco[UID].lancamentos.length === 1,
     r,
   );
 
@@ -321,7 +325,7 @@ async function principal() {
   );
   ok(
     "número desconhecido pela LID não vê dados",
-    pelaLid.respostas.join().includes("Não encontrei"),
+    pelaLid.respostas.join().includes("/cadastro"),
     pelaLid,
   );
 
@@ -343,7 +347,7 @@ async function principal() {
   r = await doCadastro("oi");
   ok(
     "primeira conversa reconhece o número sem o 9 e avisa a conta",
-    r.includes("ligado à sua conta") && r.includes("SAIR") && r.includes("Lançar"),
+    r.includes("conectado à sua conta Findomo") && r.includes("SAIR") && r.includes("Lançar"),
     r,
   );
   ok(
@@ -351,7 +355,7 @@ async function principal() {
     Boolean((await armazem.vinculoDoUsuario(UID2))?.confirmadoEm),
   );
   r = await doCadastro("gastei 40 no mercado");
-  ok("depois atende normal", r.includes("R$ 40,00") && !r.includes("ligado à sua conta"), r);
+  ok("depois atende normal", r.includes("R$ 40,00") && !r.includes("conectado à sua conta Findomo"), r);
   await doCadastro("sim");
   ok("lança na conta certa", banco[UID2].lancamentos.length === 1 && banco[UID].lancamentos.length === 1);
 
@@ -363,16 +367,16 @@ async function principal() {
   ok("resumo do admin", resumoAdmin.ligados === 2 && resumoAdmin.clientes.length === 2, resumoAdmin);
 
   r = await enviar("SAIR");
-  ok("sair pede confirmação", r.includes("desligar"), r);
+  ok("sair pede confirmação", r.includes("desconectar"), r);
   r = await enviar("sim");
   ok(
     "sair desliga",
-    r.includes("desliguei") &&
+    r.includes("desconectado") &&
       !(await armazem.vinculoPorTelefone("5511999998888")),
     r,
   );
   r = await enviar("resumo");
-  ok("depois de sair não vê dados", r.includes("Não encontrei"), r);
+  ok("depois de sair não vê dados", r.includes("/cadastro"), r);
 
   console.log(falhas ? `\n${falhas} falha(s)` : "\nWhatsApp OK");
   process.exit(falhas ? 1 : 0);

@@ -30,31 +30,41 @@ const MEIOS: Record<string, string> = {
 
 export function site() {
   return (
-    process.env.NEXT_PUBLIC_SITE_URL || "https://norteai-delta.vercel.app"
+    process.env.NEXT_PUBLIC_SITE_URL || "https://findomo.com.br"
   ).replace(/\/$/, "");
 }
 
+// Respostas rápidas: o cliente toca no número em vez de digitar (o WhatsApp não
+// mostra botões para números conectados fora da API oficial).
+export function opcoes(itens: string[]) {
+  const numeros = ["1️⃣", "2️⃣", "3️⃣", "4️⃣"];
+  return itens.map((t, i) => `${numeros[i]} ${t}`).join("\n");
+}
+
+export const OPCOES_CONFIRMAR = opcoes(["Confirmar", "Cancelar", "Corrigir"]);
+
 export function boasVindas(primeiroNome: string) {
   return [
-    `Pronto${primeiroNome ? `, ${primeiroNome}` : ""}! Seu WhatsApp está ligado ao Findomo. 🎩`,
+    `Tudo certo${primeiroNome ? `, ${primeiroNome}` : ""}! 🎉 Seu WhatsApp agora está conectado ao Findomo. A partir daqui, eu cuido dos seus lançamentos e respondo suas dúvidas sobre dinheiro.`,
     MENU,
   ];
 }
 
 export const MENU = [
-  "Aqui você pode:",
-  '• *Lançar*: "gastei 85 no almoço no débito", "recebi 3.200 de salário", uma foto da nota ou um áudio',
-  '• *Ver o mês*: "resumo" ou "quanto gastei com mercado?"',
-  '• *Plano*: "como está meu plano?"',
-  '• *Carteira e bolsa*: "minha carteira", "cotação PETR4", "como está a Selic?"',
-  '• *Aprender*: "o que é CDB?"',
-  '• *Corrigir*: "apagar o último"',
+  "*Como posso te ajudar hoje?* 🎩",
   "",
-  "Para desligar o WhatsApp do Findomo, mande *SAIR*.",
+  "💸 *Lançar*: \"gastei 85 no almoço no débito\", \"recebi 3.200 de salário\" ou uma foto da nota",
+  "📊 *Seu mês*: \"resumo\" ou \"quanto gastei com mercado?\"",
+  "🎯 *Seu plano*: \"como está meu plano?\"",
+  "📈 *Investimentos e bolsa*: \"minha carteira\", \"ações da Petrobras\", \"como está a bolsa?\"",
+  "📚 *Aprender*: \"o que é CDB?\"",
+  "↩️ *Corrigir*: \"apagar o último\"",
+  "",
+  "É só me escrever do seu jeito. Para desconectar, envie *SAIR*.",
 ].join("\n");
 
 export function primeiraConversa(primeiroNome: string, comMenu: boolean) {
-  const aviso = `Oi${primeiroNome ? `, ${primeiroNome}` : ""}! Este WhatsApp está ligado à sua conta do Findomo. 🎩\nSe essa conta não é sua, responda *SAIR*.`;
+  const aviso = `Olá${primeiroNome ? `, ${primeiroNome}` : ""}! 😊 Que bom ter você por aqui. Este WhatsApp está conectado à sua conta Findomo.\n\nSe essa conta não for sua, envie *SAIR* e eu desconecto na hora.`;
   return comMenu ? [aviso, MENU] : [aviso];
 }
 
@@ -69,19 +79,21 @@ export function ehSaudacao(texto: string) {
 }
 
 export function atendimentoPausado() {
-  return `O atendimento do Findomo pelo WhatsApp está em pausa por alguns instantes. Enquanto isso, use o site: ${site()}`;
+  return `Olá! 😊 Nosso atendimento pelo WhatsApp está em uma pausa rápida e volta em instantes. Enquanto isso, tudo continua disponível em ${site()}`;
 }
 
 export function naoVinculado() {
   return [
-    "Olá! Eu sou o Mordomo do Findomo. 🎩",
-    `Não encontrei este número em nenhuma conta. Para eu cuidar das suas finanças por aqui, cadastre este celular em ${site()}/conta/whatsapp e me mande uma mensagem de novo.`,
-    `Ainda não tem conta? Crie grátis em ${site()}/cadastro.`,
+    "Olá! 👋 Eu sou o *Mordomo do Findomo*, seu assistente de finanças pessoais e investimentos. 🎩",
+    "Com o Findomo você:",
+    "💸 Anota gastos e receitas por aqui mesmo, por texto ou foto da nota\n📊 Vê para onde vai o seu dinheiro, mês a mês\n🎯 Cria planos e metas e acompanha cada passo\n📈 Organiza seus investimentos e acompanha a bolsa\n📚 Aprende a investir com aulas curtas e simulador",
+    `É grátis e leva 1 minuto. Crie sua conta em ${site()}/cadastro e informe este celular. Depois é só me mandar um *oi* que eu começo a cuidar de tudo. 🚀`,
+    `Já tem conta? Cadastre este número em ${site()}/conta/whatsapp.`,
   ].join("\n\n");
 }
 
 export const CODIGO_INVALIDO =
-  "Esse código não vale mais ou não existe. Gere um novo em Conta › WhatsApp no site e me mande em até 15 minutos.";
+  "Esse código expirou ou não existe. 🙂 Gere um novo em *Conta › WhatsApp* no site e me envie em até 15 minutos.";
 
 export function propostaLancamento(
   l: LancamentoProposto,
@@ -99,7 +111,7 @@ export function propostaLancamento(
     l.parcelas > 1 ? `em ${l.parcelas}x de ${brl(l.valor / l.parcelas)}` : null,
     quando,
   ].filter(Boolean);
-  return `Anotei: ${partes.join(" · ")}.\n\nConfirma? Responda *sim*, *não* ou me diga o que corrigir (ex.: "valor 90", "foi ontem", "no pix").`;
+  return `📝 Entendi assim:\n${partes.join(" · ")}\n\nPosso salvar?\n${OPCOES_CONFIRMAR}\n\nPara ajustar, é só escrever, por exemplo: "valor 90", "foi ontem" ou "no pix".`;
 }
 
 export function lancamentoSalvo(
@@ -113,8 +125,8 @@ export function lancamentoSalvo(
     0;
   const mes = nomeMes(resumo.mes).toLowerCase();
   if (l.tipo === "receita")
-    return `Feito ✅ Receita lançada. Em ${mes} entraram ${brl(resumo.receitas, false)} e sobram ${brl(resumo.saldo, false)}.`;
-  return `Feito ✅ Em ${mes} você já gastou ${brl(daCategoria, false)} com ${nome}. No mês: entrou ${brl(resumo.receitas, false)}, saiu ${brl(resumo.despesas, false)}.`;
+    return `Receita salva! ✅\nEm ${mes} já entraram ${brl(resumo.receitas, false)}, e o saldo do mês está em *${brl(resumo.saldo, false)}*.`;
+  return `Despesa salva! ✅\nEm ${mes} você já gastou ${brl(daCategoria, false)} com ${nome}.\nNo mês: entrou ${brl(resumo.receitas, false)} · saiu ${brl(resumo.despesas, false)}.`;
 }
 
 export function resumoDoMesTexto(
@@ -125,7 +137,7 @@ export function resumoDoMesTexto(
   const nome = (id: string) =>
     categorias.find((c) => c.id === id)?.nome ?? "Outros";
   if (!resumo.receitas && !resumo.despesas)
-    return `Ainda não há lançamentos em ${nomeMes(resumo.mes).toLowerCase()}. Me mande o primeiro, por exemplo: "gastei 40 na farmácia".`;
+    return `Ainda não há lançamentos em ${nomeMes(resumo.mes).toLowerCase()}. Vamos começar? 😊 Me envie o primeiro, por exemplo: "gastei 40 na farmácia".`;
   const topo = resumo.porCategoria
     .slice(0, 4)
     .map((p) => `• ${nome(p.categoriaId)}: ${brl(p.total, false)}`)
@@ -134,15 +146,16 @@ export function resumoDoMesTexto(
     anterior.despesas > 0
       ? `\n\n${nomeMes(anterior.mes)} fechou com ${brl(anterior.despesas, false)} de despesas.`
       : "";
-  return `*${nomeMes(resumo.mes)}*\nEntrou: ${brl(resumo.receitas, false)}\nSaiu: ${brl(resumo.despesas, false)}\nSobra: *${brl(resumo.saldo, false)}*${topo ? `\n\nOnde mais foi:\n${topo}` : ""}${comparacao}`;
+  return `📊 *Resumo de ${nomeMes(resumo.mes).toLowerCase()}*\nEntrou: ${brl(resumo.receitas, false)}\nSaiu: ${brl(resumo.despesas, false)}\nSaldo: *${brl(resumo.saldo, false)}*${topo ? `\n\nOnde mais foi:\n${topo}` : ""}${comparacao}\n\nVeja os detalhes em ${site()}/financas`;
 }
 
 export function ultimosTexto(lista: Lancamento[], categorias: Categoria[]) {
-  if (!lista.length) return "Você ainda não tem lançamentos.";
+  if (!lista.length)
+    return 'Você ainda não tem lançamentos. Que tal começar agora? Ex.: "gastei 40 na farmácia" 😊';
   const nome = (id: string) =>
     categorias.find((c) => c.id === id)?.nome ?? "Outros";
   return (
-    "*Últimos lançamentos*\n" +
+    "🧾 *Últimos lançamentos*\n" +
     lista
       .map(
         (l) =>
@@ -157,15 +170,15 @@ export function resumoLancamento(l: Lancamento) {
 }
 
 export const SEM_IA_MIDIA =
-  'Por enquanto eu ainda não leio fotos e áudios por aqui. Me escreva o lançamento, por exemplo: "gastei 85 no almoço no débito".';
+  'Por enquanto ainda não consigo ler fotos por aqui. 🙂 Me escreva o lançamento, por exemplo: "gastei 85 no almoço no débito".';
 export const AUDIO_FALHOU =
-  'Não consegui entender esse áudio. Pode mandar de novo, falando mais perto do celular, ou escrever? Ex.: "gastei 85 no almoço no débito".';
+  'Não consegui entender esse áudio. 🙂 Pode enviar de novo, falando mais perto do celular, ou escrever? Ex.: "gastei 85 no almoço no débito".';
 export const SEM_AUDIO =
-  'Ainda não consigo ouvir áudios por aqui. Me escreva, por exemplo: "gastei 85 no almoço no débito".';
+  'Os áudios chegam em breve por aqui! 🎧 Por enquanto, me escreva, por exemplo: "gastei 85 no almoço no débito".';
 export const MUITAS_MENSAGENS =
-  "Recebi muitas mensagens em pouco tempo. Dê uma pausa de alguns minutos e me chame de novo.";
+  "Recebi muitas mensagens em pouco tempo. 🙂 Dê uma pausa de alguns minutos e me chame de novo.";
 export const ERRO_GERAL =
-  "Tive um problema para responder agora. Pode mandar de novo em instantes?";
+  "Ops, tive uma instabilidade para responder agora. Pode me enviar de novo em instantes? 🙏";
 
 type ConteudoCarteira = {
   vazia?: boolean;
@@ -180,13 +193,13 @@ type ConteudoCarteira = {
 export function textoCarteira(conteudo: unknown) {
   const c = conteudo as ConteudoCarteira;
   if (c.vazia || c.patrimonio == null)
-    return `Sua carteira ainda está vazia no Findomo. Cadastre seus investimentos em ${c.link} e eu acompanho por aqui.`;
+    return `Sua carteira ainda está vazia no Findomo. 📈 Cadastre seus investimentos em ${c.link} e eu acompanho tudo com você por aqui.`;
   const pctTxt =
     c.rentabilidadeAcumuladaPct != null
       ? ` (${c.rentabilidadeAcumuladaPct >= 0 ? "+" : "−"}${Math.abs(c.rentabilidadeAcumuladaPct).toFixed(1).replace(".", ",")}%)`
       : "";
   return [
-    `*Sua carteira*: ${brl(c.patrimonio)}`,
+    `📈 *Sua carteira*: ${brl(c.patrimonio)}`,
     c.rendimento != null ? `Rendimento: ${brl(c.rendimento)}${pctTxt}` : null,
     ...(c.porClasse ?? []).map((x) => `• ${x.classe}: ${brl(x.total)} (${x.pct}%)`),
     c.maiores?.length
