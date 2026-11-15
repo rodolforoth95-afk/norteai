@@ -9,6 +9,8 @@ import {
 } from "@/lib/servidor/whatsapp/operacao";
 import { PainelCanal } from "./PainelCanal";
 import { ConfigAtendimento } from "./ConfigAtendimento";
+import { iaDisponivel } from "@/lib/servidor/ia";
+import { transcricaoDisponivel } from "@/lib/servidor/whatsapp/transcricao";
 
 export const metadata = { title: "Admin · WhatsApp" };
 export const dynamic = "force-dynamic";
@@ -94,10 +96,49 @@ export default async function PaginaAdminWhatsApp() {
         </div>
       ) : null}
 
+      <div className="flex flex-col gap-2">
+        <h2 className="font-display text-lg font-semibold text-texto">
+          3. O que o Mordomo entende
+        </h2>
+        <ul className="painel flex flex-col gap-3 p-5 text-sm">
+          {[
+            {
+              nome: "Texto simples",
+              ok: true,
+              ajuda: '"gastei 20 no café", resumo, cotações.',
+            },
+            {
+              nome: "IA: frases livres, fotos de nota, PDF, carteira",
+              ok: iaDisponivel(),
+              ajuda: "Precisa de ANTHROPIC_API_KEY na Vercel.",
+            },
+            {
+              nome: "Áudio (transcrição)",
+              ok: transcricaoDisponivel(),
+              ajuda: "Precisa de OPENAI_API_KEY na Vercel.",
+            },
+          ].map((r) => (
+            <li key={r.nome} className="flex items-start justify-between gap-3">
+              <span className="flex flex-col">
+                <span className="font-semibold text-texto">{r.nome}</span>
+                {!r.ok ? (
+                  <span className="text-xs text-suave">{r.ajuda}</span>
+                ) : null}
+              </span>
+              <span
+                className={`shrink-0 font-semibold ${r.ok ? "text-menta" : "text-gravata"}`}
+              >
+                {r.ok ? "Ligado" : "Desligado"}
+              </span>
+            </li>
+          ))}
+        </ul>
+      </div>
+
       {resumo ? (
         <div className="flex flex-col gap-2">
           <h2 className="font-display text-lg font-semibold text-texto">
-            3. Clientes
+            4. Clientes
           </h2>
           <div className="grid grid-cols-3 gap-3">
             {[

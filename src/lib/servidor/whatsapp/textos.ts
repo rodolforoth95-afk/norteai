@@ -158,6 +158,8 @@ export function resumoLancamento(l: Lancamento) {
 
 export const SEM_IA_MIDIA =
   'Por enquanto eu ainda não leio fotos e áudios por aqui. Me escreva o lançamento, por exemplo: "gastei 85 no almoço no débito".';
+export const AUDIO_FALHOU =
+  'Não consegui entender esse áudio. Pode mandar de novo, falando mais perto do celular, ou escrever? Ex.: "gastei 85 no almoço no débito".';
 export const SEM_AUDIO =
   'Ainda não consigo ouvir áudios por aqui. Me escreva, por exemplo: "gastei 85 no almoço no débito".';
 export const MUITAS_MENSAGENS =

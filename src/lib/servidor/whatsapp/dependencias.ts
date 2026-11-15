@@ -16,7 +16,7 @@ import { dentroDoLimite } from "../util";
 import { conversarNoWhatsApp } from "./agente";
 import { armazemWhatsApp } from "./armazem";
 import type { Dependencias } from "./mordomo";
-import { transcrever } from "./transcricao";
+import { transcrever, transcricaoDisponivel } from "./transcricao";
 
 // As dependências de verdade do Mordomo: Supabase (ou arquivo no modo de teste),
 // Claude, transcrição e brapi.
@@ -81,6 +81,7 @@ export function dependenciasReais(): Dependencias {
       },
     },
     transcrever: (midia) => transcrever(midia),
+    transcricaoDisponivel: transcricaoDisponivel(),
     async cotacao(simbolo) {
       if (!brapiDisponivel()) return null;
       const c = await cotacao(simbolo);

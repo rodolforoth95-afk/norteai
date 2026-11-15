@@ -20,6 +20,7 @@ import {
   ERRO_GERAL,
   MENU,
   MUITAS_MENSAGENS,
+  AUDIO_FALHOU,
   SEM_AUDIO,
   SEM_IA_MIDIA,
   atendimentoPausado,
@@ -75,6 +76,7 @@ export type Dependencias = {
     ) => Promise<LancamentoProposto | null>;
   };
   transcrever: (midia: MidiaCanal) => Promise<string | null>;
+  transcricaoDisponivel: boolean;
   cotacao: (
     simbolo: string,
   ) => Promise<{ preco: number; variacaoPct: number; nome: string } | null>;
@@ -345,7 +347,11 @@ async function responder(
   let textoEntrada: string | undefined;
   if (m.midia?.tipo === "audio") {
     const transcrito = await deps.transcrever(m.midia);
-    if (!transcrito) return { respostas: [SEM_AUDIO], usuarioId: uid };
+    if (!transcrito)
+      return {
+        respostas: [deps.transcricaoDisponivel ? AUDIO_FALHOU : SEM_AUDIO],
+        usuarioId: uid,
+      };
     texto = transcrito;
     textoEntrada = `[áudio] ${transcrito}`;
     prefixo = `🎤 Ouvi: "${transcrito.slice(0, 200)}"`;

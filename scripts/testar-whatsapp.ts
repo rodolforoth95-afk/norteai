@@ -126,6 +126,7 @@ async function principal() {
       lerImagem: async () => null,
     },
     transcrever: async () => null,
+    transcricaoDisponivel: false,
     cotacao: async (s) =>
       s === "PETR4"
         ? { preco: 38.12, variacaoPct: 1.4, nome: "Petrobras" }
@@ -259,6 +260,11 @@ async function principal() {
     midia: { tipo: "audio", mimetype: "audio/ogg", base64: "AAAA" },
   });
   ok("áudio sem transcrição pede texto", r.includes("áudios"), r);
+  deps.transcricaoDisponivel = true;
+  r = await enviar("", {
+    midia: { tipo: "audio", mimetype: "audio/ogg", base64: "AAAA" },
+  });
+  ok("áudio que falhou pede para repetir", r.includes("Não consegui entender"), r);
   deps.transcrever = async () => "gastei 30 na farmácia";
   r = await enviar("", {
     midia: { tipo: "audio", mimetype: "audio/ogg", base64: "AAAA" },
