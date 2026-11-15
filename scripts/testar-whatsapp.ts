@@ -203,9 +203,9 @@ async function principal() {
   r = await enviar("gastei 85 no almoço no débito");
   ok(
     "propõe a despesa e pede confirmação",
-    r.includes("Despesa R$ 85,00") &&
+    r.includes("Despesa: R$ 85,00") &&
       r.includes("débito") &&
-      r.includes("Posso salvar") && r.includes("[✅ Confirmar=sim]") && r.includes("[❌ Cancelar=nao]"),
+      r.includes("Posso salvar") && r.includes("[Confirmar=sim]") && r.includes("[Cancelar=nao]"),
     r,
   );
   ok("nada salvo antes do sim", banco[UID].lancamentos.length === 0);
@@ -224,7 +224,7 @@ async function principal() {
       l.origem === "whatsapp",
     l,
   );
-  ok("responde com o mês", r.includes("salva!"), r);
+  ok("responde com o mês", r.includes("salva com sucesso"), r);
   r = await enviar("sim");
   ok(
     "sim sem pendência não duplica",
@@ -250,7 +250,7 @@ async function principal() {
   );
 
   r = await enviar("recebi 3.200 de salário");
-  ok("propõe receita", r.includes("Receita R$ 3.200,00"), r);
+  ok("propõe receita", r.includes("Receita: R$ 3.200,00"), r);
   await enviar("s");
   ok("receita salva", banco[UID].lancamentos.length === 2);
 
@@ -322,6 +322,26 @@ async function principal() {
     midia: { tipo: "imagem", mimetype: "image/jpeg", base64: "AAAA" },
   });
   ok("erro da IA na foto avisa com código", r.includes("ler essa foto") && r.includes("código 400"), r);
+  deps.ia = {
+    ...deps.ia,
+    disponivel: true,
+    lerImagem: async () => ({
+      tipo: "despesa",
+      valor: 7,
+      data: "2026-11-14",
+      descricao: "Compra no cartão",
+      estabelecimento: null,
+      meio: "credito",
+      parcelas: 1,
+      categoriaId: banco[UID].categorias.find((c) => c.tipo === "despesa")!.id,
+    }),
+  };
+  const foto = await processarMensagem(
+    msg("", { midia: { tipo: "imagem", mimetype: "image/jpeg", base64: "AAAA" } }),
+    deps,
+  );
+  ok("foto lida vem com enquete", foto.enquete?.pergunta === "Posso salvar?" && foto.respostas[0].includes("R$ 7,00"), foto);
+  await enviar("não");
   deps.ia = { ...deps.ia, disponivel: false };
 
   agora = new Date(agora.getTime() + 11 * 60 * 1000);

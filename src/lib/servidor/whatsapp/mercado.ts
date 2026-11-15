@@ -148,15 +148,14 @@ export async function responderMercado(
     const a = agendaRadar(hoje);
     if (!a.eventos.length && !a.fechamentos.length)
       return `A agenda do Radar Findomo desta semana ainda não foi publicada. Acompanhe em ${a.link}.`;
-    return [
-      "*Radar Findomo* 📡",
+    const linhas = [
       ...a.eventos.map(
         (e) =>
           `• ${dataBR(e.data)}${e.hora ? ` ${e.hora}` : ""}: *${e.titulo}*${e.esperado ? ` (esperado: ${e.esperado})` : ""}`,
       ),
       ...a.fechamentos.map((e) => `• ${dataBR(e.data)}: ${e.titulo}: ${e.resultado}`),
-      `Mais em ${a.link}`,
-    ].join("\n");
+    ];
+    return ["*Radar Findomo*", linhas.join("\n"), `Mais em ${a.link}`].join("\n\n");
   }
   if (!brapiDisponivel())
     return `Os dados de mercado estão indisponíveis agora. Veja em ${site()}/mercado.`;
@@ -165,11 +164,12 @@ export async function responderMercado(
       const c = await criptosPrincipais();
       return [
         "*Criptomoedas agora*",
-        ...c.criptos.map(
-          (x) => `• *${x.nome}* (${x.simbolo}): ${brl(x.precoReais)} · ${pct(x.variacao24hPct)} em 24h`,
-        ),
-        `${AVISO} Mais em ${c.link}`,
-      ].join("\n");
+        c.criptos
+          .map((x) => `• *${x.nome}* (${x.simbolo}): ${brl(x.precoReais)}, ${pct(x.variacao24hPct)} em 24h`)
+          .join("\n"),
+        AVISO,
+        `Mais em ${c.link}`,
+      ].join("\n\n");
     }
     if (intencao.tipo === "tesouro") {
       const t = await tesouroDireto();
@@ -177,31 +177,35 @@ export async function responderMercado(
         return `Não consegui as taxas do Tesouro agora. Veja em ${t.link}.`;
       return [
         "*Tesouro Direto*",
-        ...t.titulos.map(
-          (x) =>
-            `• *${x.nome}*: taxa ${num(x.taxaCompraPct) ?? "—"}%${x.precoCompra ? ` · ${brl(x.precoCompra)}` : ""}`,
-        ),
-        `Para entender cada título, mande "o que é Tesouro Selic?". Mais em ${t.link}`,
-      ].join("\n");
+        t.titulos
+          .map(
+            (x) =>
+              `• *${x.nome}*: taxa de ${num(x.taxaCompraPct) ?? "—"}%${x.precoCompra ? `, ${brl(x.precoCompra)}` : ""}`,
+          )
+          .join("\n"),
+        'Para entender cada título, pergunte por exemplo "o que é Tesouro Selic?".',
+        `Mais em ${t.link}`,
+      ].join("\n\n");
     }
     if (intencao.tipo === "mercado_hoje") {
       const m = await mercadoHoje();
       const linha = (a: { simbolo: string; variacaoPctHoje: number | null }) =>
-        `${a.simbolo} ${pct(a.variacaoPctHoje)}`;
+        `• ${a.simbolo}: ${pct(a.variacaoPctHoje)}`;
       return [
         m.ibovespa
           ? `*Ibovespa*: ${m.ibovespa.pontos.toLocaleString("pt-BR", { maximumFractionDigits: 0 })} pontos, ${pct(m.ibovespa.variacaoPctHoje)} hoje.`
           : "*Bolsa hoje*",
         m.maioresAltas.length
-          ? `📈 Maiores altas: ${m.maioresAltas.slice(0, 3).map(linha).join(", ")}`
+          ? `*Maiores altas*\n${m.maioresAltas.slice(0, 3).map(linha).join("\n")}`
           : "",
         m.maioresBaixas.length
-          ? `📉 Maiores baixas: ${m.maioresBaixas.slice(0, 3).map(linha).join(", ")}`
+          ? `*Maiores baixas*\n${m.maioresBaixas.slice(0, 3).map(linha).join("\n")}`
           : "",
-        `${AVISO} Mais em ${m.link}`,
+        AVISO,
+        `Mais em ${m.link}`,
       ]
         .filter(Boolean)
-        .join("\n");
+        .join("\n\n");
     }
     let simbolos =
       intencao.tipo === "ativos" ? intencao.simbolos : [];
@@ -216,24 +220,24 @@ export async function responderMercado(
       return `Não consegui a cotação de ${simbolos.join(", ")} agora. Veja em ${site()}/mercado.`;
     const blocos = lista.map((a) => {
       const extras = [
-        a.precoLucro != null ? `P/L ${num(a.precoLucro, 1)}` : null,
-        a.dividendYieldPct != null ? `dividendos ${num(a.dividendYieldPct, 1)}% ao ano` : null,
+        a.precoLucro != null ? `P/L: ${num(a.precoLucro, 1)}` : null,
+        a.dividendYieldPct != null ? `Dividendos: ${num(a.dividendYieldPct, 1)}% ao ano` : null,
         a.minimo52Semanas != null && a.maximo52Semanas != null
           ? `52 semanas: ${brl(a.minimo52Semanas)} a ${brl(a.maximo52Semanas)}`
           : null,
       ].filter(Boolean);
       return [
-        `*${a.simbolo}* · ${a.nome}${a.setor ? ` (${a.setor})` : ""}`,
-        `${brl(a.preco)} · ${pct(a.variacaoPctHoje)} hoje`,
-        extras.length ? extras.join(" · ") : null,
+        `*${a.simbolo}* · ${a.nome}${a.setor ? ` (${a.setor})` : ""}\n${brl(a.preco)}, ${pct(a.variacaoPctHoje)} hoje`,
+        extras.length ? extras.join("\n") : null,
         a.link,
       ]
         .filter(Boolean)
-        .join("\n");
+        .join("\n\n");
     });
     return [
       ...blocos,
-      `${AVISO} Quer entender o P/L ou os dividendos? É só perguntar.`,
+      AVISO,
+      "Quer entender o P/L ou os dividendos? É só perguntar.",
     ].join("\n\n");
   } catch {
     return `Não consegui os dados de mercado agora. Veja em ${site()}/mercado.`;
