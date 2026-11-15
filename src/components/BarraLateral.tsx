@@ -8,10 +8,12 @@ import {
   CandlestickChart,
   FlaskConical,
   Home,
+  MessageCircle,
   PanelLeftClose,
   PanelLeftOpen,
   PieChart,
   Radar,
+  Settings2,
   Target,
   ArrowLeftRight,
   User,
@@ -44,9 +46,19 @@ const PRINCIPAIS: {
   { href: "/aprender", rotulo: "Aprender", Icone: BookOpen },
   { href: "/radar", rotulo: "Radar Findomo", Icone: Radar },
 ];
-const CONTA = [
+const CONTA: typeof PRINCIPAIS = [
   { href: "/perfil", rotulo: "Meu perfil", Icone: UserRound },
   { href: "/conta", rotulo: "Conta", Icone: User },
+];
+const ADMIN: typeof PRINCIPAIS = [
+  {
+    href: "/admin",
+    rotulo: "Admin",
+    Icone: Settings2,
+    filhos: [
+      { href: "/admin/whatsapp", rotulo: "WhatsApp", Icone: MessageCircle },
+    ],
+  },
 ];
 
 // Menu do computador: fixado aberto (com nomes) ou recolhido em trilho de ícones.
@@ -56,10 +68,12 @@ export function BarraLateral({
   saldo,
   nivel,
   nome,
+  admin = false,
 }: {
   saldo: number;
   nivel: string;
   nome: string;
+  admin?: boolean;
 }) {
   const caminho = usePathname();
   const [aberto, setAberto] = useState(true);
@@ -188,7 +202,9 @@ export function BarraLateral({
         className="mt-5 flex flex-1 flex-col justify-between overflow-y-auto"
       >
         <ul className="flex flex-col gap-1">{PRINCIPAIS.map(item)}</ul>
-        <ul className="mt-4 flex flex-col gap-1">{CONTA.map(item)}</ul>
+        <ul className="mt-4 flex flex-col gap-1">
+          {(admin ? [...CONTA, ...ADMIN] : CONTA).map(item)}
+        </ul>
       </nav>
 
       <div className="mt-3 flex flex-col gap-1 border-t border-linha pt-3">

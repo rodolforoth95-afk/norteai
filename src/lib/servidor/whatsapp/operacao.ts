@@ -1,9 +1,12 @@
 import "server-only";
+import { adminWebAtivo, emailAdminWeb } from "../admin-web";
 
 // Quem opera o canal (vê o QR para parear e pode desconectar o número do Findomo):
-// e-mails em WHATSAPP_OPERADORES, separados por vírgula, ou o login do modo de teste.
+// e-mails em WHATSAPP_OPERADORES, separados por vírgula, o login admin/admin (enquanto
+// ADMIN_ATIVO=1) ou o login do modo de teste.
 export function ehOperadorWhatsApp(email: string, teste: boolean) {
   if (teste) return true;
+  if (adminWebAtivo() && email.toLowerCase() === emailAdminWeb()) return true;
   const lista = (process.env.WHATSAPP_OPERADORES ?? "")
     .split(",")
     .map((e) => e.trim().toLowerCase())

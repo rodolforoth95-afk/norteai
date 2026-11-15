@@ -20,6 +20,11 @@ import {
   aplicarLancamento,
 } from "../src/lib/servidor/lancamentos";
 import type { MensagemCanal } from "../src/lib/servidor/whatsapp/tipos";
+import {
+  telefoneBrasileiroValido,
+  telefoneCanonico,
+} from "../src/lib/servidor/whatsapp/telefone";
+
 
 let falhas = 0;
 const ok = (nome: string, cond: boolean, info: unknown = "") => {
@@ -29,6 +34,11 @@ const ok = (nome: string, cond: boolean, info: unknown = "") => {
   );
 };
 
+ok("telefone digitado com máscara", telefoneCanonico("(11) 99999-8888") === "5511999998888");
+ok("telefone do WhatsApp sem o 9", telefoneCanonico("551199998888") === "5511999998888");
+ok("fixo sem 9 não ganha 9", telefoneCanonico("551133334444") === "551133334444");
+ok("celular válido", telefoneBrasileiroValido("11 99999-8888"));
+ok("fixo não vale para WhatsApp", !telefoneBrasileiroValido("(11) 3333-4444"));
 ok(
   "código com FINDOMO",
   JSON.stringify(lerComando("FINDOMO 482913")) ===
@@ -147,7 +157,7 @@ async function principal() {
   r = await enviar("gastei 50 no mercado");
   ok(
     "sem vínculo nada é lançado",
-    banco[UID].lancamentos.length === 0 && r.includes("código"),
+    banco[UID].lancamentos.length === 0 && r.includes("Não encontrei"),
     r,
   );
 
@@ -285,9 +295,46 @@ async function principal() {
   );
   ok(
     "número desconhecido pela LID não vê dados",
-    pelaLid.respostas.join().includes("código"),
+    pelaLid.respostas.join().includes("Não encontrei"),
     pelaLid,
   );
+
+  const UID2 = "usuario-2";
+  banco[UID2] = financasVazias();
+  ok(
+    "cadastra o celular no site",
+    (await armazem.cadastrarTelefone(UID2, "5521988887777", agora.toISOString())) === "ok",
+  );
+  ok(
+    "celular de outra conta fica ocupado",
+    (await armazem.cadastrarTelefone(UID, "5521988887777", agora.toISOString())) === "ocupado",
+  );
+  const doCadastro = (texto: string) =>
+    processarMensagem(
+      msg(texto, { telefone: "552188887777", jid: "552188887777@s.whatsapp.net" }),
+      deps,
+    ).then((x) => x.respostas.join("\n---\n"));
+  r = await doCadastro("oi");
+  ok(
+    "primeira conversa reconhece o número sem o 9 e avisa a conta",
+    r.includes("ligado à sua conta") && r.includes("SAIR") && r.includes("Lançar"),
+    r,
+  );
+  ok(
+    "vínculo confirmado depois da primeira conversa",
+    Boolean((await armazem.vinculoDoUsuario(UID2))?.confirmadoEm),
+  );
+  r = await doCadastro("gastei 40 no mercado");
+  ok("depois atende normal", r.includes("R$ 40,00") && !r.includes("ligado à sua conta"), r);
+  await doCadastro("sim");
+  ok("lança na conta certa", banco[UID2].lancamentos.length === 1 && banco[UID].lancamentos.length === 1);
+
+  await armazem.salvarConfig({ atendimento: false, mensagemPausa: "Voltamos já." });
+  r = await enviar("resumo");
+  ok("atendimento pausado responde a pausa", r === "Voltamos já.", r);
+  await armazem.salvarConfig({ atendimento: true, mensagemPausa: null });
+  const resumoAdmin = await armazem.resumoAdmin("2000-01-01T00:00:00Z");
+  ok("resumo do admin", resumoAdmin.ligados === 2 && resumoAdmin.clientes.length === 2, resumoAdmin);
 
   r = await enviar("SAIR");
   ok("sair pede confirmação", r.includes("desligar"), r);
@@ -299,7 +346,7 @@ async function principal() {
     r,
   );
   r = await enviar("resumo");
-  ok("depois de sair não vê dados", r.includes("código"), r);
+  ok("depois de sair não vê dados", r.includes("Não encontrei"), r);
 
   console.log(falhas ? `\n${falhas} falha(s)` : "\nWhatsApp OK");
   process.exit(falhas ? 1 : 0);

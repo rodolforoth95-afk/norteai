@@ -11,11 +11,19 @@ import {
   ipDe,
   registrarErro,
 } from "@/lib/servidor/util";
+import { armazemWhatsApp } from "@/lib/servidor/whatsapp/armazem";
+import {
+  telefoneBrasileiroValido,
+  telefoneCanonico,
+} from "@/lib/servidor/whatsapp/telefone";
 
 const Corpo = z.object({
   nome: esquemaNome,
   email: esquemaEmail,
   senha: esquemaSenha,
+  telefone: z
+    .string()
+    .refine(telefoneBrasileiroValido, "Informe um celular com DDD, por exemplo (11) 99999-8888."),
   maioridade: z.literal(true, "Confirme que você tem 18 anos ou mais."),
   termos: z.literal(true, "Aceite os Termos de uso e a Política de privacidade."),
 });
@@ -28,6 +36,10 @@ export async function POST(req: Request) {
   const lido = Corpo.safeParse(await req.json().catch(() => null));
   if (!lido.success) return erro(lido.error.issues[0]?.message ?? "Dados inválidos.", 400);
   const { nome, email, senha } = lido.data;
+  const telefone = telefoneCanonico(lido.data.telefone);
+  const whatsapp = armazemWhatsApp(false);
+  const dono = await whatsapp.vinculoPorTelefone(telefone).catch(() => null);
+  if (dono) return erro("Este celular já está em outra conta. Entre com ela ou use outro número.", 409);
 
   const supabase = await criarClienteServidor();
   const { data, error } = await supabase.auth.signUp({
@@ -64,6 +76,12 @@ export async function POST(req: Request) {
     registrarErro("gravar consentimento", erroConsentimento.code);
     await admin.auth.admin.deleteUser(data.user.id);
     return erro("Não foi possível criar a conta agora. Tente de novo.", 500);
+  }
+
+  try {
+    await whatsapp.cadastrarTelefone(data.user.id, telefone, aceitoEm);
+  } catch (e) {
+    registrarErro("cadastro telefone", e instanceof Error ? e.message.slice(0, 60) : undefined);
   }
 
   // Com "Confirm email" desligado no Supabase, a conta já nasce confirmada e com sessão:

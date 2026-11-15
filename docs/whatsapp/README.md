@@ -23,6 +23,8 @@ Findomo na Vercel
 - Cada mensagem recebida entra numa **fila em disco** (`dados/fila.json`). Se o Findomo estiver fora, o canal tenta de novo em 2 s, 5 s, 15 s, 30 s e 60 s. Depois disso, avisa o cliente.
 - Cada conversa é atendida em ordem; conversas diferentes andam em paralelo.
 - O Findomo **nunca processa a mesma mensagem duas vezes**, porque o `message_id` é único.
+- **O celular é a identidade do cliente.** Ele informa o celular no cadastro (ou em Conta › WhatsApp) e já fica ligado. Na primeira conversa, o Mordomo avisa de qual conta é o número ("se não é sua, responda SAIR"). Celular brasileiro é guardado sempre com o 9, porque o WhatsApp entrega muitos números sem ele. Se o celular já estiver em outra conta, o código de 6 dígitos prova que o número é seu e o transfere.
+- **Admin** (`/admin/whatsapp`, menu Admin › WhatsApp): QR para parear o número do Findomo, situação, desconectar, ligar ou pausar o atendimento com uma mensagem de pausa, e a lista de clientes ligados. Veem essa área os e-mails de `WHATSAPP_OPERADORES` e o login admin/admin enquanto `ADMIN_ATIVO=1`.
 - Lançar e apagar **sempre pedem "sim"**. A proposta vale 10 minutos.
 - Sem a chave da IA, o Mordomo continua funcionando com as regras locais: lança por texto e responde resumo, últimos lançamentos, cotação e perguntas comuns. Foto pede IA; áudio pede `OPENAI_API_KEY`.
 
@@ -30,14 +32,14 @@ Findomo na Vercel
 
 ### 1. Banco (Supabase)
 
-Rode `supabase/migrations/0007_whatsapp.sql` no SQL Editor.
+Rode no SQL Editor, nesta ordem: `supabase/migrations/0007_whatsapp.sql` e `supabase/migrations/0008_whatsapp_telefone_admin.sql`.
 
 ### 2. Variáveis na Vercel
 
 | Variável | O que é |
 |---|---|
 | `WHATSAPP_CHAVE_INTERNA` | Chave compartilhada com o canal. Gere com `openssl rand -hex 32`. Precisa ter 32 caracteres ou mais. |
-| `WHATSAPP_NUMERO` | Número do Findomo com DDI, só dígitos (ex.: `5511999998888`), para o botão "Abrir o WhatsApp". |
+| `WHATSAPP_NUMERO` | Opcional. Número do Findomo com DDI, só dígitos. Sem ela, o site usa o número que o canal informa depois de pareado. |
 | `WHATSAPP_OPERADORES` | E-mails de quem pode ver o QR e desconectar o número, separados por vírgula. |
 | `ANTHROPIC_API_KEY` | Já pendente. Liga a IA: frases livres, fotos, carteira e indicadores por conversa. |
 | `OPENAI_API_KEY` | Opcional: transcrição de áudio (`gpt-4o-mini-transcribe`, centavos por minuto). |
@@ -74,16 +76,16 @@ docker logs -f findomo_whatsapp
 
 ### 4. Parear o número
 
-1. Entre no Findomo com um e-mail que esteja em `WHATSAPP_OPERADORES` e abra **Conta › WhatsApp**.
-2. A área "Canal do Findomo (operação)" mostra o QR. Ele também aparece nos logs do serviço.
+1. Entre no Findomo como operador (e-mail em `WHATSAPP_OPERADORES` ou admin/admin) e abra **Admin › WhatsApp**.
+2. A área "Número do Findomo" mostra o QR. Ele também aparece nos logs do serviço.
 3. No celular do número do Findomo, abra **WhatsApp › Aparelhos conectados › Conectar um aparelho** e leia o QR.
 
 A sessão fica em `dados/auth`. Não apague essa pasta, a não ser que queira parear de novo.
 
 ### 5. Teste
 
-1. Em Conta › WhatsApp, marque a autorização e toque em **Conectar WhatsApp**.
-2. Mande o código para o número do Findomo.
+1. Em Conta › WhatsApp, informe o seu celular, marque a autorização e toque em **Salvar meu celular**.
+2. Do seu celular, mande "oi" para o número do Findomo.
 3. Mande "gastei 20 no café" e responda "sim".
 
 ## Desenvolvimento local

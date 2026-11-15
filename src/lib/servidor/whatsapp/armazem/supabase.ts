@@ -22,10 +22,11 @@ type LinhaVinculo = {
   avisos: boolean;
   consentido_em: string;
   vinculado_em: string;
+  confirmado_em: string | null;
 };
 
 const CAMPOS_VINCULO =
-  "usuario_id, telefone, lid, jid, nome_whatsapp, avisos, consentido_em, vinculado_em";
+  "usuario_id, telefone, lid, jid, nome_whatsapp, avisos, consentido_em, vinculado_em, confirmado_em";
 
 function vinculoDe(l: LinhaVinculo | null): Vinculo | null {
   return l
@@ -38,6 +39,7 @@ function vinculoDe(l: LinhaVinculo | null): Vinculo | null {
         avisos: l.avisos,
         consentidoEm: l.consentido_em,
         vinculadoEm: l.vinculado_em,
+        confirmadoEm: l.confirmado_em,
       }
     : null;
 }
@@ -79,8 +81,50 @@ export const armazemSupabase: ArmazemWhatsApp = {
       avisos: v.avisos,
       consentido_em: v.consentidoEm,
       vinculado_em: new Date().toISOString(),
+      confirmado_em: v.confirmadoEm,
     });
     falhar("vincular", error);
+  },
+  async cadastrarTelefone(usuarioId, telefone, consentidoEm) {
+    const admin = criarClienteAdmin();
+    const dono = await vinculoOnde("telefone", telefone);
+    if (dono && dono.usuarioId !== usuarioId) return "ocupado";
+    if (dono) return "ok";
+    const { error } = await admin.from("whatsapp_vinculo").upsert({
+      usuario_id: usuarioId,
+      telefone,
+      lid: null,
+      jid: `${telefone}@s.whatsapp.net`,
+      nome_whatsapp: null,
+      avisos: true,
+      consentido_em: consentidoEm,
+      vinculado_em: new Date().toISOString(),
+      confirmado_em: null,
+    });
+    if (error?.code === ERRO_UNICO) return "ocupado";
+    falhar("cadastrar telefone", error);
+    return "ok";
+  },
+  async confirmarVinculo(usuarioId, dados, quando) {
+    const admin = criarClienteAdmin();
+    if (dados.lid) {
+      const r = await admin
+        .from("whatsapp_vinculo")
+        .update({ lid: null })
+        .eq("lid", dados.lid)
+        .neq("usuario_id", usuarioId);
+      falhar("liberar lid", r.error);
+    }
+    const { error } = await admin
+      .from("whatsapp_vinculo")
+      .update({
+        jid: dados.jid,
+        ...(dados.lid ? { lid: dados.lid } : {}),
+        ...(dados.nomeWhatsapp ? { nome_whatsapp: dados.nomeWhatsapp } : {}),
+        confirmado_em: quando,
+      })
+      .eq("usuario_id", usuarioId);
+    falhar("confirmar vínculo", error);
   },
   async desvincular(usuarioId) {
     const admin = criarClienteAdmin();
@@ -284,6 +328,78 @@ export const armazemSupabase: ArmazemWhatsApp = {
       .from("whatsapp_canal")
       .upsert({ id: 1, comando });
     falhar("comando canal", error);
+  },
+
+  async obterConfig() {
+    const { data, error } = await criarClienteAdmin()
+      .from("whatsapp_canal")
+      .select("atendimento, mensagem_pausa")
+      .eq("id", 1)
+      .maybeSingle();
+    falhar("ler configuração", error);
+    return {
+      atendimento: data?.atendimento ?? true,
+      mensagemPausa: data?.mensagem_pausa ?? null,
+    };
+  },
+  async salvarConfig(c) {
+    const { error } = await criarClienteAdmin()
+      .from("whatsapp_canal")
+      .upsert({
+        id: 1,
+        atendimento: c.atendimento,
+        mensagem_pausa: c.mensagemPausa,
+      });
+    falhar("salvar configuração", error);
+  },
+  async resumoAdmin(desde) {
+    const admin = criarClienteAdmin();
+    const [ligados, aguardando, mensagens, lista] = await Promise.all([
+      admin
+        .from("whatsapp_vinculo")
+        .select("usuario_id", { count: "exact", head: true })
+        .not("confirmado_em", "is", null),
+      admin
+        .from("whatsapp_vinculo")
+        .select("usuario_id", { count: "exact", head: true })
+        .is("confirmado_em", null),
+      admin
+        .from("whatsapp_mensagem")
+        .select("id", { count: "exact", head: true })
+        .eq("direcao", "entrada")
+        .gte("criado_em", desde),
+      admin
+        .from("whatsapp_vinculo")
+        .select("usuario_id, telefone, vinculado_em, confirmado_em, usuario(nome_completo)")
+        .order("vinculado_em", { ascending: false })
+        .limit(50),
+    ]);
+    falhar("contar ligados", ligados.error);
+    falhar("contar aguardando", aguardando.error);
+    falhar("contar mensagens", mensagens.error);
+    falhar("listar clientes", lista.error);
+    type Linha = {
+      usuario_id: string;
+      telefone: string;
+      vinculado_em: string;
+      confirmado_em: string | null;
+      usuario: { nome_completo: string | null } | { nome_completo: string | null }[] | null;
+    };
+    return {
+      ligados: ligados.count ?? 0,
+      aguardando: aguardando.count ?? 0,
+      mensagensHoje: mensagens.count ?? 0,
+      clientes: ((lista.data ?? []) as unknown as Linha[]).map((l) => {
+        const u = Array.isArray(l.usuario) ? l.usuario[0] : l.usuario;
+        return {
+          usuarioId: l.usuario_id,
+          nome: u?.nome_completo ?? null,
+          telefone: l.telefone,
+          vinculadoEm: l.vinculado_em,
+          confirmado: Boolean(l.confirmado_em),
+        };
+      }),
+    };
   },
 
   async limpar() {

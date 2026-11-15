@@ -10,6 +10,10 @@ import { VERSOES_DOCUMENTOS, registrarErro } from "./util";
 
 const EMAIL_INTERNO = process.env.ADMIN_EMAIL ?? "admin@example.com";
 
+export function emailAdminWeb() {
+  return EMAIL_INTERNO.toLowerCase();
+}
+
 export function adminWebAtivo() {
   return (
     process.env.ADMIN_ATIVO === "1" &&

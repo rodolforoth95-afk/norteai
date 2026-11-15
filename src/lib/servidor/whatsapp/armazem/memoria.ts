@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto";
 import type {
   AcaoPendente,
+  ConfigWhatsApp,
   EstadoCanal,
   StatusMensagem,
   Vinculo,
@@ -26,6 +27,7 @@ export type DadosWhatsApp = {
   }[];
   pendentes: { usuarioId: string; acao: AcaoPendente; expiraEm: string }[];
   canal: EstadoCanal | null;
+  config: ConfigWhatsApp;
 };
 
 export function dadosVazios(): DadosWhatsApp {
@@ -35,6 +37,7 @@ export function dadosVazios(): DadosWhatsApp {
     mensagens: [],
     pendentes: [],
     canal: null,
+    config: { atendimento: true, mensagemPausa: null },
   };
 }
 
@@ -76,6 +79,45 @@ export function armazemSobre(
             (!v.lid || x.lid !== v.lid),
         );
         d.vinculos.push({ ...v, vinculadoEm: agora() });
+      });
+    },
+    async cadastrarTelefone(usuarioId, telefone, consentidoEm) {
+      return alterar((d) => {
+        if (
+          d.vinculos.some(
+            (x) => x.telefone === telefone && x.usuarioId !== usuarioId,
+          )
+        )
+          return "ocupado" as const;
+        const atual = d.vinculos.find((x) => x.usuarioId === usuarioId);
+        if (atual?.telefone === telefone) return "ok" as const;
+        d.vinculos = d.vinculos.filter((x) => x.usuarioId !== usuarioId);
+        d.vinculos.push({
+          usuarioId,
+          telefone,
+          lid: null,
+          jid: `${telefone}@s.whatsapp.net`,
+          nomeWhatsapp: null,
+          avisos: true,
+          consentidoEm,
+          vinculadoEm: agora(),
+          confirmadoEm: null,
+        });
+        return "ok" as const;
+      });
+    },
+    async confirmarVinculo(usuarioId, dados, quando) {
+      await alterar((d) => {
+        const v = d.vinculos.find((x) => x.usuarioId === usuarioId);
+        if (!v) return;
+        if (dados.lid)
+          d.vinculos = d.vinculos.filter(
+            (x) => x.usuarioId === usuarioId || x.lid !== dados.lid,
+          );
+        v.jid = dados.jid;
+        v.lid = dados.lid ?? v.lid;
+        v.nomeWhatsapp = dados.nomeWhatsapp ?? v.nomeWhatsapp;
+        v.confirmadoEm = quando;
       });
     },
     async desvincular(usuarioId) {
@@ -221,6 +263,35 @@ export function armazemSobre(
           atualizadoEm: d.canal?.atualizadoEm ?? agora(),
         };
       });
+    },
+
+    async obterConfig() {
+      return (await ler()).config ?? dadosVazios().config;
+    },
+    async salvarConfig(c) {
+      await alterar((d) => {
+        d.config = c;
+      });
+    },
+    async resumoAdmin(desde) {
+      const d = await ler();
+      return {
+        ligados: d.vinculos.filter((v) => v.confirmadoEm).length,
+        aguardando: d.vinculos.filter((v) => !v.confirmadoEm).length,
+        mensagensHoje: d.mensagens.filter(
+          (m) => m.direcao === "entrada" && m.criadoEm >= desde,
+        ).length,
+        clientes: [...d.vinculos]
+          .sort((a, b) => b.vinculadoEm.localeCompare(a.vinculadoEm))
+          .slice(0, 50)
+          .map((v) => ({
+            usuarioId: v.usuarioId,
+            nome: v.nomeWhatsapp,
+            telefone: v.telefone,
+            vinculadoEm: v.vinculadoEm,
+            confirmado: Boolean(v.confirmadoEm),
+          })),
+      };
     },
 
     async limpar() {

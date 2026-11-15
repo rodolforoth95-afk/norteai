@@ -26,6 +26,27 @@ export type Vinculo = {
   avisos: boolean;
   consentidoEm: string;
   vinculadoEm: string;
+  confirmadoEm: string | null;
+};
+
+export type ConfigWhatsApp = {
+  atendimento: boolean;
+  mensagemPausa: string | null;
+};
+
+export type ClienteWhatsApp = {
+  usuarioId: string;
+  nome: string | null;
+  telefone: string;
+  vinculadoEm: string;
+  confirmado: boolean;
+};
+
+export type ResumoAdminWhatsApp = {
+  ligados: number;
+  aguardando: number;
+  mensagensHoje: number;
+  clientes: ClienteWhatsApp[];
 };
 
 export type LancamentoProposto = {

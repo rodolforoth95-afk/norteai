@@ -4,6 +4,7 @@ import { Logo } from "@/components/Logo";
 import { TabBar } from "@/components/TabBar";
 import { BarraLateral } from "@/components/BarraLateral";
 import { exigirUsuario } from "@/lib/servidor/sessao";
+import { ehOperadorWhatsApp } from "@/lib/servidor/whatsapp/operacao";
 import { resumoMoedas } from "@/lib/dominio/moedas";
 import { hojeBR } from "@/lib/dominio/carteira";
 import { carregarFinancas } from "@/lib/servidor/financas";
@@ -29,7 +30,7 @@ function historicoDe(d: FinancasDados): ItemHistorico[] {
 
 // Celular: cabeçalho no topo e abas embaixo. Computador: menu lateral e conteúdo largo.
 export default async function LayoutApp({ children }: { children: React.ReactNode }) {
-  const { uid, repo, primeiroNome } = await exigirUsuario();
+  const { uid, repo, primeiroNome, email, teste } = await exigirUsuario();
   const [moedas, financas] = await Promise.all([repo.listarMoedas(uid), carregarFinancas(repo, uid)]);
   const { saldo, nivel } = resumoMoedas(moedas);
   const contexto = { categorias: financas.categorias, regras: financas.regras, historico: historicoDe(financas), hoje: hojeBR() };
@@ -39,7 +40,7 @@ export default async function LayoutApp({ children }: { children: React.ReactNod
         Pular para o conteúdo
       </a>
 
-      <BarraLateral saldo={saldo} nivel={nivel} nome={primeiroNome} />
+      <BarraLateral saldo={saldo} nivel={nivel} nome={primeiroNome} admin={ehOperadorWhatsApp(email, teste)} />
 
       <header className="vidro sticky top-0 z-20 border-b border-linha lg:hidden">
         <div className="mx-auto flex h-14 w-full max-w-[76rem] items-center justify-between gap-3 px-4 sm:px-6">

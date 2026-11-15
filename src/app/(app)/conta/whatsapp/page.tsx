@@ -8,7 +8,6 @@ import {
   numeroWhatsAppFindomo,
 } from "@/lib/servidor/whatsapp/operacao";
 import { ConectarWhatsApp } from "./ConectarWhatsApp";
-import { PainelCanal } from "./PainelCanal";
 
 export const metadata = { title: "WhatsApp" };
 
@@ -19,8 +18,8 @@ export default async function PaginaWhatsApp() {
   const armazem = armazemWhatsApp();
   const vinculo = await armazem.vinculoDoUsuario(uid).catch(() => null);
   const operador = ehOperadorWhatsApp(email, teste);
-  const canal = operador ? await armazem.obterCanal().catch(() => null) : null;
-  const numero = numeroWhatsAppFindomo();
+  const canal = await armazem.obterCanal().catch(() => null);
+  const numero = numeroWhatsAppFindomo() ?? (canal?.status === "conectado" ? canal.numero : null);
 
   return (
     <section className="mx-auto flex w-full max-w-2xl flex-col gap-6 pb-10">
@@ -47,6 +46,7 @@ export default async function PaginaWhatsApp() {
             ? {
                 telefone: mascararTelefone(vinculo.telefone),
                 desde: vinculo.vinculadoEm,
+                confirmado: Boolean(vinculo.confirmadoEm),
               }
             : null
         }
@@ -54,20 +54,13 @@ export default async function PaginaWhatsApp() {
       />
 
       {operador ? (
-        <PainelCanal
-          canal={
-            canal
-              ? {
-                  status: canal.status,
-                  qr: canal.qr,
-                  numero: canal.numero ? mascararTelefone(canal.numero) : null,
-                  nome: canal.nome,
-                  atualizadoEm: canal.atualizadoEm,
-                  comandoPendente: canal.comando,
-                }
-              : null
-          }
-        />
+        <Link
+          href="/admin/whatsapp"
+          className="painel flex items-center justify-between gap-3 border-dashed p-5 text-sm font-semibold text-texto hover:bg-superficie-2"
+        >
+          Admin do WhatsApp: número do Findomo, QR e atendimento
+          <span aria-hidden="true">→</span>
+        </Link>
       ) : null}
     </section>
   );

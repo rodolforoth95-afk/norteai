@@ -55,13 +55,13 @@ export function PainelCanal({ canal }: Props) {
       <div className="flex items-center gap-2">
         <RadioTower className="h-5 w-5 text-ciano" aria-hidden="true" />
         <p className="font-display text-base font-semibold text-texto">
-          Canal do Findomo (operação)
+          WhatsApp do Findomo
         </p>
       </div>
       {!canal ? (
         <p className="text-sm text-suave">
           O serviço do WhatsApp ainda não se comunicou com o site. Suba o
-          serviço com as instruções de docs/whatsapp/README.md e esta área
+          serviço no Railway (docs/whatsapp/README.md) e esta área
           mostra o QR para parear o número.
         </p>
       ) : (

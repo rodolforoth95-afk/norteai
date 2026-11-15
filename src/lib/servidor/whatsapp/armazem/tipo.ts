@@ -1,5 +1,7 @@
 import type {
   AcaoPendente,
+  ConfigWhatsApp,
+  ResumoAdminWhatsApp,
   EntradaRegistrada,
   EstadoCanal,
   StatusMensagem,
@@ -15,6 +17,18 @@ export interface ArmazemWhatsApp {
   vinculoDoUsuario(usuarioId: string): Promise<Vinculo | null>;
   // Liga o número à conta. Se o número estava em outra conta, ela perde o vínculo.
   vincular(v: Omit<Vinculo, "vinculadoEm">): Promise<void>;
+  // Telefone informado no site (cadastro ou conta): fica ligado à conta e é confirmado
+  // na primeira conversa. Se outra conta já tem o número, não mexe e devolve "ocupado".
+  cadastrarTelefone(
+    usuarioId: string,
+    telefone: string,
+    consentidoEm: string,
+  ): Promise<"ok" | "ocupado">;
+  confirmarVinculo(
+    usuarioId: string,
+    dados: { jid: string; lid: string | null; nomeWhatsapp: string | null },
+    quando: string,
+  ): Promise<void>;
   desvincular(usuarioId: string): Promise<void>;
   alterarAvisos(usuarioId: string, avisos: boolean): Promise<void>;
 
@@ -69,6 +83,10 @@ export interface ArmazemWhatsApp {
     e: Omit<EstadoCanal, "comando" | "atualizadoEm">,
   ): Promise<"desconectar" | null>;
   pedirComando(comando: "desconectar"): Promise<void>;
+
+  obterConfig(): Promise<ConfigWhatsApp>;
+  salvarConfig(c: ConfigWhatsApp): Promise<void>;
+  resumoAdmin(desde: string): Promise<ResumoAdminWhatsApp>;
 
   // Retenção: apaga mensagens com mais de 90 dias e códigos vencidos.
   limpar(): Promise<void>;

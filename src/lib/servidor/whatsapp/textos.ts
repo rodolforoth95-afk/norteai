@@ -53,10 +53,29 @@ export const MENU = [
   "Para desligar o WhatsApp do Findomo, mande *SAIR*.",
 ].join("\n");
 
+export function primeiraConversa(primeiroNome: string, comMenu: boolean) {
+  const aviso = `Oi${primeiroNome ? `, ${primeiroNome}` : ""}! Este WhatsApp está ligado à sua conta do Findomo. 🎩\nSe essa conta não é sua, responda *SAIR*.`;
+  return comMenu ? [aviso, MENU] : [aviso];
+}
+
+export function ehSaudacao(texto: string) {
+  const t = texto
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z ]/g, " ")
+    .trim();
+  return /^(oi+|ola|opa|e ai|eai|hey|hello|bom dia|boa tarde|boa noite|tudo bem|oi tudo bem)( .{0,20})?$/.test(t) && t.length <= 30;
+}
+
+export function atendimentoPausado() {
+  return `O atendimento do Findomo pelo WhatsApp está em pausa por alguns instantes. Enquanto isso, use o site: ${site()}`;
+}
+
 export function naoVinculado() {
   return [
     "Olá! Eu sou o Mordomo do Findomo. 🎩",
-    `Para eu cuidar das suas finanças por aqui, ligue este WhatsApp à sua conta: entre em ${site()}/conta/whatsapp, toque em *Conectar WhatsApp* e me mande o código de 6 dígitos que aparecer.`,
+    `Não encontrei este número em nenhuma conta. Para eu cuidar das suas finanças por aqui, cadastre este celular em ${site()}/conta/whatsapp e me mande uma mensagem de novo.`,
     `Ainda não tem conta? Crie grátis em ${site()}/cadastro.`,
   ].join("\n\n");
 }

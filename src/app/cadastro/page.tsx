@@ -9,15 +9,21 @@ import { Botao } from "@/components/Botao";
 import { REGRA_SENHA, erroDe, esquemaEmail, esquemaNome, esquemaSenha } from "@/lib/validacao";
 import { guardarEmailPendente, postarJson } from "@/lib/email-pendente";
 
-type Campos = "nome" | "email" | "senha";
+type Campos = "nome" | "email" | "telefone" | "senha";
+
+function erroTelefone(t: string) {
+  const d = t.replace(/\D/g, "").replace(/^55(?=\d{10,11}$)/, "");
+  return /^[1-9][0-9]9[0-9]{8}$/.test(d) ? null : "Informe um celular com DDD, por exemplo (11) 99999-8888.";
+}
 
 // Tela 2 — Cadastro
 export default function PaginaCadastro() {
   const router = useRouter();
-  const [valores, setValores] = useState({ nome: "", email: "", senha: "" });
+  const [valores, setValores] = useState({ nome: "", email: "", telefone: "", senha: "" });
   const [tocados, setTocados] = useState<Record<Campos, boolean>>({
     nome: false,
     email: false,
+    telefone: false,
     senha: false,
   });
   const [maioridade, setMaioridade] = useState(false);
@@ -28,9 +34,10 @@ export default function PaginaCadastro() {
   const erros: Record<Campos, string | null> = {
     nome: erroDe(esquemaNome, valores.nome),
     email: erroDe(esquemaEmail, valores.email),
+    telefone: erroTelefone(valores.telefone),
     senha: erroDe(esquemaSenha, valores.senha),
   };
-  const valido = !erros.nome && !erros.email && !erros.senha && maioridade && termos;
+  const valido = !erros.nome && !erros.email && !erros.telefone && !erros.senha && maioridade && termos;
 
   function alterar(campo: Campos, valor: string) {
     setValores((v) => ({ ...v, [campo]: valor }));
@@ -41,7 +48,7 @@ export default function PaginaCadastro() {
 
   async function criarConta(e: FormEvent) {
     e.preventDefault();
-    setTocados({ nome: true, email: true, senha: true });
+    setTocados({ nome: true, email: true, telefone: true, senha: true });
     if (!valido) return;
     setErroGeral(null);
     setEnviando(true);
@@ -98,6 +105,18 @@ export default function PaginaCadastro() {
           onChange={(e) => alterar("email", e.target.value)}
           onBlur={() => tocar("email")}
           erro={tocados.email ? erros.email : null}
+        />
+        <Campo
+          rotulo="Celular (WhatsApp)"
+          type="tel"
+          inputMode="tel"
+          autoComplete="tel-national"
+          placeholder="(11) 99999-8888"
+          value={valores.telefone}
+          onChange={(e) => alterar("telefone", e.target.value)}
+          onBlur={() => tocar("telefone")}
+          ajuda="Com ele você lança despesas e tira dúvidas conversando com o Findomo no WhatsApp."
+          erro={tocados.telefone ? erros.telefone : null}
         />
         <CampoSenha
           rotulo="Senha"

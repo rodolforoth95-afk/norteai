@@ -12,6 +12,7 @@ import {
 } from "@/lib/dominio/financas";
 import type { ArmazemWhatsApp } from "./armazem/tipo";
 import { lerComando, lerCorrecao } from "./comandos";
+import { telefoneCanonico } from "./telefone";
 import type { RespostaAgente } from "./agente";
 import type { ContextoFerramentas } from "./ferramentas";
 import {
@@ -21,10 +22,13 @@ import {
   MUITAS_MENSAGENS,
   SEM_AUDIO,
   SEM_IA_MIDIA,
+  atendimentoPausado,
   boasVindas,
   brl,
+  ehSaudacao,
   lancamentoSalvo,
   naoVinculado,
+  primeiraConversa,
   propostaLancamento,
   resumoDoMesTexto,
   resumoLancamento,
@@ -95,9 +99,13 @@ export async function processarMensagem(
   deps: Dependencias,
 ): Promise<Resultado> {
   const agora = deps.agora();
+  const telefone = telefoneCanonico(m.telefone);
   const vinculo =
     (m.lid ? await deps.armazem.vinculoPorLid(m.lid) : null) ??
-    (await deps.armazem.vinculoPorTelefone(m.telefone));
+    (await deps.armazem.vinculoPorTelefone(telefone)) ??
+    (telefone !== m.telefone
+      ? await deps.armazem.vinculoPorTelefone(m.telefone)
+      : null);
   const entrada = await deps.armazem.registrarEntrada({
     messageId: m.messageId,
     usuarioId: vinculo?.usuarioId ?? null,
@@ -127,7 +135,12 @@ export async function processarMensagem(
   let usuarioId = vinculo?.usuarioId ?? null;
   let textoGuardado: string | undefined;
   try {
-    if (!deps.limite(`wa:${m.telefone}`)) respostas = [MUITAS_MENSAGENS];
+    const config = deps.limite(`wa:${m.telefone}`)
+      ? await deps.armazem.obterConfig()
+      : null;
+    if (!config) respostas = [MUITAS_MENSAGENS];
+    else if (!config.atendimento)
+      respostas = [config.mensagemPausa?.trim() || atendimentoPausado()];
     else {
       const r = await responder(m, vinculo, deps);
       respostas = r.respostas;
@@ -188,12 +201,13 @@ async function responder(
       };
     await deps.armazem.vincular({
       usuarioId: dono,
-      telefone: m.telefone,
+      telefone: telefoneCanonico(m.telefone),
       lid: m.lid,
       jid: m.jid,
       nomeWhatsapp: m.nome.slice(0, 60) || null,
       avisos: true,
       consentidoEm: iso,
+      confirmadoEm: iso,
     });
     return {
       respostas: boasVindas(await deps.primeiroNome(dono)),
@@ -202,6 +216,18 @@ async function responder(
   }
 
   if (!vinculo) return { respostas: [naoVinculado()], usuarioId: null };
+  if (!vinculo.confirmadoEm) {
+    await deps.armazem.confirmarVinculo(
+      vinculo.usuarioId,
+      { jid: m.jid, lid: m.lid, nomeWhatsapp: m.nome.slice(0, 60) || null },
+      iso,
+    );
+    const nome = await deps.primeiroNome(vinculo.usuarioId);
+    if (comando.tipo === "ajuda" || ehSaudacao(m.texto))
+      return { respostas: primeiraConversa(nome, true), usuarioId: vinculo.usuarioId };
+    const r = await responder(m, { ...vinculo, confirmadoEm: iso }, deps);
+    return { ...r, respostas: [...primeiraConversa(nome, false), ...r.respostas] };
+  }
   const uid = vinculo.usuarioId;
   const hoje = hojeBR(agora);
   const pendente = await deps.armazem.obterPendente(uid, iso);
