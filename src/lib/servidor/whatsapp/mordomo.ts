@@ -384,7 +384,26 @@ async function responder(
   } else if (m.midia) {
     if (!deps.ia.disponivel)
       return { respostas: [SEM_IA_MIDIA], usuarioId: uid };
-    const lido = await deps.ia.lerImagem(m.midia, dados);
+    let lido: LancamentoProposto | null;
+    try {
+      lido = await deps.ia.lerImagem(m.midia, dados);
+    } catch (e) {
+      const status = (e as { status?: number })?.status;
+      console.error(
+        "[norteia] whatsapp ler imagem",
+        status ?? "",
+        m.midia.mimetype,
+        Math.round((m.midia.base64.length * 3) / 4 / 1024),
+        "KB",
+        e instanceof Error ? e.message.slice(0, 200) : "",
+      );
+      return {
+        respostas: [
+          `Tive um problema para ler essa ${m.midia.tipo === "documento" ? "arquivo" : "foto"} agora. 🙏 Pode tentar de novo em instantes ou escrever o lançamento? (código ${status ?? "IA"})`,
+        ],
+        usuarioId: uid,
+      };
+    }
     if (!lido)
       return {
         respostas: [

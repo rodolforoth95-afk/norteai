@@ -309,6 +309,18 @@ async function principal() {
     midia: { tipo: "imagem", mimetype: "image/jpeg", base64: "AAAA" },
   });
   ok("foto sem IA pede texto", r.includes("fotos"), r);
+  deps.ia = {
+    ...deps.ia,
+    disponivel: true,
+    lerImagem: async () => {
+      throw Object.assign(new Error("falhou"), { status: 400 });
+    },
+  };
+  r = await enviar("", {
+    midia: { tipo: "imagem", mimetype: "image/jpeg", base64: "AAAA" },
+  });
+  ok("erro da IA na foto avisa com código", r.includes("ler essa foto") && r.includes("código 400"), r);
+  deps.ia = { ...deps.ia, disponivel: false };
 
   agora = new Date(agora.getTime() + 11 * 60 * 1000);
   await enviar("gastei 12 de café");

@@ -338,7 +338,7 @@ export async function lerLancamentoComIA(entrada: { texto?: string; imagem?: { m
   });
   const resposta = await claude().messages.create({
     model: MODELO_ENTREVISTA,
-    max_tokens: 2000,
+    max_tokens: 16000,
     output_config: {
       effort: "low",
       format: {
@@ -365,8 +365,18 @@ export async function lerLancamentoComIA(entrada: { texto?: string; imagem?: { m
     messages: [{ role: "user", content: blocos }],
   });
   if (resposta.stop_reason === "refusal") return null;
+  if (resposta.stop_reason === "max_tokens") {
+    registrarErro("ler lançamento", "max_tokens");
+    return null;
+  }
   const bloco = resposta.content.find((b): b is Anthropic.TextBlock => b.type === "text");
-  return bloco ? (JSON.parse(bloco.text) as LancamentoIA) : null;
+  if (!bloco) return null;
+  try {
+    return JSON.parse(bloco.text) as LancamentoIA;
+  } catch {
+    registrarErro("ler lançamento", "json");
+    return null;
+  }
 }
 
 // Prompt do "Mordomo Estrategista": transforma o diagnóstico (números calculados pelo app)
